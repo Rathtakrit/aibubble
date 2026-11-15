@@ -1032,8 +1032,11 @@ body[data-mode="story"] .sheet .sheet-timeline {
     margin-top: 4px;
   }
 
+  /* The story's sample note starts at the column's left edge, as every other line there does.
+     The timeline's own status line keeps its wide band and its centred margins, which would
+     centre the note too if it kept them inside the column. */
   .story-column [data-block="story"] .status {
-    margin-top: 10px;
+    margin: 10px 0 0;
   }
 
   /* The company panel keeps its news inside the column, so the timeline keeps its place: the list
@@ -1191,9 +1194,12 @@ body[data-mode="story"] .sheet .sheet-timeline {
 /* --- Story on desktop: the page keeps the window's height and the chapter text scrolls --- */
 
 /* Story keeps the page the height of the window, as Explore does, so the timeline never falls
-   below it. The text column fills the room between the header and the timeline, and the chapter
-   text is the one part that shrinks and scrolls inside it: the kicker, date, title, sample note, the
-   players line, the buttons and "Read the story" keep their places around it.
+   below it. The page is read as three bands: the header, the main area and the timeline. The
+   header and the timeline keep their heights and the main area is given whatever is left over, so
+   it is a share of the window and never the height of the chapter. The text column fills that
+   area, and the chapter text is the one part that shrinks and scrolls inside it: the kicker, date,
+   title, sample note, the players line, the buttons and "Read the story" keep their places around
+   it, above the timeline.
    The 1048px is where the two columns stop sitting side by side: their sizes (360px and 560px), the
    gap and the page's side padding add up to that, and below it the columns stack and the page
    scrolls in Explore too, so Story behaves the same there. */
@@ -1203,18 +1209,53 @@ body[data-mode="story"] .sheet .sheet-timeline {
     height: 100dvh;
   }
 
-  body[data-mode="story"] .explore-main,
-  body[data-mode="story"] .story-column {
-    min-height: 0;
+  body[data-mode="story"] .layout-desktop > .site-header,
+  body[data-mode="story"] .layout-desktop > .timeline {
+    flex: 0 0 auto;
   }
 
+  /* The main area is the window less the header and the timeline, not the height of what it holds:
+     its size starts at zero and it grows into the room left between them. Nothing is drawn outside
+     it, so neither column can reach the timeline's line.
+     One line, not wrapping: above 1048px the two columns always fit side by side, and a wrapping
+     area sizes its line by the tallest thing in it — the chapter — so the column would be handed
+     the chapter's height again instead of the room between the header and the timeline. */
+  body[data-mode="story"] .explore-main {
+    flex: 1 1 0;
+    flex-wrap: nowrap;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  /* The text column fills that area from the top and hands the room it has to its one growing
+     child, the chapter block. Its height is the area's own content box, whatever the chapter's
+     length, so the block and the chapter text have a shorter height to shrink into. */
+  body[data-mode="story"] .story-column {
+    height: 100%;
+    min-height: 0;
+    justify-content: flex-start;
+  }
+
+  body[data-mode="story"] .story-column > * {
+    flex: 0 0 auto;
+  }
+
+  /* Inside the column the kicker, the date and, in the block, the title, the sample note, the
+     players line, the buttons and "Read the story" keep their natural height; the chapter text is
+     the only part that grows into the leftover room and shrinks below its content to scroll. */
   body[data-mode="story"] .story-column [data-block="story"]:not([hidden]) {
     display: flex;
     flex-direction: column;
+    flex: 1 1 auto;
     min-height: 0;
   }
 
-  body[data-mode="story"] .story-column .chapter-text {
+  body[data-mode="story"] .story-column [data-block="story"] > * {
+    flex: 0 0 auto;
+  }
+
+  body[data-mode="story"] .story-column [data-block="story"] .chapter-text {
+    flex: 1 1 auto;
     min-height: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
@@ -1225,10 +1266,12 @@ body[data-mode="story"] .sheet .sheet-timeline {
   body[data-mode="story"] .story-column [data-block="story-list"]:not([hidden]) {
     display: flex;
     flex-direction: column;
+    flex: 1 1 auto;
     min-height: 0;
   }
 
   body[data-mode="story"] .story-column .chapter-list {
+    flex: 1 1 auto;
     min-height: 0;
   }
 

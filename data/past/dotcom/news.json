@@ -19,7 +19,7 @@
       "players": [],
       "kind": "money",
       "key_date": true,
-      "source": "https://en.wikipedia.org/api/rest_v1/page/summary/Telecommunications_Act_of_1996"
+      "source": "https://en.wikipedia.org/wiki/Telecommunications_Act_of_1996"
     },
     {
       "id": "1996-09-30-lucent-spinoff",
@@ -31,7 +31,7 @@
       ],
       "kind": "money",
       "key_date": false,
-      "source": "https://en.wikipedia.org/api/rest_v1/page/summary/Lucent_Technologies"
+      "source": "https://en.wikipedia.org/wiki/Lucent_Technologies"
     },
     {
       "id": "1996-12-05-irrational-exuberance",
@@ -63,7 +63,7 @@
       "players": [],
       "kind": "money",
       "key_date": false,
-      "source": "https://en.wikipedia.org/api/rest_v1/page/summary/TheGlobe.com"
+      "source": "https://en.wikipedia.org/wiki/TheGlobe.com"
     },
     {
       "id": "1999-01-28-yahoo-geocities",
@@ -75,7 +75,7 @@
       ],
       "kind": "money",
       "key_date": false,
-      "source": "https://en.wikipedia.org/api/rest_v1/page/summary/GeoCities"
+      "source": "https://en.wikipedia.org/wiki/GeoCities"
     },
     {
       "id": "1999-01-29-jdsu-merger",
@@ -346,7 +346,7 @@
       ],
       "kind": "money",
       "key_date": true,
-      "source": "https://en.wikipedia.org/api/rest_v1/page/summary/Enron"
+      "source": "https://en.wikipedia.org/wiki/Enron"
     },
     {
       "id": "2002-01-28-global-crossing-bankruptcy",
