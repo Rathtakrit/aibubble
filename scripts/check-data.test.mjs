@@ -1,4 +1,5 @@
 // Checks that scripts/check-data.mjs rejects broken data. Run with: node --test scripts/
+// The tests copy scripts/fixtures/sample and break the copy, so they do not depend on data/.
 
 import test from "node:test";
 import assert from "node:assert";
@@ -11,10 +12,11 @@ import { spawnSync } from "node:child_process";
 const here = dirname(fileURLToPath(import.meta.url));
 const checker = join(here, "check-data.mjs");
 const dataDir = join(here, "..", "data");
+const fixtureDir = join(here, "fixtures", "sample");
 
 function copyData() {
   const dir = mkdtempSync(join(tmpdir(), "aibubble-check-"));
-  cpSync(dataDir, dir, { recursive: true });
+  cpSync(fixtureDir, dir, { recursive: true });
   return dir;
 }
 
@@ -46,7 +48,9 @@ function expectFail(dir, file) {
 }
 
 test("the real data passes", () => {
-  expectOk(copyData());
+  const result = run(dataDir);
+  assert.equal(result.status, 0, `expected exit 0, got ${result.status}:\n${result.stdout}${result.stderr}`);
+  assert.match(result.stdout, /^data ok: /);
 });
 
 test("rejects a missing file", () => {
@@ -193,7 +197,7 @@ test("rejects an unknown amount_type", () => {
 test("rejects a company with no value point", () => {
   const dir = copyData();
   const values = read(dir, "values.json");
-  values.items = values.items.filter((item) => item.company !== "nvidia");
+  values.items = values.items.filter((item) => item.company !== "samplenet");
   write(dir, "values.json", values);
   expectFail(dir, "companies.json");
 });

@@ -1,21 +1,21 @@
 {
-  "status": "sample",
+  "status": "draft",
   "items": [
     {
       "id": "nvidia",
       "name": "Nvidia",
       "kind": "listed",
       "ticker": "NVDA",
-      "first_mention": "2017-06-12",
-      "source": "https://example.com/sample"
+      "first_mention": "2018-11-15",
+      "source": "https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-third-quarter-fiscal-2019"
     },
     {
       "id": "microsoft",
       "name": "Microsoft",
       "kind": "listed",
       "ticker": "MSFT",
-      "first_mention": "2017-06-12",
-      "source": "https://example.com/sample"
+      "first_mention": "2019-07-22",
+      "source": "https://blogs.microsoft.com/blog/2019/07/22/openai-forms-multi-year-partnership-with-microsoft/"
     },
     {
       "id": "alphabet",
@@ -23,30 +23,148 @@
       "kind": "listed",
       "ticker": "GOOGL",
       "first_mention": "2017-06-12",
-      "source": "https://example.com/sample"
+      "source": "https://arxiv.org/abs/1706.03762"
     },
     {
       "id": "amazon",
       "name": "Amazon",
       "kind": "listed",
       "ticker": "AMZN",
-      "first_mention": "2017-06-12",
-      "source": "https://example.com/sample"
+      "first_mention": "2023-09-25",
+      "source": "https://www.aboutamazon.com/news/company-news/amazon-aws-anthropic-ai"
+    },
+    {
+      "id": "meta",
+      "name": "Meta",
+      "kind": "listed",
+      "ticker": "META",
+      "first_mention": "2023-02-24",
+      "source": "https://ai.meta.com/blog/large-language-model-llama-meta-ai/"
+    },
+    {
+      "id": "oracle",
+      "name": "Oracle",
+      "kind": "listed",
+      "ticker": "ORCL",
+      "first_mention": "2025-01-21",
+      "source": "https://techcrunch.com/2025/01/21/openai-teams-up-with-softbank-and-oracle-on-50b-data-center-project/"
+    },
+    {
+      "id": "amd",
+      "name": "AMD",
+      "kind": "listed",
+      "ticker": "AMD",
+      "first_mention": "2022-10-07",
+      "source": "https://www.bis.gov/press-release/commerce-implements-new-export-controls-advanced-computing-semiconductor-manufacturing-items-peoples"
+    },
+    {
+      "id": "broadcom",
+      "name": "Broadcom",
+      "kind": "listed",
+      "ticker": "AVGO",
+      "first_mention": "2025-10-13",
+      "source": "https://techcrunch.com/2025/10/14/openai-and-broadcom-partner-on-ai-hardware/"
+    },
+    {
+      "id": "tsmc",
+      "name": "TSMC",
+      "kind": "listed",
+      "ticker": "TSM",
+      "first_mention": "2026-07-28",
+      "source": "https://www.theguardian.com/business/2026/jul/28/ai-sell-off-chip-stocks-sk-hynix-samsung"
+    },
+    {
+      "id": "softbank",
+      "name": "SoftBank",
+      "kind": "listed",
+      "ticker": "9984.T",
+      "first_mention": "2020-09-13",
+      "source": "https://nvidianews.nvidia.com/news/nvidia-to-acquire-arm-for-40-billion-creating-worlds-premier-computing-company-for-the-age-of-ai"
+    },
+    {
+      "id": "intel",
+      "name": "Intel",
+      "kind": "listed",
+      "ticker": "INTC",
+      "first_mention": "2025-09-18",
+      "source": "https://nvidianews.nvidia.com/news/nvidia-and-intel-to-develop-ai-infrastructure-and-personal-computing-products"
+    },
+    {
+      "id": "palantir",
+      "name": "Palantir",
+      "kind": "listed",
+      "ticker": "PLTR",
+      "first_mention": "2025-11-03",
+      "source": "https://www.businessinsider.com/why-michael-burry-big-short-nvidia-palantir-ai-bubble-stocks-2025-11"
+    },
+    {
+      "id": "coreweave",
+      "name": "CoreWeave",
+      "kind": "listed",
+      "ticker": "CRWV",
+      "first_mention": "2025-03-10",
+      "source": "https://www.coreweave.com/news/coreweave-announces-agreement-with-openai-to-deliver-ai-infrastructure"
     },
     {
       "id": "openai",
       "name": "OpenAI",
       "kind": "private",
-      "first_mention": "2019-07-22",
-      "source": "https://example.com/sample"
+      "first_mention": "2023-04-28",
+      "source": "https://techcrunch.com/2023/04/28/openai-funding-valuation-chatgpt/"
+    },
+    {
+      "id": "anthropic",
+      "name": "Anthropic",
+      "kind": "private",
+      "first_mention": "2023-05-23",
+      "source": "https://siliconvalleyinvestclub.com/2023/05/24/anthropic-raises-450-million-in-series-c-round/"
+    },
+    {
+      "id": "xai",
+      "name": "xAI",
+      "kind": "private",
+      "first_mention": "2025-07-09",
+      "source": "https://x.ai/news/grok-4"
+    },
+    {
+      "id": "mistral",
+      "name": "Mistral AI",
+      "kind": "private",
+      "first_mention": "2023-09-27",
+      "source": "https://mistral.ai/news/announcing-mistral-7b"
     },
     {
       "id": "g-chips",
       "name": "Other chips",
       "kind": "group",
-      "members": ["Arm", "Micron", "Broadcom"],
-      "first_mention": "2023-05-25",
-      "source": "https://example.com/sample"
+      "members": [
+        "Arm",
+        "Micron",
+        "SK Hynix",
+        "Samsung",
+        "ASML",
+        "Supermicro"
+      ],
+      "first_mention": "2017-12-31",
+      "source": "https://companiesmarketcap.com/micron-technology/marketcap/"
+    },
+    {
+      "id": "g-labs",
+      "name": "Other labs",
+      "kind": "group",
+      "members": [
+        "Perplexity",
+        "Scale AI",
+        "Databricks",
+        "Figure",
+        "Thinking Machines",
+        "Cursor",
+        "Crusoe",
+        "DeepSeek",
+        "Inflection"
+      ],
+      "first_mention": "2023-06-29",
+      "source": "https://techcrunch.com/2023/06/29/inflection-ai-lands-1-3b-investment-to-build-more-personal-ai"
     }
   ]
 }

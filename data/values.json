@@ -1,173 +1,1188 @@
 {
-  "status": "sample",
+  "status": "draft",
   "items": [
     {
-      "company": "nvidia",
-      "date": "2017-06-12",
-      "value_usd_bn": 100,
-      "what": "sample point",
-      "source": "https://example.com/sample"
-    },
-    {
-      "company": "nvidia",
-      "date": "2020-01-02",
-      "value_usd_bn": 150,
+      "company": "alphabet",
+      "date": "2017-12-31",
+      "value_usd_bn": 729.45,
       "what": "year end",
-      "source": "https://example.com/sample"
+      "source": "https://companiesmarketcap.com/alphabet-google/marketcap/"
     },
     {
-      "company": "nvidia",
-      "date": "2023-01-03",
-      "value_usd_bn": 400,
+      "company": "alphabet",
+      "date": "2018-12-31",
+      "value_usd_bn": 723.55,
       "what": "year end",
-      "source": "https://example.com/sample"
+      "source": "https://companiesmarketcap.com/alphabet-google/marketcap/"
     },
     {
-      "company": "nvidia",
-      "date": "2024-06-03",
-      "value_usd_bn": 2500,
-      "what": "sample point",
-      "source": "https://example.com/sample"
+      "company": "alphabet",
+      "date": "2019-12-31",
+      "value_usd_bn": 921.13,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/alphabet-google/marketcap/"
     },
     {
-      "company": "nvidia",
-      "date": "2025-06-02",
-      "value_usd_bn": 3500,
-      "what": "sample point",
-      "source": "https://example.com/sample"
+      "company": "alphabet",
+      "date": "2020-12-31",
+      "value_usd_bn": 1185,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/alphabet-google/marketcap/"
+    },
+    {
+      "company": "alphabet",
+      "date": "2021-12-31",
+      "value_usd_bn": 1917,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/alphabet-google/marketcap/"
+    },
+    {
+      "company": "alphabet",
+      "date": "2022-12-31",
+      "value_usd_bn": 1145,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/alphabet-google/marketcap/"
+    },
+    {
+      "company": "alphabet",
+      "date": "2023-12-31",
+      "value_usd_bn": 1756,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/alphabet-google/marketcap/"
+    },
+    {
+      "company": "alphabet",
+      "date": "2024-12-31",
+      "value_usd_bn": 2365,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/alphabet-google/marketcap/"
+    },
+    {
+      "company": "alphabet",
+      "date": "2025-09-15",
+      "value_usd_bn": 3050,
+      "what": "First close above US$3 trillion",
+      "source": "https://fortune.com/2025/09/15/google-3-trillion-valuation-market-cap-artificial-intelligence-monopoly-antitrust/"
+    },
+    {
+      "company": "alphabet",
+      "date": "2025-12-31",
+      "value_usd_bn": 3802,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/alphabet-google/marketcap/"
+    },
+    {
+      "company": "alphabet",
+      "date": "2026-01-12",
+      "value_usd_bn": 4000,
+      "what": "First touch of US$4 trillion",
+      "source": "https://www.bnnbloomberg.ca/business/2026/01/12/alphabet-hits-us4-trillion-valuation-as-ai-refocus-lifts-sentiment/"
+    },
+    {
+      "company": "alphabet",
+      "date": "2026-11-14",
+      "value_usd_bn": 3596,
+      "what": "latest",
+      "source": "https://companiesmarketcap.com/alphabet-google/marketcap/"
+    },
+    {
+      "company": "amazon",
+      "date": "2017-12-31",
+      "value_usd_bn": 563.53,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/amazon/marketcap/"
+    },
+    {
+      "company": "amazon",
+      "date": "2018-09-04",
+      "value_usd_bn": 1000,
+      "what": "Second US company to reach US$1 trillion",
+      "source": "https://www.pbs.org/newshour/amp/economy/amazon-becomes-second-company-to-top-1-trillion"
+    },
+    {
+      "company": "amazon",
+      "date": "2018-12-31",
+      "value_usd_bn": 737.46,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/amazon/marketcap/"
+    },
+    {
+      "company": "amazon",
+      "date": "2019-12-31",
+      "value_usd_bn": 920.22,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/amazon/marketcap/"
+    },
+    {
+      "company": "amazon",
+      "date": "2020-12-31",
+      "value_usd_bn": 1634,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/amazon/marketcap/"
+    },
+    {
+      "company": "amazon",
+      "date": "2021-12-31",
+      "value_usd_bn": 1691,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/amazon/marketcap/"
+    },
+    {
+      "company": "amazon",
+      "date": "2022-12-31",
+      "value_usd_bn": 856.94,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/amazon/marketcap/"
+    },
+    {
+      "company": "amazon",
+      "date": "2023-12-31",
+      "value_usd_bn": 1570,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/amazon/marketcap/"
+    },
+    {
+      "company": "amazon",
+      "date": "2024-12-31",
+      "value_usd_bn": 2352,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/amazon/marketcap/"
+    },
+    {
+      "company": "amazon",
+      "date": "2025-12-31",
+      "value_usd_bn": 2485,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/amazon/marketcap/"
+    },
+    {
+      "company": "amazon",
+      "date": "2026-11-14",
+      "value_usd_bn": 2883,
+      "what": "latest",
+      "source": "https://companiesmarketcap.com/amazon/marketcap/"
+    },
+    {
+      "company": "amd",
+      "date": "2017-12-31",
+      "value_usd_bn": 9.91,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/amd/marketcap/"
+    },
+    {
+      "company": "amd",
+      "date": "2018-12-31",
+      "value_usd_bn": 18.55,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/amd/marketcap/"
+    },
+    {
+      "company": "amd",
+      "date": "2019-12-31",
+      "value_usd_bn": 53.65,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/amd/marketcap/"
+    },
+    {
+      "company": "amd",
+      "date": "2020-12-31",
+      "value_usd_bn": 110.42,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/amd/marketcap/"
+    },
+    {
+      "company": "amd",
+      "date": "2021-12-31",
+      "value_usd_bn": 173.77,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/amd/marketcap/"
+    },
+    {
+      "company": "amd",
+      "date": "2022-12-31",
+      "value_usd_bn": 104.43,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/amd/marketcap/"
+    },
+    {
+      "company": "amd",
+      "date": "2023-12-31",
+      "value_usd_bn": 238.14,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/amd/marketcap/"
+    },
+    {
+      "company": "amd",
+      "date": "2024-12-31",
+      "value_usd_bn": 203.15,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/amd/marketcap/"
+    },
+    {
+      "company": "amd",
+      "date": "2025-12-31",
+      "value_usd_bn": 350.01,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/amd/marketcap/"
+    },
+    {
+      "company": "amd",
+      "date": "2026-11-14",
+      "value_usd_bn": 875.9,
+      "what": "latest",
+      "source": "https://companiesmarketcap.com/amd/marketcap/"
+    },
+    {
+      "company": "anthropic",
+      "date": "2023-05-23",
+      "value_usd_bn": 5,
+      "what": "Series C, sources put it at nearly $5bn; reported",
+      "source": "https://siliconvalleyinvestclub.com/2023/05/24/anthropic-raises-450-million-in-series-c-round/"
+    },
+    {
+      "company": "anthropic",
+      "date": "2024-05-13",
+      "value_usd_bn": 18.4,
+      "what": "post-money $18.4bn quoted as current; report date, not close",
+      "source": "https://techcrunch.com/2024/05/13/anthropic-is-expanding-to-europe-and-raising-more-money/"
+    },
+    {
+      "company": "anthropic",
+      "date": "2025-03-03",
+      "value_usd_bn": 61.5,
+      "what": "round (Series E), $3.5bn raised",
+      "source": "https://techcrunch.com/2025/03/03/anthropic-raises-3-5b-to-fuel-its-ai-ambitions/"
+    },
+    {
+      "company": "anthropic",
+      "date": "2025-09-02",
+      "value_usd_bn": 183,
+      "what": "round (Series F), $13bn raised",
+      "source": "https://tech.eu/2025/09/02/anthropic-raises-13-billion-at-183-billion-valuation-tripling-its-value-in-six-months/"
+    },
+    {
+      "company": "anthropic",
+      "date": "2026-02-04",
+      "value_usd_bn": 350,
+      "what": "employee tender offer (reported plan), pre-money",
+      "source": "https://www.bloomberg.com/news/articles/2026-02-04/anthropic-plans-employee-tender-offer-at-350-billion-valuation"
+    },
+    {
+      "company": "anthropic",
+      "date": "2026-05-28",
+      "value_usd_bn": 965,
+      "what": "round, $65bn raised",
+      "source": "https://www.clickondetroit.com/business/2026/05/28/anthropic-vaults-to-a-965-billion-valuation-with-new-funding-as-claude-demand-surges/"
+    },
+    {
+      "company": "broadcom",
+      "date": "2017-12-31",
+      "value_usd_bn": 105.16,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/broadcom/marketcap/"
+    },
+    {
+      "company": "broadcom",
+      "date": "2018-12-31",
+      "value_usd_bn": 103.56,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/broadcom/marketcap/"
+    },
+    {
+      "company": "broadcom",
+      "date": "2019-12-31",
+      "value_usd_bn": 125.71,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/broadcom/marketcap/"
+    },
+    {
+      "company": "broadcom",
+      "date": "2020-12-31",
+      "value_usd_bn": 178.07,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/broadcom/marketcap/"
+    },
+    {
+      "company": "broadcom",
+      "date": "2021-12-31",
+      "value_usd_bn": 274.73,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/broadcom/marketcap/"
+    },
+    {
+      "company": "broadcom",
+      "date": "2022-12-31",
+      "value_usd_bn": 233.65,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/broadcom/marketcap/"
+    },
+    {
+      "company": "broadcom",
+      "date": "2023-12-31",
+      "value_usd_bn": 461.01,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/broadcom/marketcap/"
+    },
+    {
+      "company": "broadcom",
+      "date": "2024-12-31",
+      "value_usd_bn": 1133,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/broadcom/marketcap/"
+    },
+    {
+      "company": "broadcom",
+      "date": "2025-12-31",
+      "value_usd_bn": 1669,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/broadcom/marketcap/"
+    },
+    {
+      "company": "broadcom",
+      "date": "2026-11-14",
+      "value_usd_bn": 1656,
+      "what": "latest",
+      "source": "https://companiesmarketcap.com/broadcom/marketcap/"
+    },
+    {
+      "company": "coreweave",
+      "date": "2025-12-31",
+      "value_usd_bn": 38.08,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/coreweave/marketcap/"
+    },
+    {
+      "company": "coreweave",
+      "date": "2026-11-14",
+      "value_usd_bn": 29.54,
+      "what": "latest",
+      "source": "https://companiesmarketcap.com/coreweave/marketcap/"
+    },
+    {
+      "company": "g-chips",
+      "date": "2017-12-31",
+      "value_usd_bn": 492.91,
+      "what": "sum of 5 members",
+      "source": "https://companiesmarketcap.com/micron-technology/marketcap/"
+    },
+    {
+      "company": "g-chips",
+      "date": "2018-12-31",
+      "value_usd_bn": 369.74,
+      "what": "sum of 5 members",
+      "source": "https://companiesmarketcap.com/micron-technology/marketcap/"
+    },
+    {
+      "company": "g-chips",
+      "date": "2019-12-31",
+      "value_usd_bn": 560.34,
+      "what": "sum of 5 members",
+      "source": "https://companiesmarketcap.com/micron-technology/marketcap/"
+    },
+    {
+      "company": "g-chips",
+      "date": "2020-12-31",
+      "value_usd_bn": 866.14,
+      "what": "sum of 5 members",
+      "source": "https://companiesmarketcap.com/micron-technology/marketcap/"
+    },
+    {
+      "company": "g-chips",
+      "date": "2021-12-31",
+      "value_usd_bn": 949.56,
+      "what": "sum of 5 members",
+      "source": "https://companiesmarketcap.com/micron-technology/marketcap/"
+    },
+    {
+      "company": "g-chips",
+      "date": "2022-12-31",
+      "value_usd_bn": 612.79,
+      "what": "sum of 5 members",
+      "source": "https://companiesmarketcap.com/micron-technology/marketcap/"
+    },
+    {
+      "company": "g-chips",
+      "date": "2023-12-31",
+      "value_usd_bn": 964.72,
+      "what": "sum of 6 members",
+      "source": "https://companiesmarketcap.com/arm-holdings/marketcap/"
+    },
+    {
+      "company": "g-chips",
+      "date": "2024-12-31",
+      "value_usd_bn": 858.55,
+      "what": "sum of 6 members",
+      "source": "https://companiesmarketcap.com/arm-holdings/marketcap/"
+    },
+    {
+      "company": "g-chips",
+      "date": "2025-12-31",
+      "value_usd_bn": 1700.91,
+      "what": "sum of 6 members",
+      "source": "https://companiesmarketcap.com/arm-holdings/marketcap/"
+    },
+    {
+      "company": "g-chips",
+      "date": "2026-11-14",
+      "value_usd_bn": 1678.42,
+      "what": "sum of 4 members",
+      "source": "https://companiesmarketcap.com/arm-holdings/marketcap/"
+    },
+    {
+      "company": "g-labs",
+      "date": "2023-12-31",
+      "value_usd_bn": 4,
+      "what": "sum of 1 member",
+      "source": "https://techcrunch.com/2023/06/29/inflection-ai-lands-1-3b-investment-to-build-more-personal-ai"
+    },
+    {
+      "company": "g-labs",
+      "date": "2024-12-31",
+      "value_usd_bn": 4,
+      "what": "sum of 1 member",
+      "source": "https://techcrunch.com/2023/06/29/inflection-ai-lands-1-3b-investment-to-build-more-personal-ai"
+    },
+    {
+      "company": "g-labs",
+      "date": "2025-12-31",
+      "value_usd_bn": 114,
+      "what": "sum of 6 members",
+      "source": "https://www.thestar.com.my/tech/tech-news/2025/09/11/perplexity-finalizes-20-billion-valuation-round-the-information-reports"
+    },
+    {
+      "company": "g-labs",
+      "date": "2026-11-14",
+      "value_usd_bn": 416,
+      "what": "sum of 9 members",
+      "source": "https://www.thestar.com.my/tech/tech-news/2025/09/11/perplexity-finalizes-20-billion-valuation-round-the-information-reports"
+    },
+    {
+      "company": "intel",
+      "date": "2017-12-31",
+      "value_usd_bn": 216.02,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/intel/marketcap/"
+    },
+    {
+      "company": "intel",
+      "date": "2018-12-31",
+      "value_usd_bn": 211.93,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/intel/marketcap/"
+    },
+    {
+      "company": "intel",
+      "date": "2019-12-31",
+      "value_usd_bn": 256.75,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/intel/marketcap/"
+    },
+    {
+      "company": "intel",
+      "date": "2020-12-31",
+      "value_usd_bn": 204.16,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/intel/marketcap/"
+    },
+    {
+      "company": "intel",
+      "date": "2021-12-31",
+      "value_usd_bn": 209.6,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/intel/marketcap/"
+    },
+    {
+      "company": "intel",
+      "date": "2022-12-31",
+      "value_usd_bn": 109.07,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/intel/marketcap/"
+    },
+    {
+      "company": "intel",
+      "date": "2023-12-31",
+      "value_usd_bn": 211.85,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/intel/marketcap/"
+    },
+    {
+      "company": "intel",
+      "date": "2024-12-31",
+      "value_usd_bn": 87.55,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/intel/marketcap/"
+    },
+    {
+      "company": "intel",
+      "date": "2025-12-31",
+      "value_usd_bn": 172.67,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/intel/marketcap/"
+    },
+    {
+      "company": "intel",
+      "date": "2026-11-14",
+      "value_usd_bn": 317.09,
+      "what": "latest",
+      "source": "https://companiesmarketcap.com/intel/marketcap/"
+    },
+    {
+      "company": "meta",
+      "date": "2017-12-31",
+      "value_usd_bn": 512.75,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/meta-platforms/marketcap/"
+    },
+    {
+      "company": "meta",
+      "date": "2018-12-31",
+      "value_usd_bn": 374.13,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/meta-platforms/marketcap/"
+    },
+    {
+      "company": "meta",
+      "date": "2019-12-31",
+      "value_usd_bn": 585.37,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/meta-platforms/marketcap/"
+    },
+    {
+      "company": "meta",
+      "date": "2020-12-31",
+      "value_usd_bn": 778.23,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/meta-platforms/marketcap/"
+    },
+    {
+      "company": "meta",
+      "date": "2021-12-31",
+      "value_usd_bn": 921.93,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/meta-platforms/marketcap/"
+    },
+    {
+      "company": "meta",
+      "date": "2022-12-31",
+      "value_usd_bn": 319.88,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/meta-platforms/marketcap/"
+    },
+    {
+      "company": "meta",
+      "date": "2023-12-31",
+      "value_usd_bn": 909.62,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/meta-platforms/marketcap/"
+    },
+    {
+      "company": "meta",
+      "date": "2024-12-31",
+      "value_usd_bn": 1514,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/meta-platforms/marketcap/"
+    },
+    {
+      "company": "meta",
+      "date": "2025-12-31",
+      "value_usd_bn": 1671,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/meta-platforms/marketcap/"
+    },
+    {
+      "company": "meta",
+      "date": "2026-11-14",
+      "value_usd_bn": 1640,
+      "what": "latest",
+      "source": "https://companiesmarketcap.com/meta-platforms/marketcap/"
     },
     {
       "company": "microsoft",
-      "date": "2017-06-12",
-      "value_usd_bn": 500,
-      "what": "sample point",
-      "source": "https://example.com/sample"
+      "date": "2017-12-31",
+      "value_usd_bn": 659.9,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/microsoft/marketcap/"
     },
     {
       "company": "microsoft",
-      "date": "2020-01-02",
+      "date": "2018-12-31",
+      "value_usd_bn": 780.36,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/microsoft/marketcap/"
+    },
+    {
+      "company": "microsoft",
+      "date": "2019-04-25",
+      "value_usd_bn": 1000,
+      "what": "First time above US$1 trillion, after earnings",
+      "source": "https://phys.org/news/2019-04-microsoft-tops-trillion-dollar-mark.html"
+    },
+    {
+      "company": "microsoft",
+      "date": "2019-12-31",
       "value_usd_bn": 1200,
       "what": "year end",
-      "source": "https://example.com/sample"
+      "source": "https://companiesmarketcap.com/microsoft/marketcap/"
     },
     {
       "company": "microsoft",
-      "date": "2023-01-03",
-      "value_usd_bn": 1800,
+      "date": "2020-12-31",
+      "value_usd_bn": 1681,
       "what": "year end",
-      "source": "https://example.com/sample"
+      "source": "https://companiesmarketcap.com/microsoft/marketcap/"
     },
     {
       "company": "microsoft",
-      "date": "2025-06-02",
+      "date": "2021-12-31",
+      "value_usd_bn": 2522,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/microsoft/marketcap/"
+    },
+    {
+      "company": "microsoft",
+      "date": "2022-12-31",
+      "value_usd_bn": 1787,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/microsoft/marketcap/"
+    },
+    {
+      "company": "microsoft",
+      "date": "2023-12-31",
+      "value_usd_bn": 2794,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/microsoft/marketcap/"
+    },
+    {
+      "company": "microsoft",
+      "date": "2024-01-25",
+      "value_usd_bn": 3009,
+      "what": "Closed above US$3 trillion, just ahead of Apple",
+      "source": "https://www.barchart.com/story/news/23627794/microsofts-market-cap-hits-3-trillion"
+    },
+    {
+      "company": "microsoft",
+      "date": "2024-12-31",
+      "value_usd_bn": 3200,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/microsoft/marketcap/"
+    },
+    {
+      "company": "microsoft",
+      "date": "2025-07-31",
+      "value_usd_bn": 4010,
+      "what": "Touched US$4 trillion intraday after earnings",
+      "source": "https://www.geekwire.com/2025/microsoft-reaches-4-trillion-valuation-for-a-moment-at-least-after-big-earnings-report/"
+    },
+    {
+      "company": "microsoft",
+      "date": "2025-12-31",
+      "value_usd_bn": 3625,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/microsoft/marketcap/"
+    },
+    {
+      "company": "microsoft",
+      "date": "2026-11-14",
+      "value_usd_bn": 3890,
+      "what": "latest",
+      "source": "https://companiesmarketcap.com/microsoft/marketcap/"
+    },
+    {
+      "company": "mistral",
+      "date": "2023-06-13",
+      "value_usd_bn": 0.26,
+      "what": "seed, €105m raised at €240m post-money; reported",
+      "source": "https://techcrunch.com/2023/06/13/frances-mistral-ai-blows-in-with-a-113m-seed-round-at-a-260m-valuation-to-take-on-openai/"
+    },
+    {
+      "company": "mistral",
+      "date": "2023-12-11",
+      "value_usd_bn": 2,
+      "what": "Series A, €415m raised at ~$2bn post-money; reported",
+      "source": "https://techcrunch.com/2023/12/11/mistral-ai-a-paris-based-openai-rival-closed-its-415-million-funding-round/"
+    },
+    {
+      "company": "mistral",
+      "date": "2024-06-11",
+      "value_usd_bn": 6,
+      "what": "Series B, €600m equity and debt at $6bn post-money; reported",
+      "source": "https://techcrunch.com/2024/06/11/paris-based-ai-startup-mistral-ai-raises-640-million/"
+    },
+    {
+      "company": "mistral",
+      "date": "2025-09-09",
+      "value_usd_bn": 13.7,
+      "what": "Series C led by ASML, €1.7bn at €11.7bn post-money; $13.7bn is arithmetic",
+      "source": "https://mistral.ai/news/mistral-ai-raises-1-7-b-to-accelerate-technological-progress-with-ai/"
+    },
+    {
+      "company": "mistral",
+      "date": "2026-09-08",
+      "value_usd_bn": 24,
+      "what": "round (Series D), about US$24bn (announced in euros)",
+      "source": "https://euronews.com/business/2026/09/08/mistral-ai-raises-record-3-billion-in-samsung-led-funding-round"
+    },
+    {
+      "company": "nvidia",
+      "date": "2017-12-31",
+      "value_usd_bn": 117.26,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/nvidia/marketcap/"
+    },
+    {
+      "company": "nvidia",
+      "date": "2018-12-31",
+      "value_usd_bn": 81.43,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/nvidia/marketcap/"
+    },
+    {
+      "company": "nvidia",
+      "date": "2019-12-31",
+      "value_usd_bn": 144,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/nvidia/marketcap/"
+    },
+    {
+      "company": "nvidia",
+      "date": "2020-12-31",
+      "value_usd_bn": 323.24,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/nvidia/marketcap/"
+    },
+    {
+      "company": "nvidia",
+      "date": "2021-12-31",
+      "value_usd_bn": 735.27,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/nvidia/marketcap/"
+    },
+    {
+      "company": "nvidia",
+      "date": "2022-12-31",
+      "value_usd_bn": 364.18,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/nvidia/marketcap/"
+    },
+    {
+      "company": "nvidia",
+      "date": "2023-05-30",
+      "value_usd_bn": 1000,
+      "what": "First time above US$1 trillion; first US chipmaker to do so",
+      "source": "https://dc.fortune.com/2023/05/30/nvidia-hits-trillion-dollar-mark/"
+    },
+    {
+      "company": "nvidia",
+      "date": "2023-12-31",
+      "value_usd_bn": 1223,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/nvidia/marketcap/"
+    },
+    {
+      "company": "nvidia",
+      "date": "2024-02-23",
+      "value_usd_bn": 2000,
+      "what": "US$2 trillion reached in intraday trading",
+      "source": "https://www.rte.ie/news/business/2024/0223/1434016-nvidias-market-capitalisation"
+    },
+    {
+      "company": "nvidia",
+      "date": "2024-03-01",
+      "value_usd_bn": 2000,
+      "what": "First close above US$2 trillion (per Statista and Forbes)",
+      "source": "https://statista.com/chart/32472/most-valuable-public-companies-in-the-world"
+    },
+    {
+      "company": "nvidia",
+      "date": "2024-06-05",
       "value_usd_bn": 3000,
-      "what": "sample point",
-      "source": "https://example.com/sample"
+      "what": "US$3 trillion (one source dates it 5 June, another 12 June)",
+      "source": "https://www.fool.com/investing/2025/07/14/will-nvidia-soar-after-reaching-4-trillion-history"
     },
     {
-      "company": "alphabet",
-      "date": "2017-06-12",
-      "value_usd_bn": 600,
-      "what": "sample point",
-      "source": "https://example.com/sample"
-    },
-    {
-      "company": "alphabet",
-      "date": "2020-01-02",
-      "value_usd_bn": 900,
+      "company": "nvidia",
+      "date": "2024-12-31",
+      "value_usd_bn": 3288,
       "what": "year end",
-      "source": "https://example.com/sample"
+      "source": "https://companiesmarketcap.com/nvidia/marketcap/"
     },
     {
-      "company": "alphabet",
-      "date": "2023-01-03",
-      "value_usd_bn": 1200,
+      "company": "nvidia",
+      "date": "2025-12-31",
+      "value_usd_bn": 4638,
       "what": "year end",
-      "source": "https://example.com/sample"
+      "source": "https://companiesmarketcap.com/nvidia/marketcap/"
     },
     {
-      "company": "alphabet",
-      "date": "2025-06-02",
-      "value_usd_bn": 2000,
-      "what": "sample point",
-      "source": "https://example.com/sample"
+      "company": "nvidia",
+      "date": "2026-05-13",
+      "value_usd_bn": 5500,
+      "what": "First company to touch US$5.5 trillion, intraday",
+      "source": "https://finance.yahoo.com/markets/article/nvidia-tops-55-trillion-valuation-as-stock-surges-153749987.html"
     },
     {
-      "company": "amazon",
-      "date": "2017-06-12",
-      "value_usd_bn": 400,
-      "what": "sample point",
-      "source": "https://example.com/sample"
+      "company": "nvidia",
+      "date": "2026-05-14",
+      "value_usd_bn": 5700,
+      "what": "Record high of about US$5.7 trillion",
+      "source": "https://decrypt.co/379959/nvidia-hits-record-high-market-value-5-7-trillion?amp=1"
     },
     {
-      "company": "amazon",
-      "date": "2020-01-02",
-      "value_usd_bn": 900,
-      "what": "year end",
-      "source": "https://example.com/sample"
+      "company": "nvidia",
+      "date": "2026-11-05",
+      "value_usd_bn": 4400,
+      "what": "About US$4.4 trillion after the post-midterm sell-off",
+      "source": "https://www.5paisa.com/blog/nvidia-loses-440-billion-us-technology-selloff-midterm-elections"
     },
     {
-      "company": "amazon",
-      "date": "2023-01-03",
-      "value_usd_bn": 800,
-      "what": "year end",
-      "source": "https://example.com/sample"
-    },
-    {
-      "company": "amazon",
-      "date": "2025-06-02",
-      "value_usd_bn": 2000,
-      "what": "sample point",
-      "source": "https://example.com/sample"
+      "company": "nvidia",
+      "date": "2026-11-14",
+      "value_usd_bn": 3932,
+      "what": "latest",
+      "source": "https://companiesmarketcap.com/nvidia/marketcap/"
     },
     {
       "company": "openai",
-      "date": "2019-07-22",
-      "value_usd_bn": 1,
-      "what": "funding round",
-      "source": "https://example.com/sample"
+      "date": "2023-04-28",
+      "value_usd_bn": 29,
+      "what": "tender offer (existing shares sold), $27bn-$29bn; reported",
+      "source": "https://techcrunch.com/2023/04/28/openai-funding-valuation-chatgpt/"
     },
     {
       "company": "openai",
-      "date": "2023-01-03",
-      "value_usd_bn": 20,
-      "what": "funding round",
-      "source": "https://example.com/sample"
+      "date": "2024-02-18",
+      "value_usd_bn": 86,
+      "what": "employee tender offer completed, $86bn; reported",
+      "source": "https://economictimes.indiatimes.com/tech/technology/openai-deal-lets-employees-sell-shares-at-86-billion-valuation/articleshow/107784738.cms"
     },
     {
       "company": "openai",
       "date": "2024-10-02",
-      "value_usd_bn": 150,
-      "what": "funding round",
-      "source": "https://example.com/sample"
+      "value_usd_bn": 157,
+      "what": "round, $6.6bn raised",
+      "source": "https://techcrunch.com/2024/10/02/openai-raises-6-6b-and-is-now-valued-at-157b/"
     },
     {
       "company": "openai",
       "date": "2025-03-31",
       "value_usd_bn": 300,
-      "what": "funding round",
-      "source": "https://example.com/sample"
+      "what": "round, $40bn raised, led by SoftBank",
+      "source": "https://techcrunch.com/2025/03/31/openai-raises-40b-at-300b-post-money-valuation"
     },
     {
-      "company": "g-chips",
-      "date": "2017-06-12",
-      "value_usd_bn": 80,
-      "what": "sample point",
-      "source": "https://example.com/sample"
+      "company": "openai",
+      "date": "2025-10-02",
+      "value_usd_bn": 500,
+      "what": "employee tender offer, $6.6bn of shares sold",
+      "source": "https://newsio.com/2025/10/02/openai-wraps-6-6-billion-share-sale-at-500-billion-valuation/?amp=1"
     },
     {
-      "company": "g-chips",
-      "date": "2020-01-02",
-      "value_usd_bn": 200,
+      "company": "openai",
+      "date": "2026-02-27",
+      "value_usd_bn": 730,
+      "what": "round, first announcement, pre-money, $110bn raised",
+      "source": "https://www.engadget.com/ai/openai-secures-another-110-billion-in-funding-from-amazon-nvidia-and-softbank-171006356.html"
+    },
+    {
+      "company": "openai",
+      "date": "2026-03-31",
+      "value_usd_bn": 852,
+      "what": "round, $122bn raised",
+      "source": "https://finance.yahoo.com/markets/stocks/articles/openai-closes-122bn-funding-round-093126735.html"
+    },
+    {
+      "company": "openai",
+      "date": "2026-11-06",
+      "value_usd_bn": 1250,
+      "what": "reported round close, pre-money, about $11bn so far",
+      "source": "https://letsdatascience.com/news/openai-reportedly-closes-11-billion-first-portion-of-round-a-43b7bec2"
+    },
+    {
+      "company": "oracle",
+      "date": "2017-12-31",
+      "value_usd_bn": 195.72,
       "what": "year end",
-      "source": "https://example.com/sample"
+      "source": "https://companiesmarketcap.com/oracle/marketcap/"
     },
     {
-      "company": "g-chips",
-      "date": "2025-06-02",
-      "value_usd_bn": 600,
-      "what": "sample point",
-      "source": "https://example.com/sample"
+      "company": "oracle",
+      "date": "2018-12-31",
+      "value_usd_bn": 162.03,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/oracle/marketcap/"
+    },
+    {
+      "company": "oracle",
+      "date": "2019-12-31",
+      "value_usd_bn": 169.94,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/oracle/marketcap/"
+    },
+    {
+      "company": "oracle",
+      "date": "2020-12-31",
+      "value_usd_bn": 190.44,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/oracle/marketcap/"
+    },
+    {
+      "company": "oracle",
+      "date": "2021-12-31",
+      "value_usd_bn": 232.88,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/oracle/marketcap/"
+    },
+    {
+      "company": "oracle",
+      "date": "2022-12-31",
+      "value_usd_bn": 220.39,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/oracle/marketcap/"
+    },
+    {
+      "company": "oracle",
+      "date": "2023-12-31",
+      "value_usd_bn": 289.81,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/oracle/marketcap/"
+    },
+    {
+      "company": "oracle",
+      "date": "2024-12-31",
+      "value_usd_bn": 472.57,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/oracle/marketcap/"
+    },
+    {
+      "company": "oracle",
+      "date": "2025-09-10",
+      "value_usd_bn": 930,
+      "what": "About US$930bn after its biggest one-day gain (not checked)",
+      "source": "https://www.advisorperspectives.com/articles/2025/09/10/oracles-200-billion-market-cap-surge-lift-above-jpmorgan"
+    },
+    {
+      "company": "oracle",
+      "date": "2025-12-31",
+      "value_usd_bn": 568.85,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/oracle/marketcap/"
+    },
+    {
+      "company": "oracle",
+      "date": "2026-11-14",
+      "value_usd_bn": 390.8,
+      "what": "latest",
+      "source": "https://companiesmarketcap.com/oracle/marketcap/"
+    },
+    {
+      "company": "palantir",
+      "date": "2020-12-31",
+      "value_usd_bn": 44.22,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/palantir/marketcap/"
+    },
+    {
+      "company": "palantir",
+      "date": "2021-12-31",
+      "value_usd_bn": 36.5,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/palantir/marketcap/"
+    },
+    {
+      "company": "palantir",
+      "date": "2022-12-31",
+      "value_usd_bn": 13.35,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/palantir/marketcap/"
+    },
+    {
+      "company": "palantir",
+      "date": "2023-12-31",
+      "value_usd_bn": 37.36,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/palantir/marketcap/"
+    },
+    {
+      "company": "palantir",
+      "date": "2024-12-31",
+      "value_usd_bn": 180.14,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/palantir/marketcap/"
+    },
+    {
+      "company": "palantir",
+      "date": "2025-12-31",
+      "value_usd_bn": 449.77,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/palantir/marketcap/"
+    },
+    {
+      "company": "palantir",
+      "date": "2026-11-14",
+      "value_usd_bn": 404.77,
+      "what": "latest",
+      "source": "https://companiesmarketcap.com/palantir/marketcap/"
+    },
+    {
+      "company": "softbank",
+      "date": "2017-12-31",
+      "value_usd_bn": 86.09,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/softbank/marketcap/"
+    },
+    {
+      "company": "softbank",
+      "date": "2018-12-31",
+      "value_usd_bn": 72.13,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/softbank/marketcap/"
+    },
+    {
+      "company": "softbank",
+      "date": "2019-12-31",
+      "value_usd_bn": 90.48,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/softbank/marketcap/"
+    },
+    {
+      "company": "softbank",
+      "date": "2020-12-31",
+      "value_usd_bn": 140.78,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/softbank/marketcap/"
+    },
+    {
+      "company": "softbank",
+      "date": "2021-12-31",
+      "value_usd_bn": 80.37,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/softbank/marketcap/"
+    },
+    {
+      "company": "softbank",
+      "date": "2022-12-31",
+      "value_usd_bn": 61.71,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/softbank/marketcap/"
+    },
+    {
+      "company": "softbank",
+      "date": "2023-12-31",
+      "value_usd_bn": 65.4,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/softbank/marketcap/"
+    },
+    {
+      "company": "softbank",
+      "date": "2024-12-31",
+      "value_usd_bn": 84.54,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/softbank/marketcap/"
+    },
+    {
+      "company": "softbank",
+      "date": "2025-12-31",
+      "value_usd_bn": 161.96,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/softbank/marketcap/"
+    },
+    {
+      "company": "tsmc",
+      "date": "2017-12-31",
+      "value_usd_bn": 199.41,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/tsmc/marketcap/"
+    },
+    {
+      "company": "tsmc",
+      "date": "2018-12-31",
+      "value_usd_bn": 191.19,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/tsmc/marketcap/"
+    },
+    {
+      "company": "tsmc",
+      "date": "2019-12-31",
+      "value_usd_bn": 286.57,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/tsmc/marketcap/"
+    },
+    {
+      "company": "tsmc",
+      "date": "2020-12-31",
+      "value_usd_bn": 488.12,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/tsmc/marketcap/"
+    },
+    {
+      "company": "tsmc",
+      "date": "2021-12-31",
+      "value_usd_bn": 575.93,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/tsmc/marketcap/"
+    },
+    {
+      "company": "tsmc",
+      "date": "2022-12-31",
+      "value_usd_bn": 386.31,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/tsmc/marketcap/"
+    },
+    {
+      "company": "tsmc",
+      "date": "2023-12-31",
+      "value_usd_bn": 539.38,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/tsmc/marketcap/"
+    },
+    {
+      "company": "tsmc",
+      "date": "2024-12-31",
+      "value_usd_bn": 1045,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/tsmc/marketcap/"
+    },
+    {
+      "company": "tsmc",
+      "date": "2025-12-31",
+      "value_usd_bn": 1570,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/tsmc/marketcap/"
+    },
+    {
+      "company": "tsmc",
+      "date": "2026-11-14",
+      "value_usd_bn": 2068,
+      "what": "latest",
+      "source": "https://companiesmarketcap.com/tsmc/marketcap/"
+    },
+    {
+      "company": "xai",
+      "date": "2024-05-26",
+      "value_usd_bn": 24,
+      "what": "Series B, $6bn at $18bn pre-money; $24bn is arithmetic, reported",
+      "source": "https://techcrunch.com/2024/05/26/elon-musks-xai-raises-6b-from-valor-a16z-and-sequoia/"
+    },
+    {
+      "company": "xai",
+      "date": "2024-12-25",
+      "value_usd_bn": 45,
+      "what": "Series C, $6bn raised, $45bn valuation; reported",
+      "source": "https://techcrunch.com/2024/12/25/elon-musks-xai-lands-billions-in-new-cash-to-fuel-ai-ambitions/"
+    },
+    {
+      "company": "xai",
+      "date": "2025-03-29",
+      "value_usd_bn": 80,
+      "what": "acquired X all-stock; xAI $80bn, X $33bn not added; reported",
+      "source": "https://techcrunch.com/2025/03/29/elon-musk-says-xai-acquired-x/"
+    },
+    {
+      "company": "xai",
+      "date": "2026-02-02",
+      "value_usd_bn": 250,
+      "what": "acquired by SpaceX in an all-stock deal",
+      "source": "https://finance.yahoo.com/news/factbox-spacex-acquires-xai-key-142912748.html"
     }
   ]
 }

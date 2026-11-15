@@ -1,0 +1,49 @@
+{
+  "status": "sample",
+  "items": [
+    {
+      "id": "d1",
+      "date": "2020-01-01",
+      "from": "samplefund",
+      "to": "samplelab",
+      "kind": "investment",
+      "amount_usd_bn": 10,
+      "amount_type": "paid",
+      "title": "SAMPLE: Fund backs Lab",
+      "source": "https://example.com/sample"
+    },
+    {
+      "id": "d2",
+      "date": "2020-01-02",
+      "from": "samplenet",
+      "to": "samplecloud",
+      "kind": "cloud",
+      "amount_usd_bn": 20,
+      "amount_type": "committed",
+      "title": "SAMPLE: Net rents Cloud",
+      "source": "https://example.com/sample"
+    },
+    {
+      "id": "d3",
+      "date": "2020-01-03",
+      "from": "samplecloud",
+      "to": "samplechips",
+      "kind": "chip",
+      "amount_usd_bn": 30,
+      "amount_type": "reported",
+      "title": "SAMPLE: Cloud buys Chips",
+      "source": "https://example.com/sample"
+    },
+    {
+      "id": "d4",
+      "date": "2020-01-04",
+      "from": "samplenet",
+      "to": "samplelab",
+      "kind": "cloud",
+      "amount_usd_bn": null,
+      "amount_type": "up to",
+      "title": "SAMPLE: Net may rent more Cloud",
+      "source": "https://example.com/sample"
+    }
+  ]
+}

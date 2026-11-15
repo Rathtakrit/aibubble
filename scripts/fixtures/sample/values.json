@@ -1,0 +1,131 @@
+{
+  "status": "sample",
+  "items": [
+    {
+      "company": "samplenet",
+      "date": "2019-01-01",
+      "value_usd_bn": 10,
+      "what": "early value",
+      "source": "https://example.com/sample"
+    },
+    {
+      "company": "samplenet",
+      "date": "2020-01-01",
+      "value_usd_bn": 20,
+      "what": "mid value",
+      "source": "https://example.com/sample"
+    },
+    {
+      "company": "samplenet",
+      "date": "2021-01-01",
+      "value_usd_bn": 30,
+      "what": "late value",
+      "source": "https://example.com/sample"
+    },
+    {
+      "company": "samplecloud",
+      "date": "2019-01-01",
+      "value_usd_bn": 10,
+      "what": "early value",
+      "source": "https://example.com/sample"
+    },
+    {
+      "company": "samplecloud",
+      "date": "2020-01-01",
+      "value_usd_bn": 20,
+      "what": "mid value",
+      "source": "https://example.com/sample"
+    },
+    {
+      "company": "samplecloud",
+      "date": "2021-01-01",
+      "value_usd_bn": 30,
+      "what": "late value",
+      "source": "https://example.com/sample"
+    },
+    {
+      "company": "samplechips",
+      "date": "2019-01-01",
+      "value_usd_bn": 10,
+      "what": "early value",
+      "source": "https://example.com/sample"
+    },
+    {
+      "company": "samplechips",
+      "date": "2020-01-01",
+      "value_usd_bn": 20,
+      "what": "mid value",
+      "source": "https://example.com/sample"
+    },
+    {
+      "company": "samplechips",
+      "date": "2021-01-01",
+      "value_usd_bn": 30,
+      "what": "late value",
+      "source": "https://example.com/sample"
+    },
+    {
+      "company": "samplefund",
+      "date": "2019-01-01",
+      "value_usd_bn": 10,
+      "what": "early value",
+      "source": "https://example.com/sample"
+    },
+    {
+      "company": "samplefund",
+      "date": "2020-01-01",
+      "value_usd_bn": 20,
+      "what": "mid value",
+      "source": "https://example.com/sample"
+    },
+    {
+      "company": "samplefund",
+      "date": "2021-01-01",
+      "value_usd_bn": 30,
+      "what": "late value",
+      "source": "https://example.com/sample"
+    },
+    {
+      "company": "samplelab",
+      "date": "2019-01-01",
+      "value_usd_bn": 10,
+      "what": "early value",
+      "source": "https://example.com/sample"
+    },
+    {
+      "company": "samplelab",
+      "date": "2020-01-01",
+      "value_usd_bn": 20,
+      "what": "mid value",
+      "source": "https://example.com/sample"
+    },
+    {
+      "company": "samplelab",
+      "date": "2021-01-01",
+      "value_usd_bn": 30,
+      "what": "late value",
+      "source": "https://example.com/sample"
+    },
+    {
+      "company": "g-sample",
+      "date": "2019-01-01",
+      "value_usd_bn": 10,
+      "what": "early value",
+      "source": "https://example.com/sample"
+    },
+    {
+      "company": "g-sample",
+      "date": "2020-01-01",
+      "value_usd_bn": 20,
+      "what": "mid value",
+      "source": "https://example.com/sample"
+    },
+    {
+      "company": "g-sample",
+      "date": "2021-01-01",
+      "value_usd_bn": 30,
+      "what": "late value",
+      "source": "https://example.com/sample"
+    }
+  ]
+}

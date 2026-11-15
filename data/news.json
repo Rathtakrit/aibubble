@@ -1,85 +1,1269 @@
 {
-  "status": "sample",
+  "status": "draft",
   "items": [
     {
-      "id": "2017-06-12-attention-paper",
+      "id": "2017-06-12-attention-is-all-you-need",
       "date": "2017-06-12",
-      "title": "SAMPLE: The attention paper is published",
-      "summary": "SAMPLE: A research paper describes a way to read a whole sentence at once.",
+      "title": "Attention Is All You Need",
+      "summary": "The transformer paper: a way to train on language in parallel across many chips, which nearly every large model since is built on.",
+      "players": [
+        "alphabet"
+      ],
+      "kind": "science",
+      "key_date": true,
+      "source": "https://arxiv.org/abs/1706.03762"
+    },
+    {
+      "id": "2017-12-05-alphazero-learns-chess-from-the-rules",
+      "date": "2017-12-05",
+      "title": "AlphaZero learns chess from the rules",
+      "summary": "Given only the rules, a program taught itself chess and shogi by playing itself and beat the best engine of the day.",
+      "players": [
+        "alphabet"
+      ],
+      "kind": "science",
+      "key_date": false,
+      "source": "https://arxiv.org/abs/1712.01815"
+    },
+    {
+      "id": "2018-06-11-gpt-1-pretrain-then-fine-tune",
+      "date": "2018-06-11",
+      "title": "GPT-1: pretrain then fine-tune",
+      "summary": "The paper that showed training a model on raw text first, then tuning it for a task, beats task-specific models; it is dated 11 June 2018.",
+      "players": [],
+      "kind": "science",
+      "key_date": false,
+      "source": "https://en.wikipedia.org/wiki/GPT-1"
+    },
+    {
+      "id": "2018-10-11-bert-reads-both-directions",
+      "date": "2018-10-11",
+      "title": "BERT reads both directions",
+      "summary": "Google's model weighed the words before and after a word at once, and set new records on eleven language tests.",
+      "players": [
+        "alphabet"
+      ],
+      "kind": "science",
+      "key_date": false,
+      "source": "https://arxiv.org/abs/1810.04805"
+    },
+    {
+      "id": "2019-02-14-gpt-2-held-back-then-released",
+      "date": "2019-02-14",
+      "title": "GPT-2 held back, then released",
+      "summary": "OpenAI put out a smaller version first, saying the full model could be misused to mass-produce fake text.",
+      "players": [],
+      "kind": "science",
+      "key_date": false,
+      "source": "https://en.wikipedia.org/wiki/GPT-2"
+    },
+    {
+      "id": "2020-01-23-scaling-laws-bigger-is-predictable",
+      "date": "2020-01-23",
+      "title": "Scaling laws: bigger is predictable",
+      "summary": "OpenAI published curves showing model quality rises smoothly with size, data and compute, which made spending predictable.",
+      "players": [],
+      "kind": "science",
+      "key_date": false,
+      "source": "https://arxiv.org/abs/2001.08361"
+    },
+    {
+      "id": "2020-05-28-gpt-3-scale-is-the-trick",
+      "date": "2020-05-28",
+      "title": "GPT-3: scale is the trick",
+      "summary": "A 175-billion-parameter model that could take on new tasks from a prompt with no retraining.",
+      "players": [
+        "microsoft"
+      ],
+      "kind": "science",
+      "key_date": true,
+      "source": "https://arxiv.org/abs/2005.14165"
+    },
+    {
+      "id": "2020-11-30-alphafold-2-cracks-protein-folding",
+      "date": "2020-11-30",
+      "title": "AlphaFold 2 cracks protein folding",
+      "summary": "Predicted protein shapes at near-experimental accuracy in a blind test, a 50-year-old problem.",
+      "players": [
+        "alphabet"
+      ],
+      "kind": "science",
+      "key_date": true,
+      "source": "https://deepmind.google/discover/blog/alphafold-a-solution-to-a-50-year-old-grand-challenge-in-biology/"
+    },
+    {
+      "id": "2021-01-05-dall-e-makes-pictures-from-words",
+      "date": "2021-01-05",
+      "title": "DALL·E makes pictures from words",
+      "summary": "Text-to-image generation that produced coherent images for short written prompts.",
+      "players": [],
+      "kind": "science",
+      "key_date": false,
+      "source": "https://en.wikipedia.org/wiki/DALL-E"
+    },
+    {
+      "id": "2021-05-18-lamda-built-for-conversation",
+      "date": "2021-05-18",
+      "title": "LaMDA built for conversation",
+      "summary": "Google's conversational model, later at the centre of a public claim that it was sentient.",
+      "players": [
+        "alphabet"
+      ],
+      "kind": "science",
+      "key_date": false,
+      "source": "https://blog.google/technology/ai/lamda/"
+    },
+    {
+      "id": "2021-06-29-github-copilot-writes-code",
+      "date": "2021-06-29",
+      "title": "GitHub Copilot writes code",
+      "summary": "A technical preview of autocomplete for programmers, built on OpenAI's models, the first mass coding assistant.",
+      "players": [
+        "microsoft"
+      ],
+      "kind": "science",
+      "key_date": false,
+      "source": "https://github.blog/news-insights/product-news/introducing-github-copilot-ai-pair-programmer/"
+    },
+    {
+      "id": "2021-07-15-alphafold-paper-published-in-nature",
+      "date": "2021-07-15",
+      "title": "AlphaFold paper published in Nature",
+      "summary": "The method behind the CASP14 result was published in full; DeepMind released structures for most known proteins in July 2022.",
+      "players": [
+        "alphabet"
+      ],
+      "kind": "science",
+      "key_date": false,
+      "source": "https://www.nature.com/articles/s41586-021-03819-2"
+    },
+    {
+      "id": "2022-03-29-chinchilla-models-were-under-trained",
+      "date": "2022-03-29",
+      "title": "Chinchilla: models were under-trained",
+      "summary": "DeepMind showed that, for a fixed compute budget, most large models were too big and fed too little text.",
+      "players": [
+        "alphabet"
+      ],
+      "kind": "science",
+      "key_date": false,
+      "source": "https://arxiv.org/abs/2203.15556"
+    },
+    {
+      "id": "2022-08-22-stable-diffusion-goes-public",
+      "date": "2022-08-22",
+      "title": "Stable Diffusion goes public",
+      "summary": "Open weights for image generation, runnable on a home graphics card, and it spread in weeks.",
+      "players": [],
+      "kind": "science",
+      "key_date": false,
+      "source": "https://en.wikipedia.org/wiki/Stable_Diffusion"
+    },
+    {
+      "id": "2022-11-30-chatgpt-opens-to-the-public",
+      "date": "2022-11-30",
+      "title": "ChatGPT opens to the public",
+      "summary": "A chat interface on GPT-3.5 that reached a million users in days and made AI a consumer product.",
+      "players": [
+        "microsoft"
+      ],
+      "kind": "science",
+      "key_date": true,
+      "source": "https://en.wikipedia.org/wiki/ChatGPT"
+    },
+    {
+      "id": "2023-02-24-meta-releases-llama-weights",
+      "date": "2023-02-24",
+      "title": "Meta releases LLaMA weights",
+      "summary": "A strong model released to researchers, which started the open-weight race.",
+      "players": [
+        "meta"
+      ],
+      "kind": "science",
+      "key_date": true,
+      "source": "https://ai.meta.com/blog/large-language-model-llama-meta-ai/"
+    },
+    {
+      "id": "2023-03-14-claude-opens-to-the-public",
+      "date": "2023-03-14",
+      "title": "Claude opens to the public",
+      "summary": "Anthropic's first public model, offered as a chat assistant and an API.",
       "players": [],
       "kind": "science",
       "key_date": true,
-      "source": "https://example.com/sample"
+      "source": "https://www.anthropic.com/news/introducing-claude"
     },
     {
-      "id": "2019-07-22-microsoft-openai",
+      "id": "2023-03-14-gpt-4-released-reads-images-too",
+      "date": "2023-03-14",
+      "title": "GPT-4 released, reads images too",
+      "summary": "OpenAI shipped a model that takes images as well as text and is far stronger on exams.",
+      "players": [
+        "microsoft"
+      ],
+      "kind": "science",
+      "key_date": true,
+      "source": "https://techcrunch.com/2023/03/14/openai-releases-gpt-4-ai-that-it-claims-is-state-of-the-art/"
+    },
+    {
+      "id": "2023-07-18-llama-2-released-with-microsoft",
+      "date": "2023-07-18",
+      "title": "Llama 2 released with Microsoft",
+      "summary": "Meta's next open model, launched with Microsoft as partner.",
+      "players": [
+        "meta",
+        "microsoft"
+      ],
+      "kind": "science",
+      "key_date": false,
+      "source": "https://ai.meta.com/blog/llama-2/"
+    },
+    {
+      "id": "2023-09-27-mistral-7b-small-and-open",
+      "date": "2023-09-27",
+      "title": "Mistral 7B: small and open",
+      "summary": "A 7-billion-parameter model released with open weights, pitched as the most powerful of its size.",
+      "players": [
+        "mistral"
+      ],
+      "kind": "science",
+      "key_date": false,
+      "source": "https://mistral.ai/news/announcing-mistral-7b"
+    },
+    {
+      "id": "2023-12-06-gemini-1-0-launched-as-multimodal",
+      "date": "2023-12-06",
+      "title": "Gemini 1.0 launched as multimodal",
+      "summary": "Google's first model family built for text, images and audio from the start, shipped in three sizes.",
+      "players": [
+        "alphabet"
+      ],
+      "kind": "science",
+      "key_date": false,
+      "source": "https://en.wikipedia.org/wiki/Gemini_(language_model)"
+    },
+    {
+      "id": "2024-02-15-sora-shows-a-minute-of-video",
+      "date": "2024-02-15",
+      "title": "Sora shows a minute of video",
+      "summary": "Text-to-video previews good enough to be mistaken for footage; not released to the public then.",
+      "players": [
+        "openai"
+      ],
+      "kind": "science",
+      "key_date": true,
+      "source": "https://techcrunch.com/2024/02/15/openais-newest-model-can-generate-videos-and-they-look-decent/"
+    },
+    {
+      "id": "2024-03-04-claude-3-family-arrives",
+      "date": "2024-03-04",
+      "title": "Claude 3 family arrives",
+      "summary": "Three models including a long-context version; Anthropic said the top one beat GPT-4 on some tests.",
+      "players": [
+        "anthropic",
+        "amazon"
+      ],
+      "kind": "science",
+      "key_date": false,
+      "source": "https://www.anthropic.com/news/claude-3-family"
+    },
+    {
+      "id": "2024-04-18-llama-3-released",
+      "date": "2024-04-18",
+      "title": "Llama 3 released",
+      "summary": "Meta's next open model, in 8B and 70B sizes.",
+      "players": [
+        "meta"
+      ],
+      "kind": "science",
+      "key_date": false,
+      "source": "https://ai.meta.com/blog/meta-llama-3/"
+    },
+    {
+      "id": "2024-05-08-alphafold-3-predicts-molecules",
+      "date": "2024-05-08",
+      "title": "AlphaFold 3 predicts molecules",
+      "summary": "Extended the model from proteins to DNA, RNA and small molecules, and how they interact.",
+      "players": [
+        "alphabet"
+      ],
+      "kind": "science",
+      "key_date": false,
+      "source": "https://blog.google/innovation-and-ai/products/google-deepmind-isomorphic-alphafold-3-ai-model/"
+    },
+    {
+      "id": "2024-05-13-gpt-4o-talks-in-real-time",
+      "date": "2024-05-13",
+      "title": "GPT-4o talks in real time",
+      "summary": "Voice conversation with near-instant replies, plus text and images, free to all users.",
+      "players": [
+        "openai",
+        "microsoft"
+      ],
+      "kind": "science",
+      "key_date": true,
+      "source": "https://techcrunch.com/2024/05/13/openais-newest-model-is-gpt-4o/"
+    },
+    {
+      "id": "2024-07-23-llama-3-1-ships-405b-open-weights",
+      "date": "2024-07-23",
+      "title": "Llama 3.1 ships 405B open weights",
+      "summary": "Meta's largest open model so far, released with a permissive licence.",
+      "players": [
+        "meta"
+      ],
+      "kind": "science",
+      "key_date": false,
+      "source": "https://ai.meta.com/blog/meta-llama-3-1/"
+    },
+    {
+      "id": "2024-09-12-o1-thinks-before-answering",
+      "date": "2024-09-12",
+      "title": "o1 thinks before answering",
+      "summary": "A model trained to work through long internal chains of reasoning before replying, much stronger on maths.",
+      "players": [
+        "openai"
+      ],
+      "kind": "science",
+      "key_date": true,
+      "source": "https://techcrunch.com/2024/09/12/openai-unveils-a-model-that-can-fact-check-itself/"
+    },
+    {
+      "id": "2024-10-08-nobel-physics-prize-for-neural-networks",
+      "date": "2024-10-08",
+      "title": "Nobel physics prize for neural networks",
+      "summary": "Hopfield and Hinton shared the physics prize for work that made today's neural networks possible.",
+      "players": [],
+      "kind": "science",
+      "key_date": true,
+      "source": "https://www.nobelprize.org/prizes/physics/2024/press-release/"
+    },
+    {
+      "id": "2024-10-09-nobel-chemistry-prize-for-protein-work",
+      "date": "2024-10-09",
+      "title": "Nobel chemistry prize for protein work",
+      "summary": "Baker, Hassabis and Jumper shared the chemistry prize, half of it for protein structure prediction.",
+      "players": [
+        "alphabet"
+      ],
+      "kind": "science",
+      "key_date": false,
+      "source": "https://www.nobelprize.org/prizes/chemistry/2024/press-release/"
+    },
+    {
+      "id": "2024-12-20-o3-announced-not-yet-released",
+      "date": "2024-12-20",
+      "title": "o3 announced, not yet released",
+      "summary": "OpenAI announced a new reasoning model, o3, three months after o1.",
+      "players": [
+        "openai"
+      ],
+      "kind": "science",
+      "key_date": false,
+      "source": "https://techcrunch.com/2024/12/20/openai-announces-new-o3-model/"
+    },
+    {
+      "id": "2025-01-22-deepseek-r1-reasoning-open-weights",
+      "date": "2025-01-22",
+      "title": "DeepSeek-R1: reasoning, open weights",
+      "summary": "A Chinese lab published a reasoning model and its paper, with the weights released.",
+      "players": [],
+      "kind": "science",
+      "key_date": true,
+      "source": "https://arxiv.org/abs/2501.12948"
+    },
+    {
+      "id": "2025-02-24-claude-3-7-sonnet-and-extended-thinking",
+      "date": "2025-02-24",
+      "title": "Claude 3.7 Sonnet and extended thinking",
+      "summary": "Anthropic shipped a hybrid model that can think longer on demand, plus a coding tool.",
+      "players": [
+        "anthropic",
+        "amazon"
+      ],
+      "kind": "science",
+      "key_date": false,
+      "source": "https://www.anthropic.com/news/claude-3-7-sonnet"
+    },
+    {
+      "id": "2025-05-22-claude-4-models-released",
+      "date": "2025-05-22",
+      "title": "Claude 4 models released",
+      "summary": "Opus 4 and Sonnet 4, aimed at long-running coding agents.",
+      "players": [
+        "anthropic",
+        "amazon"
+      ],
+      "kind": "science",
+      "key_date": false,
+      "source": "https://www.anthropic.com/news/claude-4"
+    },
+    {
+      "id": "2025-07-09-grok-4-released",
+      "date": "2025-07-09",
+      "title": "Grok 4 released",
+      "summary": "xAI released Grok 4, which it described as its most capable model.",
+      "players": [
+        "xai"
+      ],
+      "kind": "science",
+      "key_date": false,
+      "source": "https://x.ai/news/grok-4"
+    },
+    {
+      "id": "2025-08-05-claude-opus-4-1-released",
+      "date": "2025-08-05",
+      "title": "Claude Opus 4.1 released",
+      "summary": "An upgrade to Opus 4 focused on coding and agent work.",
+      "players": [
+        "anthropic"
+      ],
+      "kind": "science",
+      "key_date": false,
+      "source": "https://www.anthropic.com/news/claude-opus-4-1"
+    },
+    {
+      "id": "2025-08-07-gpt-5-released",
+      "date": "2025-08-07",
+      "title": "GPT-5 released",
+      "summary": "OpenAI's unified model, pitched as expert-level at coding and reasoning, rolled into ChatGPT.",
+      "players": [
+        "openai",
+        "microsoft"
+      ],
+      "kind": "science",
+      "key_date": true,
+      "source": "https://techcrunch.com/2025/08/07/openais-gpt-5-is-here/"
+    },
+    {
+      "id": "2025-09-29-claude-sonnet-4-5-released",
+      "date": "2025-09-29",
+      "title": "Claude Sonnet 4.5 released",
+      "summary": "Anthropic's mid-size model, pitched as frontier intelligence at a lower price.",
+      "players": [
+        "anthropic"
+      ],
+      "kind": "science",
+      "key_date": false,
+      "source": "https://www.anthropic.com/news/claude-sonnet-4-5"
+    },
+    {
+      "id": "2025-11-18-gemini-3-launched",
+      "date": "2025-11-18",
+      "title": "Gemini 3 launched",
+      "summary": "Google's next flagship model, released to its app and to developers.",
+      "players": [
+        "alphabet"
+      ],
+      "kind": "science",
+      "key_date": true,
+      "source": "https://blog.google/products-and-platforms/products/gemini/gemini-3/"
+    },
+    {
+      "id": "2026-04-23-gpt-5-5-released",
+      "date": "2026-04-23",
+      "title": "GPT-5.5 released",
+      "summary": "OpenAI's model built around tools and long tasks, a step toward a \"super app\".",
+      "players": [
+        "openai",
+        "microsoft"
+      ],
+      "kind": "science",
+      "key_date": true,
+      "source": "https://techcrunch.com/2026/04/23/openai-chatgpt-gpt-5-5-ai-model-superapp/"
+    },
+    {
+      "id": "2026-04-24-deepseek-v4-million-token-context",
+      "date": "2026-04-24",
+      "title": "DeepSeek-V4, million-token context",
+      "summary": "Open-weight models built for very long inputs, a million tokens, at a low price.",
+      "players": [],
+      "kind": "science",
+      "key_date": true,
+      "source": "https://www.deepseek.com/en/news/v4-preview/"
+    },
+    {
+      "id": "2026-07-24-claude-opus-5-launched",
+      "date": "2026-07-24",
+      "title": "Claude Opus 5 launched",
+      "summary": "Anthropic released Opus 5, which it pitched at coding and knowledge work.",
+      "players": [
+        "anthropic"
+      ],
+      "kind": "science",
+      "key_date": false,
+      "source": "https://techcrunch.com/2026/07/24/anthropic-launches-opus-5/"
+    },
+    {
+      "id": "2026-09-10-deepseek-v4-1-flash-released",
+      "date": "2026-09-10",
+      "title": "DeepSeek V4.1-Flash released",
+      "summary": "A faster, cheaper DeepSeek model.",
+      "players": [],
+      "kind": "science",
+      "key_date": false,
+      "source": "https://www.deepseek.com/en/news/deepseek-v4-1-flash/"
+    },
+    {
+      "id": "2026-09-22-claude-opus-5-5-released",
+      "date": "2026-09-22",
+      "title": "Claude Opus 5.5 released",
+      "summary": "Anthropic cut prices and pitched it at top-end coding performance.",
+      "players": [
+        "anthropic"
+      ],
+      "kind": "science",
+      "key_date": false,
+      "source": "https://techcrunch.com/2026/09/22/anthropic-releases-opus-5-5-with-lower-prices-and-fable-level-performance/"
+    },
+    {
+      "id": "2026-10-13-gemini-4-argon-rolls-out",
+      "date": "2026-10-13",
+      "title": "Gemini 4 Argon rolls out",
+      "summary": "Google's frontier model for coding, enterprise work and cyber defence, to Pro and Ultra subscribers.",
+      "players": [
+        "alphabet"
+      ],
+      "kind": "science",
+      "key_date": false,
+      "source": "https://gemini.google/release-notes/"
+    },
+    {
+      "id": "2018-11-15-nvidia-s-quarterly-sales-up-21",
+      "date": "2018-11-15",
+      "title": "Nvidia's quarterly sales up 21%",
+      "summary": "Revenue of $3.18bn for the quarter to 28 October, against $2.64bn a year earlier.",
+      "players": [
+        "nvidia"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-third-quarter-fiscal-2019"
+    },
+    {
+      "id": "2019-07-22-microsoft-puts-1bn-into-openai",
       "date": "2019-07-22",
-      "title": "SAMPLE: Microsoft invests in OpenAI",
-      "summary": "SAMPLE: A listed company puts money into a private lab.",
-      "players": ["microsoft", "openai"],
+      "title": "Microsoft puts $1bn into OpenAI",
+      "summary": "First big-tech bet on the lab; Azure becomes its home.",
+      "players": [
+        "microsoft"
+      ],
       "kind": "money",
       "key_date": true,
-      "source": "https://example.com/sample"
+      "source": "https://blogs.microsoft.com/blog/2019/07/22/openai-forms-multi-year-partnership-with-microsoft/"
     },
     {
-      "id": "2020-01-02-cloud-market",
-      "date": "2020-01-02",
-      "title": "SAMPLE: Cloud spending keeps rising",
-      "summary": "SAMPLE: Three listed companies report more money from rented computing.",
-      "players": ["microsoft", "amazon", "alphabet"],
+      "id": "2020-04-27-nvidia-completes-7bn-mellanox-purchase",
+      "date": "2020-04-27",
+      "title": "Nvidia completes $7bn Mellanox purchase",
+      "summary": "The networking deal, first announced in March 2019, closed.",
+      "players": [
+        "nvidia"
+      ],
       "kind": "money",
       "key_date": false,
-      "source": "https://example.com/sample"
+      "source": "https://nvidianews.nvidia.com/news/nvidia-completes-acquisition-of-mellanox-creating-major-force-driving-next-gen-data-centers"
     },
     {
-      "id": "2021-06-09-science-model",
-      "date": "2021-06-09",
-      "title": "SAMPLE: A bigger language model",
-      "summary": "SAMPLE: A research lab describes a larger language model.",
-      "players": ["alphabet"],
-      "kind": "science",
+      "id": "2020-09-13-nvidia-agrees-40bn-deal-for-arm",
+      "date": "2020-09-13",
+      "title": "Nvidia agrees $40bn deal for Arm",
+      "summary": "Would have been the biggest chip deal ever; regulators later blocked it.",
+      "players": [
+        "nvidia",
+        "g-chips",
+        "softbank"
+      ],
+      "kind": "money",
       "key_date": false,
-      "source": "https://example.com/sample"
+      "source": "https://nvidianews.nvidia.com/news/nvidia-to-acquire-arm-for-40-billion-creating-worlds-premier-computing-company-for-the-age-of-ai"
     },
     {
-      "id": "2022-11-30-chatgpt",
-      "date": "2022-11-30",
-      "title": "SAMPLE: A chat tool is released",
-      "summary": "SAMPLE: A private lab lets the public try a chat tool.",
-      "players": ["openai"],
-      "kind": "science",
+      "id": "2021-08-18-nvidia-s-record-quarter-on-ai-demand",
+      "date": "2021-08-18",
+      "title": "Nvidia's record quarter on AI demand",
+      "summary": "Revenue of $6.51bn, up 68% on a year earlier; data-centre revenue $2.37bn, up 35%.",
+      "players": [
+        "nvidia"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-second-quarter-fiscal-2022"
+    },
+    {
+      "id": "2022-02-07-nvidia-and-softbank-drop-the-arm-deal",
+      "date": "2022-02-07",
+      "title": "Nvidia and SoftBank drop the Arm deal",
+      "summary": "Terminated over regulatory objections; Arm to pursue a public listing instead.",
+      "players": [
+        "nvidia",
+        "softbank",
+        "g-chips"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://nvidianews.nvidia.com/news/nvidia-and-softbank-group-announce-termination-of-nvidias-acquisition-of-arm-limited"
+    },
+    {
+      "id": "2022-10-07-us-blocks-advanced-chips-to-china",
+      "date": "2022-10-07",
+      "title": "US blocks advanced chips to China",
+      "summary": "New export controls on advanced computing chips and the equipment to make them.",
+      "players": [
+        "nvidia",
+        "amd",
+        "g-chips"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://www.bis.gov/press-release/commerce-implements-new-export-controls-advanced-computing-semiconductor-manufacturing-items-peoples"
+    },
+    {
+      "id": "2023-01-23-microsoft-extends-the-openai-deal",
+      "date": "2023-01-23",
+      "title": "Microsoft extends the OpenAI deal",
+      "summary": "A multiyear, multibillion-dollar investment; Azure stays OpenAI's exclusive cloud.",
+      "players": [
+        "microsoft"
+      ],
+      "kind": "money",
       "key_date": true,
-      "source": "https://example.com/sample"
+      "source": "https://blogs.microsoft.com/blog/2023/01/23/microsoftandopenaiextendpartnership/"
     },
     {
-      "id": "2023-05-25-chip-orders",
-      "date": "2023-05-25",
-      "title": "SAMPLE: Chip orders get bigger",
-      "summary": "SAMPLE: Orders for AI chips grow across the group.",
-      "players": ["nvidia", "g-chips"],
+      "id": "2023-05-23-anthropic-raises-450m-series-c",
+      "date": "2023-05-23",
+      "title": "Anthropic raises $450m Series C",
+      "summary": "A funding round led by Spark Capital.",
+      "players": [
+        "anthropic"
+      ],
       "kind": "money",
       "key_date": false,
-      "source": "https://example.com/sample"
+      "source": "https://www.anthropic.com/news/anthropic-series-c"
     },
     {
-      "id": "2024-03-14-amazon-investment",
-      "date": "2024-03-14",
-      "title": "SAMPLE: Amazon takes a stake",
-      "summary": "SAMPLE: A reported stake links Amazon to OpenAI.",
-      "players": ["amazon", "openai"],
+      "id": "2023-05-24-nvidia-s-forecast-sets-off-the-ai-rally",
+      "date": "2023-05-24",
+      "title": "Nvidia's forecast sets off the AI rally",
+      "summary": "Q1 revenue $7.19bn and a next-quarter outlook of $11.00bn.",
+      "players": [
+        "nvidia"
+      ],
       "kind": "money",
       "key_date": false,
-      "source": "https://example.com/sample"
+      "source": "https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-first-quarter-fiscal-2024"
     },
     {
-      "id": "2024-06-03-nvidia-value",
-      "date": "2024-06-03",
-      "title": "SAMPLE: Nvidia market value jumps",
-      "summary": "SAMPLE: A listed chip maker's market value passes a round number.",
-      "players": ["nvidia"],
+      "id": "2023-05-30-nvidia-becomes-a-1-trillion-company",
+      "date": "2023-05-30",
+      "title": "Nvidia becomes a $1 trillion company",
+      "summary": "First chipmaker to pass $1tn on AI demand.",
+      "players": [
+        "nvidia"
+      ],
+      "kind": "money",
+      "key_date": true,
+      "source": "https://www.cbsnews.com/news/nvidia-1-trillion-market-value-becoming-ai-first-chip-company-to-do-so/"
+    },
+    {
+      "id": "2023-09-14-arm-s-shares-begin-trading-after-51-ipo",
+      "date": "2023-09-14",
+      "title": "Arm's shares begin trading after $51 IPO",
+      "summary": "Priced at $51.00 per ADS; trading began on Nasdaq under \"ARM\".",
+      "players": [
+        "g-chips",
+        "softbank"
+      ],
       "kind": "money",
       "key_date": false,
-      "source": "https://example.com/sample"
+      "source": "https://newsroom.arm.com/news/arm-announces-pricing-of-initial-public-offering"
+    },
+    {
+      "id": "2023-09-25-amazon-puts-up-to-4bn-into-anthropic",
+      "date": "2023-09-25",
+      "title": "Amazon puts up to $4bn into Anthropic",
+      "summary": "Investment tied to use of AWS as the lab's main cloud and chip supplier.",
+      "players": [
+        "amazon",
+        "anthropic"
+      ],
+      "kind": "money",
+      "key_date": true,
+      "source": "https://www.aboutamazon.com/news/company-news/amazon-aws-anthropic-ai"
+    },
+    {
+      "id": "2023-10-17-us-tightens-the-chip-export-rules",
+      "date": "2023-10-17",
+      "title": "US tightens the chip export rules",
+      "summary": "An update to the October 2022 controls, widening what is covered.",
+      "players": [
+        "nvidia",
+        "amd",
+        "g-chips"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://www.bis.gov/press-release/commerce-strengthens-restrictions-advanced-computing-semiconductors-semiconductor-manufacturing-equipment"
+    },
+    {
+      "id": "2023-11-17-openai-board-fires-sam-altman",
+      "date": "2023-11-17",
+      "title": "OpenAI board fires Sam Altman",
+      "summary": "Board removes the CEO; staff threaten to leave; Microsoft offers to hire them.",
+      "players": [
+        "openai",
+        "microsoft"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://openai.com/index/openai-announces-leadership-transition/"
+    },
+    {
+      "id": "2023-11-21-altman-returns-new-board-seated",
+      "date": "2023-11-21",
+      "title": "Altman returns, new board seated",
+      "summary": "Deal ends the crisis; Microsoft gets a non-voting board seat.",
+      "players": [
+        "openai",
+        "microsoft"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://openai.com/index/sam-altman-returns-as-ceo-openai-has-a-new-board/"
+    },
+    {
+      "id": "2024-02-23-nvidia-passes-2-trillion",
+      "date": "2024-02-23",
+      "title": "Nvidia passes $2 trillion",
+      "summary": "Market value briefly reached $2tn, weeks after its results.",
+      "players": [
+        "nvidia"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://www.cnn.com/2024/02/23/investing/nvidia-market-cap-2-trillion"
+    },
+    {
+      "id": "2024-05-22-nvidia-s-sales-up-262-on-the-year",
+      "date": "2024-05-22",
+      "title": "Nvidia's sales up 262% on the year",
+      "summary": "Revenue of $26.0bn for the quarter to 28 April, up 262% from a year earlier.",
+      "players": [
+        "nvidia"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-first-quarter-fiscal-2025"
+    },
+    {
+      "id": "2024-06-18-nvidia-passes-3tn-and-tops-microsoft",
+      "date": "2024-06-18",
+      "title": "Nvidia passes $3tn and tops Microsoft",
+      "summary": "Worth $3.34tn at the close, the most valuable listed company in the world.",
+      "players": [
+        "nvidia",
+        "microsoft"
+      ],
+      "kind": "money",
+      "key_date": true,
+      "source": "https://www.bbc.com/news/articles/cyrr40x0z2mo"
+    },
+    {
+      "id": "2024-10-02-openai-raises-6-6bn-at-157bn",
+      "date": "2024-10-02",
+      "title": "OpenAI raises $6.6bn at $157bn",
+      "summary": "A funding round valuing the lab at $157bn, the largest of the cycle to then.",
+      "players": [
+        "openai"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://techcrunch.com/2024/10/02/openai-raises-6-6b-and-is-now-valued-at-157b/"
+    },
+    {
+      "id": "2025-01-21-stargate-500bn-ai-infrastructure-venture",
+      "date": "2025-01-21",
+      "title": "Stargate: $500bn AI infrastructure venture",
+      "summary": "OpenAI, SoftBank, Oracle and MGX announced $100bn to start and $500bn over four years.",
+      "players": [
+        "openai",
+        "softbank",
+        "oracle"
+      ],
+      "kind": "money",
+      "key_date": true,
+      "source": "https://techcrunch.com/2025/01/21/openai-teams-up-with-softbank-and-oracle-on-50b-data-center-project/"
+    },
+    {
+      "id": "2025-01-27-deepseek-rout-nvidia-loses-600bn",
+      "date": "2025-01-27",
+      "title": "DeepSeek rout: Nvidia loses $600bn",
+      "summary": "Nvidia fell 17% in a day; the Guardian put the value lost at $600bn.",
+      "players": [
+        "nvidia"
+      ],
+      "kind": "money",
+      "key_date": true,
+      "source": "https://www.theguardian.com/technology/2025/jan/28/deepseek-selloff"
+    },
+    {
+      "id": "2025-03-03-anthropic-raises-at-a-61-5bn-valuation",
+      "date": "2025-03-03",
+      "title": "Anthropic raises at a $61.5bn valuation",
+      "summary": "Series E.",
+      "players": [
+        "anthropic"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://www.anthropic.com/news/anthropic-raises-series-e-at-usd61-5b-post-money-valuation"
+    },
+    {
+      "id": "2025-03-27-coreweave-ipo-prices-at-40",
+      "date": "2025-03-27",
+      "title": "CoreWeave IPO prices at $40",
+      "summary": "37.5m shares, $1.5bn raised, Nasdaq ticker \"CRWV\"; trading began 28 March.",
+      "players": [
+        "coreweave",
+        "nvidia"
+      ],
+      "kind": "money",
+      "key_date": true,
+      "source": "https://www.coreweave.com/news/coreweave-announces-pricing-of-initial-public-offering"
+    },
+    {
+      "id": "2025-03-31-openai-raises-40bn-at-300bn",
+      "date": "2025-03-31",
+      "title": "OpenAI raises $40bn at $300bn",
+      "summary": "SoftBank-led round, the largest private financing ever at the time.",
+      "players": [
+        "openai",
+        "softbank"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://en.wikipedia.org/wiki/OpenAI"
+    },
+    {
+      "id": "2025-05-28-nvidia-takes-a-4-5bn-h20-charge",
+      "date": "2025-05-28",
+      "title": "Nvidia takes a $4.5bn H20 charge",
+      "summary": "A US licence requirement for H20 exports to China cost it $4.5bn of inventory in the quarter.",
+      "players": [
+        "nvidia"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-first-quarter-fiscal-2026"
+    },
+    {
+      "id": "2025-06-12-meta-pays-14-3bn-for-49-of-scale-ai",
+      "date": "2025-06-12",
+      "title": "Meta pays $14.3bn for 49% of Scale AI",
+      "summary": "Buys data-labelling capacity and brings in Alexandr Wang.",
+      "players": [
+        "meta"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://scale.com/blog/scale-ai-announces-next-phase-of-company-evolution"
+    },
+    {
+      "id": "2025-07-09-nvidia-becomes-the-first-4tn-company",
+      "date": "2025-07-09",
+      "title": "Nvidia becomes the first $4tn company",
+      "summary": "The first listed company to reach a $4tn market value.",
+      "players": [
+        "nvidia"
+      ],
+      "kind": "money",
+      "key_date": true,
+      "source": "https://www.bbc.co.uk/news/articles/c8j13m74lklo"
+    },
+    {
+      "id": "2025-08-11-nvidia-and-amd-give-us-15-of-china-sales",
+      "date": "2025-08-11",
+      "title": "Nvidia and AMD give US 15% of China sales",
+      "summary": "An unusual arrangement to get export licences for H20 and MI308 chips.",
+      "players": [
+        "nvidia",
+        "amd"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://www.bbc.com/news/articles/cvgvvnx8y19o"
+    },
+    {
+      "id": "2025-09-02-anthropic-raises-13bn-at-183bn",
+      "date": "2025-09-02",
+      "title": "Anthropic raises $13bn at $183bn",
+      "summary": "Series F, the lab's largest round.",
+      "players": [
+        "anthropic"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://www.anthropic.com/news/anthropic-raises-series-f-at-usd183b-post-money-valuation"
+    },
+    {
+      "id": "2025-09-10-oracle-signs-300bn-compute-deal-with-openai",
+      "date": "2025-09-10",
+      "title": "Oracle signs $300bn compute deal with OpenAI",
+      "summary": "A five-year contract reported by the WSJ, with purchases starting in 2027.",
+      "players": [
+        "oracle",
+        "openai"
+      ],
+      "kind": "money",
+      "key_date": true,
+      "source": "https://techcrunch.com/2025/09/10/openai-and-oracle-reportedly-ink-historic-cloud-computing-deal"
+    },
+    {
+      "id": "2025-09-22-nvidia-to-invest-up-to-100bn-in-openai",
+      "date": "2025-09-22",
+      "title": "Nvidia to invest up to $100bn in OpenAI",
+      "summary": "Letter of intent for at least 10GW of Nvidia systems; money released as capacity is deployed.",
+      "players": [
+        "nvidia",
+        "openai"
+      ],
+      "kind": "money",
+      "key_date": true,
+      "source": "https://nvidianews.nvidia.com/news/openai-and-nvidia-announce-strategic-partnership-to-deploy-10gw-of-nvidia-systems"
+    },
+    {
+      "id": "2025-09-24-stargate-adds-five-more-data-centre-sites",
+      "date": "2025-09-24",
+      "title": "Stargate adds five more data-centre sites",
+      "summary": "OpenAI, Oracle and SoftBank named five additional Stargate sites.",
+      "players": [
+        "openai",
+        "oracle",
+        "softbank"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://group.softbank/en/news/press/20250924"
+    },
+    {
+      "id": "2025-10-28-microsoft-takes-27-of-openai-group-pbc",
+      "date": "2025-10-28",
+      "title": "Microsoft takes 27% of OpenAI Group PBC",
+      "summary": "Stake valued at about $135bn on an as-converted basis after the restructuring.",
+      "players": [
+        "microsoft",
+        "openai"
+      ],
+      "kind": "money",
+      "key_date": true,
+      "source": "https://blogs.microsoft.com/blog/2025/10/28/the-next-chapter-of-the-microsoft-openai-partnership/"
+    },
+    {
+      "id": "2025-10-29-nvidia-first-company-to-5-trillion",
+      "date": "2025-10-29",
+      "title": "Nvidia first company to $5 trillion",
+      "summary": "The first listed company to reach a $5tn market value.",
+      "players": [
+        "nvidia"
+      ],
+      "kind": "money",
+      "key_date": true,
+      "source": "https://www.bbc.co.uk/news/articles/cp8e970vn5vo"
+    },
+    {
+      "id": "2025-11-03-burry-discloses-shorts-against-nvidia-and-palantir",
+      "date": "2025-11-03",
+      "title": "Burry discloses shorts against Nvidia and Palantir",
+      "summary": "\"Big Short\" investor bets against the AI trade and attacks chip depreciation accounting.",
+      "players": [
+        "nvidia",
+        "palantir"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://www.businessinsider.com/why-michael-burry-big-short-nvidia-palantir-ai-bubble-stocks-2025-11"
+    },
+    {
+      "id": "2025-11-25-nvidia-memo-answers-the-bubble-charge",
+      "date": "2025-11-25",
+      "title": "Nvidia memo answers the bubble charge",
+      "summary": "Private memo to analysts names Burry and disputes his depreciation and circular-financing claims.",
+      "players": [
+        "nvidia"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://www.cnbc.com/2025/11/25/nvidia-pushes-back-on-charges-that-ai-investment-is-a-bubble.html"
+    },
+    {
+      "id": "2026-01-06-xai-raises-20bn-series-e",
+      "date": "2026-01-06",
+      "title": "xAI raises $20bn Series E",
+      "summary": "Upsized from $15bn, at about $230bn, with Nvidia, Cisco, Fidelity and Gulf funds.",
+      "players": [
+        "xai",
+        "nvidia"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://www.cnbc.com/2026/01/06/elon-musk-xai-raises-20-billion-from-nvidia-cisco-investors.html"
+    },
+    {
+      "id": "2026-02-02-spacex-absorbs-xai-in-all-stock-deal",
+      "date": "2026-02-02",
+      "title": "SpaceX absorbs xAI in all-stock deal",
+      "summary": "Combined entity implied near $1.25tn; the lab becomes part of Musk's rocket company.",
+      "players": [
+        "xai"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://valueaddvc.com/xai-valuation"
+    },
+    {
+      "id": "2026-03-31-openai-closes-122bn-at-852bn",
+      "date": "2026-03-31",
+      "title": "OpenAI closes $122bn at $852bn",
+      "summary": "Largest private round ever, more than double the October 2025 mark.",
+      "players": [
+        "openai",
+        "softbank"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://openai.com/index/accelerating-the-next-phase-ai/"
+    },
+    {
+      "id": "2026-06-01-anthropic-files-confidentially-for-ipo",
+      "date": "2026-06-01",
+      "title": "Anthropic files confidentially for IPO",
+      "summary": "First frontier lab to start a listing process; reported $965bn valuation after a $65bn round.",
+      "players": [
+        "anthropic",
+        "amazon",
+        "alphabet"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://www.techstackipo.com/ipo/anthropic"
+    },
+    {
+      "id": "2026-06-16-openai-2025-accounts-leak",
+      "date": "2026-06-16",
+      "title": "OpenAI 2025 accounts leak",
+      "summary": "$13.07bn revenue against a $20.9bn operating loss; spending outran sales.",
+      "players": [
+        "openai",
+        "microsoft"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://arstechnica.com/ai/2026/06/leaked-financial-docs-show-openai-is-losing-billions-of-dollars-a-year/"
+    },
+    {
+      "id": "2026-07-16-s-p-cuts-oracle-to-bbb",
+      "date": "2026-07-16",
+      "title": "S&P cuts Oracle to BBB-",
+      "summary": "Downgrade cites AI spending and concentration on OpenAI; one notch above junk.",
+      "players": [
+        "oracle",
+        "openai"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://www.bloomberg.com/news/articles/2026-07-16/oracle-risks-falling-behind-in-ai-race-as-spending-binge-bites"
+    },
+    {
+      "id": "2026-07-20-oracle-credit-insurance-at-18-year-high",
+      "date": "2026-07-20",
+      "title": "Oracle credit insurance at 18-year high",
+      "summary": "Cost of insuring Oracle debt against default hits a multi-year record; bonds sell off.",
+      "players": [
+        "oracle"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://www.bloomberg.com/news/articles/2026-07-20/oracle-credit-risk-hits-near-18-year-high-on-ai-debt-load-angst"
+    },
+    {
+      "id": "2026-07-28-ai-sell-off-hits-korean-chipmakers",
+      "date": "2026-07-28",
+      "title": "AI sell-off hits Korean chipmakers",
+      "summary": "Seoul market at a three-month low as memory shares slide.",
+      "players": [
+        "nvidia",
+        "tsmc"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://www.theguardian.com/business/2026/jul/28/ai-sell-off-chip-stocks-sk-hynix-samsung"
+    },
+    {
+      "id": "2026-07-29-asian-chip-shares-plunge-again",
+      "date": "2026-07-29",
+      "title": "Asian chip shares plunge again",
+      "summary": "Second day of AI selling in Asia; FTSE 100 nevertheless sets a record.",
+      "players": [
+        "nvidia",
+        "tsmc",
+        "amd"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://www.theguardian.com/business/2026/jul/29/asian-chip-firms-shares-plunge-ai-sell-off-stock-markets"
+    },
+    {
+      "id": "2026-09-23-oracle-force-majeure-on-jupiter-campus",
+      "date": "2026-09-23",
+      "title": "Oracle force majeure on Jupiter campus",
+      "summary": "Notice on the $165bn OpenAI data-centre project; stock falls about 4%; project loan trades near 90 cents.",
+      "players": [
+        "oracle",
+        "openai"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://balladmarkets.com/blog/oracle-stock-ai-bubble-credit-market-warning"
+    },
+    {
+      "id": "2026-10-08-openai-revenue-20bn-below-plan",
+      "date": "2026-10-08",
+      "title": "OpenAI revenue $20bn below plan",
+      "summary": "September annualised revenue about $50bn, not the ~$70bn investors had been told.",
+      "players": [
+        "openai"
+      ],
+      "kind": "money",
+      "key_date": true,
+      "source": "https://techcrunch.com/2026/10/08/openais-revenue-is-reportedly-20-billion-less-than-previously-projected/"
+    },
+    {
+      "id": "2026-10-13-imf-names-ai-correction-a-top-risk",
+      "date": "2026-10-13",
+      "title": "IMF names AI correction a top risk",
+      "summary": "Global Financial Stability Report lists AI, bond yields and cyber as triggers of turmoil.",
+      "players": [],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://www.imf.org/en/publications/gfsr/issues/2026/10/13/global-financial-stability-report-october-2026"
+    },
+    {
+      "id": "2026-10-15-sell-off-deepens-on-ai-debt-fears",
+      "date": "2026-10-15",
+      "title": "Sell-off deepens on AI debt fears",
+      "summary": "Tech shares fall again on US inflation and worry about how the buildout is financed.",
+      "players": [],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://www.theguardian.com/business/2026/oct/15/tech-market-sell-off-deepens-amid-fears-over-us-inflation-and-ai-debt"
+    },
+    {
+      "id": "2026-10-26-anthropic-files-public-s-1",
+      "date": "2026-10-26",
+      "title": "Anthropic files public S-1",
+      "summary": "Prospectus names Nasdaq, ticker \"ANT\"; first frontier lab to open its books.",
+      "players": [
+        "anthropic",
+        "amazon",
+        "alphabet"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://tech-insider.org/anthropic-ipo-s-1-filing-ant-nasdaq-16-3b-revenue-2026/"
+    },
+    {
+      "id": "2026-10-28-alphabet-falls-on-weaker-profits",
+      "date": "2026-10-28",
+      "title": "Alphabet falls on weaker profits",
+      "summary": "Q3 profit below expectations; more than $500bn of value wiped in a week.",
+      "players": [
+        "alphabet"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://www.theguardian.com/technology/2026/oct/28/google-alphabet-q3-earnings-report"
+    },
+    {
+      "id": "2026-10-29-2026-hyperscaler-capex-tops-700bn",
+      "date": "2026-10-29",
+      "title": "2026 hyperscaler capex tops $700bn",
+      "summary": "TMT Finance puts 2026 capital spending by the big cloud companies above $700bn, up sharply on 2025.",
+      "players": [
+        "amazon",
+        "microsoft",
+        "alphabet",
+        "meta"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://www.tmtfinance.com/insights/2026-hyperscaler-capex-tops-us700bn-analysis-2/"
+    },
+    {
+      "id": "2026-10-31-openai-cuts-round-to-20bn-at-1-25tn",
+      "date": "2026-10-31",
+      "title": "OpenAI cuts round to $20bn at $1.25tn",
+      "summary": "Reduced the target by $10bn; still seeking a $1.25tn post-money valuation.",
+      "players": [
+        "openai"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://www.cnbc.com/2026/10/31/openai-fundraising-20-billion-valuation.html"
+    },
+    {
+      "id": "2026-11-05-2-5tn-wiped-as-ai-stocks-rout",
+      "date": "2026-11-05",
+      "title": "$2.5tn+ wiped as AI stocks rout",
+      "summary": "Nasdaq -5.5%, S&P 500 -4.4%, Dow down over 1,800 points; Democrats' midterm sweep blamed.",
+      "players": [
+        "nvidia",
+        "amd",
+        "alphabet",
+        "meta",
+        "oracle",
+        "coreweave"
+      ],
+      "kind": "money",
+      "key_date": true,
+      "source": "https://www.theguardian.com/technology/2026/nov/06/us-tech-stock-ai-bubble-bursting-market-meltdown-explainer"
+    },
+    {
+      "id": "2026-11-06-openai-closes-11bn-at-1-25tn",
+      "date": "2026-11-06",
+      "title": "OpenAI closes $11bn at $1.25tn",
+      "summary": "First part of a round still expected to close in the coming weeks.",
+      "players": [
+        "openai"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://techcrunch.com/2026/11/06/openai-reportedly-raises-an-additional-11-billion-at-a-1-25-trillion-valuation/"
+    },
+    {
+      "id": "2026-11-11-openai-q3-10bn-revenue-10-9bn-loss",
+      "date": "2026-11-11",
+      "title": "OpenAI Q3: $10bn revenue, $10.9bn loss",
+      "summary": "Revenue up 50% on the quarter while operating losses matched it.",
+      "players": [
+        "openai",
+        "microsoft"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://www.forbes.com/sites/gabrielalinzainescu/2026/11/11/openai-revenue-hits-10-billion-as-losses-reach-109-billion/"
+    },
+    {
+      "id": "2026-11-12-jensen-huang-resigns-kress-interim-ceo",
+      "date": "2026-11-12",
+      "title": "Jensen Huang resigns; Kress interim CEO",
+      "summary": "Nvidia's founder leaves immediately; CFO Colette Kress takes over; Harvey Jones becomes first board chair.",
+      "players": [
+        "nvidia"
+      ],
+      "kind": "money",
+      "key_date": true,
+      "source": "https://nvidianews.nvidia.com/news/nvidia-announces-ceo-transition"
     }
   ]
 }
