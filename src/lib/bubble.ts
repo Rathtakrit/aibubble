@@ -1,12 +1,31 @@
 // Draws one day of the bubble into an SVG. The layout itself is pure and lives in layout.ts,
 // and the camera that flies to the players lives in camera.ts.
+//
+// Everything on screen is keyed by company id (bubbles) or "from|to|kind" (arrows), so a
+// company that is shown on two days in a row keeps its element. Changing the day tweens
+// every bubble from where it is now to where the new day puts it, and the money lines are
+// redrawn from the bubbles' tweened places on each frame, so they stay attached.
 
-import { arrowsForDate, bubblesForDate, formatDate, formatValue, FRAME } from "./layout.ts";
-import type { Arrow, Bubble } from "./layout.ts";
+import { arrowCurve, arrowsForDate, bubblesForDate, formatDate, formatValue, FRAME } from "./layout.ts";
+import type { Arrow, Bubble, Placed } from "./layout.ts";
 import { fitView, sceneTransform } from "./camera.ts";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 const CLIP_ID = "aibubble-clip";
+
+// How long the bubbles take to glide to a new day, and how long a company takes to fade in
+// or out (the fade is the stylesheet's 700ms opacity transition; this is how long we keep a
+// leaving company's element before removing it).
+const GLIDE_MS = 500;
+const FADE_MS = 700;
+
+// Opacity of a faint money line, and of a bubble that is not a player of the chosen item.
+const FAINT = "0.28";
+const DIM = "0.38";
+
+// The small arrowhead at the end of a strong line.
+const HEAD_LENGTH = 1.4;
+const HEAD_HALF = 0.8;
 
 function el<T extends SVGElement>(name: string): T {
   return document.createElementNS(SVG_NS, name) as T;
@@ -18,6 +37,11 @@ function clamp(min: number, value: number, max: number): number {
 
 function fixed(value: number): string {
   return value.toFixed(3);
+}
+
+// Ease in-out, so a bubble starts and stops gently.
+function ease(t: number): number {
+  return t < 0.5 ? 2 * t * t : 1 - ((-2 * t + 2) * (-2 * t + 2)) / 2;
 }
 
 type BubbleNode = {
@@ -32,12 +56,49 @@ type BubbleNode = {
 
 type ArrowNode = {
   group: SVGGElement;
-  shaft: SVGLineElement;
+  shaft: SVGPathElement;
   head: SVGPathElement;
 };
 
-const bubbleNodes = new WeakMap<SVGSVGElement, Map<string, BubbleNode>>();
-const arrowNodes = new WeakMap<SVGSVGElement, Map<string, ArrowNode>>();
+// A bubble on screen, with where it is now and where this glide is taking it.
+type LiveBubble = {
+  node: BubbleNode;
+  bubble: Bubble;
+  x: number;
+  y: number;
+  r: number;
+  fromX: number;
+  fromY: number;
+  fromR: number;
+  toX: number;
+  toY: number;
+  toR: number;
+  leaving: boolean;
+  removal: ReturnType<typeof setTimeout> | null;
+};
+
+// A money line on screen. Its path follows the bubbles' place on every frame.
+type LiveArrow = {
+  node: ArrowNode;
+  arrow: Arrow;
+  strong: boolean;
+  visible: boolean;
+  leaving: boolean;
+  removal: ReturnType<typeof setTimeout> | null;
+};
+
+type Drawing = {
+  bubbles: Map<string, LiveBubble>;
+  arrows: Map<string, LiveArrow>;
+  zoom: number;
+  players: Set<string>;
+  dim: boolean;
+  startedAt: number;
+  raf: number | null;
+  reduced: boolean;
+};
+
+const drawings = new WeakMap<SVGSVGElement, Drawing>();
 
 // The clip, the scene group the camera will transform, and the frame ring on top.
 function ensureScene(
@@ -166,19 +227,17 @@ function createBubbleNode(bubble: Bubble): BubbleNode {
   return { group, circle, logo, logoRect, logoText, name, value };
 }
 
-function updateBubbleNode(
-  node: BubbleNode,
-  bubble: Bubble,
-  zoom: number,
-  isPlayer: boolean,
-  dim: boolean,
-): void {
+// Paints one bubble where it is right now: circle, dashed group edge, logo slot, labels.
+function paintBubble(live: LiveBubble, drawing: Drawing): void {
+  const { node, bubble, x, y, r } = live;
   const { circle, logo, logoRect, logoText, name, value } = node;
   const isGroup = bubble.kind === "group";
+  const isPlayer = drawing.players.has(bubble.id);
+  const zoom = drawing.zoom;
 
-  circle.setAttribute("cx", fixed(bubble.x));
-  circle.setAttribute("cy", fixed(bubble.y));
-  circle.setAttribute("r", fixed(bubble.r));
+  circle.setAttribute("cx", fixed(x));
+  circle.setAttribute("cy", fixed(y));
+  circle.setAttribute("r", fixed(r));
   if (isGroup) {
     circle.style.fill = "none";
     circle.style.stroke = "var(--ink-2)";
@@ -191,10 +250,9 @@ function updateBubbleNode(
     circle.style.strokeWidth = isPlayer ? "2px" : "1px";
     circle.removeAttribute("stroke-dasharray");
   }
-  node.group.style.opacity = dim && !isPlayer ? "0.38" : "1";
 
   // Which labels show depends on the size of the circle on screen.
-  const onScreen = bubble.r * zoom;
+  const onScreen = r * zoom;
   const showLogo = !isGroup && onScreen >= 6.5;
   const showName = onScreen >= 3.4;
   const showValue = onScreen >= 7;
@@ -204,14 +262,13 @@ function updateBubbleNode(
 
   // Font sizes are chosen for the screen and then divided by the zoom, so the text stays the same
   // size on screen however far the camera moves.
-  const nameSize = clamp(1.8, bubble.r * 0.15 * zoom, 3.8) / zoom;
-  const valueSize = clamp(1.5, bubble.r * 0.1 * zoom, 2.6) / zoom;
-  const logoSize = clamp(2.2, bubble.r * 0.22 * zoom, 5) / zoom;
+  const nameSize = clamp(1.8, r * 0.15 * zoom, 3.8) / zoom;
+  const valueSize = clamp(1.5, r * 0.1 * zoom, 2.6) / zoom;
+  const logoSize = clamp(2.2, r * 0.22 * zoom, 5) / zoom;
   const gap = 0.5 / zoom;
 
-  const stack =
-    (showLogo ? logoSize + gap : 0) + (showName ? nameSize : 0) + (showValue ? gap + valueSize : 0);
-  let cursor = bubble.y - stack / 2;
+  const stack = (showLogo ? logoSize + gap : 0) + (showName ? nameSize : 0) + (showValue ? gap + valueSize : 0);
+  let cursor = y - stack / 2;
   let logoCenter = 0;
   let nameCenter = 0;
   let valueCenter = 0;
@@ -228,146 +285,257 @@ function updateBubbleNode(
   }
 
   if (showLogo) {
-    logoRect.setAttribute("x", fixed(bubble.x - logoSize / 2));
+    logoRect.setAttribute("x", fixed(x - logoSize / 2));
     logoRect.setAttribute("y", fixed(logoCenter - logoSize / 2));
     logoRect.setAttribute("width", fixed(logoSize));
     logoRect.setAttribute("height", fixed(logoSize));
     logoRect.setAttribute("rx", fixed(logoSize * 0.25));
-    logoText.setAttribute("x", fixed(bubble.x));
+    logoText.setAttribute("x", fixed(x));
     logoText.setAttribute("y", fixed(logoCenter));
     logoText.style.fontSize = `${fixed(logoSize * 0.5)}px`;
     logoText.textContent = bubble.name.charAt(0);
   }
   if (showName) {
-    name.setAttribute("x", fixed(bubble.x));
+    name.setAttribute("x", fixed(x));
     name.setAttribute("y", fixed(nameCenter));
     name.style.fontSize = `${fixed(nameSize)}px`;
     name.textContent = bubble.name;
   }
   if (showValue) {
-    value.setAttribute("x", fixed(bubble.x));
+    value.setAttribute("x", fixed(x));
     value.setAttribute("y", fixed(valueCenter));
     value.style.fontSize = `${fixed(valueSize)}px`;
     value.textContent = formatValue(bubble.value);
   }
 }
 
-function updateBubbles(
-  svg: SVGSVGElement,
-  layer: SVGGElement,
-  bubbles: Bubble[],
-  zoom: number,
-  players: Set<string>,
-  dim: boolean,
-): void {
-  let nodes = bubbleNodes.get(svg);
-  if (!nodes) {
-    nodes = new Map();
-    bubbleNodes.set(svg, nodes);
-  }
-
-  const seen = new Set<string>();
-  for (const bubble of bubbles) {
-    seen.add(bubble.id);
-    let node = nodes.get(bubble.id);
-    if (!node) {
-      node = createBubbleNode(bubble);
-      nodes.set(bubble.id, node);
-      layer.appendChild(node.group);
-      node.group.style.opacity = "0";
-      void node.group.getBoundingClientRect();
-    }
-    updateBubbleNode(node, bubble, zoom, players.has(bubble.id), dim);
-  }
-
-  for (const [id, node] of nodes) {
-    if (!seen.has(id)) {
-      node.group.style.opacity = "0";
-      node.group.remove();
-      nodes.delete(id);
-    }
-  }
-}
-
-function createArrowNode(arrow: Arrow): ArrowNode {
+function createArrowNode(): ArrowNode {
   const group = el<SVGGElement>("g");
   group.setAttribute("class", "bubble-arrow");
-  const shaft = el<SVGLineElement>("line");
+  const shaft = el<SVGPathElement>("path");
+  shaft.setAttribute("class", "bubble-arrow-line");
+  shaft.setAttribute("fill", "none");
+  shaft.setAttribute("vector-effect", "non-scaling-stroke");
+  shaft.setAttribute("stroke-linecap", "round");
   const head = el<SVGPathElement>("path");
-  for (const part of [shaft, head]) {
-    part.style.stroke = `var(--${arrow.kind})`;
-    part.style.strokeWidth = "1.75px";
-    part.style.fill = "none";
-    part.setAttribute("vector-effect", "non-scaling-stroke");
-  }
+  head.setAttribute("class", "bubble-arrow-head");
+  head.setAttribute("fill", "none");
+  head.setAttribute("vector-effect", "non-scaling-stroke");
+  head.setAttribute("stroke-linecap", "round");
   group.appendChild(shaft);
   group.appendChild(head);
   return { group, shaft, head };
 }
 
-function updateArrowNode(node: ArrowNode, arrow: Arrow, strong: boolean, dim: boolean): void {
-  node.shaft.setAttribute("x1", fixed(arrow.x1));
-  node.shaft.setAttribute("y1", fixed(arrow.y1));
-  node.shaft.setAttribute("x2", fixed(arrow.x2));
-  node.shaft.setAttribute("y2", fixed(arrow.y2));
-
-  const dx = arrow.x2 - arrow.x1;
-  const dy = arrow.y2 - arrow.y1;
-  const distance = Math.hypot(dx, dy) || 1;
-  const ux = dx / distance;
-  const uy = dy / distance;
-  const px = -uy;
-  const py = ux;
-  const length = 1.4;
-  const half = 0.8;
-  node.head.setAttribute(
-    "d",
-    `M ${fixed(arrow.x2 - ux * length + px * half)} ${fixed(arrow.y2 - uy * length + py * half)} ` +
-      `L ${fixed(arrow.x2)} ${fixed(arrow.y2)} ` +
-      `L ${fixed(arrow.x2 - ux * length - px * half)} ${fixed(arrow.y2 - uy * length - py * half)}`,
-  );
-  // Money between two players of the current item stands out; the rest fades back.
-  const width = strong ? "2.5px" : "1.75px";
-  node.shaft.style.strokeWidth = width;
-  node.head.style.strokeWidth = width;
-  node.group.style.opacity = dim && !strong ? "0.15" : "1";
+// The look of one arrow: a pale thin line for the everyday view, or its kind colour and
+// small arrowhead when both ends are players of the chosen item.
+function styleArrow(live: LiveArrow): void {
+  const strong = live.strong;
+  live.node.shaft.style.stroke = strong ? `var(--${live.arrow.kind})` : "var(--ink-2)";
+  live.node.shaft.style.strokeWidth = strong ? "1.75px" : "1px";
+  live.node.head.style.stroke = strong ? `var(--${live.arrow.kind})` : "var(--ink-2)";
+  live.node.head.style.display = strong ? "" : "none";
+  live.node.group.style.opacity = live.visible ? (strong ? "1" : FAINT) : "0";
 }
 
-function updateArrows(
-  svg: SVGSVGElement,
-  layer: SVGGElement,
-  arrows: Arrow[],
-  players: Set<string>,
-  dim: boolean,
-): void {
-  let nodes = arrowNodes.get(svg);
-  if (!nodes) {
-    nodes = new Map();
-    arrowNodes.set(svg, nodes);
+// The shape of one arrow at this instant: the curve, plus the little head at its end.
+function shapeArrow(live: LiveArrow, from: Placed, to: Placed): void {
+  const curve = arrowCurve(from, to, live.arrow.bend, live.arrow.side);
+  live.node.shaft.setAttribute(
+    "d",
+    `M ${fixed(curve.x1)} ${fixed(curve.y1)} Q ${fixed(curve.cx)} ${fixed(curve.cy)} ${fixed(curve.x2)} ${fixed(curve.y2)}`,
+  );
+  if (!live.strong) return;
+
+  // The head points the way the curve arrives, from the control point to the end.
+  const dx = curve.x2 - curve.cx;
+  const dy = curve.y2 - curve.cy;
+  const length = Math.sqrt(dx * dx + dy * dy) || 1;
+  const ux = dx / length;
+  const uy = dy / length;
+  const px = -uy;
+  const py = ux;
+  live.node.head.setAttribute(
+    "d",
+    `M ${fixed(curve.x2 - ux * HEAD_LENGTH + px * HEAD_HALF)} ${fixed(curve.y2 - uy * HEAD_LENGTH + py * HEAD_HALF)} ` +
+      `L ${fixed(curve.x2)} ${fixed(curve.y2)} ` +
+      `L ${fixed(curve.x2 - ux * HEAD_LENGTH - px * HEAD_HALF)} ${fixed(curve.y2 - uy * HEAD_LENGTH - py * HEAD_HALF)}`,
+  );
+}
+
+// Every money line, redrawn from where the bubbles are at this instant.
+function paintArrows(drawing: Drawing): void {
+  for (const live of drawing.arrows.values()) {
+    if (!live.visible) continue;
+    const from = drawing.bubbles.get(live.arrow.from);
+    const to = drawing.bubbles.get(live.arrow.to);
+    if (!from || !to) continue;
+    shapeArrow(live, { x: from.x, y: from.y, r: from.r }, { x: to.x, y: to.y, r: to.r });
+  }
+}
+
+function paintAll(drawing: Drawing): void {
+  for (const live of drawing.bubbles.values()) paintBubble(live, drawing);
+  paintArrows(drawing);
+}
+
+// One frame of the glide: ease every bubble to its new place, then redraw the lines.
+function step(drawing: Drawing, now: number): void {
+  const t = Math.min(1, Math.max(0, (now - drawing.startedAt) / GLIDE_MS));
+  const e = ease(t);
+  for (const live of drawing.bubbles.values()) {
+    live.x = live.fromX + (live.toX - live.fromX) * e;
+    live.y = live.fromY + (live.toY - live.fromY) * e;
+    live.r = live.fromR + (live.toR - live.fromR) * e;
+  }
+  paintAll(drawing);
+  drawing.raf = t < 1 ? requestAnimationFrame((later) => step(drawing, later)) : null;
+}
+
+// Jumps straight to the new day, for a reader who asked for reduced motion.
+function jump(drawing: Drawing): void {
+  if (drawing.raf !== null) {
+    cancelAnimationFrame(drawing.raf);
+    drawing.raf = null;
+  }
+  for (const live of drawing.bubbles.values()) {
+    live.x = live.toX;
+    live.y = live.toY;
+    live.r = live.toR;
+  }
+  paintAll(drawing);
+}
+
+function glide(drawing: Drawing): void {
+  if (drawing.raf !== null) cancelAnimationFrame(drawing.raf);
+  drawing.raf = null;
+  if (drawing.reduced) {
+    jump(drawing);
+    return;
+  }
+  drawing.startedAt = performance.now();
+  drawing.raf = requestAnimationFrame((now) => step(drawing, now));
+}
+
+function removeBubble(drawing: Drawing, id: string, live: LiveBubble): void {
+  live.removal = setTimeout(() => {
+    live.node.group.remove();
+    if (drawing.bubbles.get(id) === live) drawing.bubbles.delete(id);
+  }, FADE_MS);
+}
+
+function removeArrow(drawing: Drawing, key: string, live: LiveArrow): void {
+  live.removal = setTimeout(() => {
+    live.node.group.remove();
+    if (drawing.arrows.get(key) === live) drawing.arrows.delete(key);
+  }, FADE_MS);
+}
+
+// Keyed by company id: a company shown today and tomorrow keeps its element and glides.
+function updateBubbles(drawing: Drawing, layer: SVGGElement, bubbles: Bubble[]): void {
+  const seen = new Set<string>();
+  for (const bubble of bubbles) {
+    seen.add(bubble.id);
+    const existing = drawing.bubbles.get(bubble.id);
+    if (!existing) {
+      const node = createBubbleNode(bubble);
+      layer.appendChild(node.group);
+      node.group.style.opacity = "0";
+      const live: LiveBubble = {
+        node,
+        bubble,
+        x: bubble.x,
+        y: bubble.y,
+        r: 0,
+        fromX: bubble.x,
+        fromY: bubble.y,
+        fromR: 0,
+        toX: bubble.x,
+        toY: bubble.y,
+        toR: bubble.r,
+        leaving: false,
+        removal: null,
+      };
+      drawing.bubbles.set(bubble.id, live);
+      // A company new to this day grows out of nothing; the stylesheet fades the element in.
+      requestAnimationFrame(() => {
+        node.group.style.opacity = opacityOf(live, drawing);
+      });
+      continue;
+    }
+    if (existing.removal !== null) {
+      // It was fading out and this day shows it again: keep the element, fade back in.
+      clearTimeout(existing.removal);
+      existing.removal = null;
+    }
+    // A new day during a glide starts the next glide from where the bubble is now.
+    existing.fromX = existing.x;
+    existing.fromY = existing.y;
+    existing.fromR = existing.r;
+    existing.toX = bubble.x;
+    existing.toY = bubble.y;
+    existing.toR = bubble.r;
+    existing.bubble = bubble;
+    existing.leaving = false;
+    existing.node.group.style.opacity = opacityOf(existing, drawing);
   }
 
+  for (const [id, live] of drawing.bubbles) {
+    if (seen.has(id) || live.leaving) continue;
+    // It leaves this day: fade out and remove it, keeping its last place meanwhile.
+    live.leaving = true;
+    live.fromX = live.x;
+    live.fromY = live.y;
+    live.fromR = live.r;
+    live.toX = live.x;
+    live.toY = live.y;
+    live.toR = live.r;
+    live.node.group.style.opacity = "0";
+    removeBubble(drawing, id, live);
+  }
+}
+
+function opacityOf(live: LiveBubble, drawing: Drawing): string {
+  if (live.leaving) return "0";
+  return drawing.dim && !drawing.players.has(live.bubble.id) ? DIM : "1";
+}
+
+function updateArrows(drawing: Drawing, layer: SVGGElement, arrows: Arrow[]): void {
   const seen = new Set<string>();
   for (const arrow of arrows) {
     const key = `${arrow.from}|${arrow.to}|${arrow.kind}`;
     seen.add(key);
-    let node = nodes.get(key);
-    if (!node) {
-      node = createArrowNode(arrow);
-      nodes.set(key, node);
+    const strong = drawing.dim && drawing.players.has(arrow.from) && drawing.players.has(arrow.to);
+    // The everyday view draws one pale line per pair; a chosen item draws every line of
+    // its own pairs in full.
+    const visible = strong || arrow.pairFirst;
+    const live = drawing.arrows.get(key);
+    if (!live) {
+      const node = createArrowNode();
       layer.appendChild(node.group);
       node.group.style.opacity = "0";
-      void node.group.getBoundingClientRect();
+      const created: LiveArrow = { node, arrow, strong, visible, leaving: false, removal: null };
+      drawing.arrows.set(key, created);
+      requestAnimationFrame(() => styleArrow(created));
+      continue;
     }
-    const strong = dim && players.has(arrow.from) && players.has(arrow.to);
-    updateArrowNode(node, arrow, strong, dim);
+    if (live.removal !== null) {
+      clearTimeout(live.removal);
+      live.removal = null;
+    }
+    live.arrow = arrow;
+    live.strong = strong;
+    live.visible = visible;
+    live.leaving = false;
+    styleArrow(live);
   }
 
-  for (const [key, node] of nodes) {
-    if (!seen.has(key)) {
-      node.group.style.opacity = "0";
-      node.group.remove();
-      nodes.delete(key);
-    }
+  for (const [key, live] of drawing.arrows) {
+    if (seen.has(key) || live.leaving) continue;
+    live.leaving = true;
+    live.visible = false;
+    live.node.group.style.opacity = "0";
+    removeArrow(drawing, key, live);
   }
 }
 
@@ -407,12 +575,31 @@ export function renderBubble(
   const wanted = new Set(options.players ?? []);
   // Players that are not on screen that day are ignored, as in the design.
   const players = new Set(bubbles.filter((bubble) => wanted.has(bubble.id)).map((bubble) => bubble.id));
-  const dim = players.size > 0;
-
   const view = fitView(bubbles, options.players ?? [], options.manual ?? 1);
+
   const { bubbleLayer, arrowLayer, scene } = ensureScene(svg);
-  updateBubbles(svg, bubbleLayer, bubbles, view.z, players, dim);
-  updateArrows(svg, arrowLayer, arrows, players, dim);
+  let drawing = drawings.get(svg);
+  if (!drawing) {
+    drawing = {
+      bubbles: new Map(),
+      arrows: new Map(),
+      zoom: view.z,
+      players,
+      dim: players.size > 0,
+      startedAt: 0,
+      raf: null,
+      reduced: window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    };
+    drawings.set(svg, drawing);
+  }
+  drawing.zoom = view.z;
+  drawing.players = players;
+  drawing.dim = players.size > 0;
+  drawing.reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  updateBubbles(drawing, bubbleLayer, bubbles);
+  updateArrows(drawing, arrowLayer, arrows);
+  glide(drawing);
 
   scene.style.transition = cameraTransition();
   scene.style.transform = sceneTransform(view);
