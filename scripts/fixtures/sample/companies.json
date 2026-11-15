@@ -1,0 +1,56 @@
+{
+  "status": "sample",
+  "items": [
+    {
+      "id": "samplenet",
+      "name": "Sample Net",
+      "kind": "listed",
+      "ticker": "SMP",
+      "first_mention": "2019-01-01",
+      "source": "https://example.com/sample"
+    },
+    {
+      "id": "samplecloud",
+      "name": "Sample Cloud",
+      "kind": "listed",
+      "ticker": "SCLD",
+      "first_mention": "2019-01-01",
+      "source": "https://example.com/sample"
+    },
+    {
+      "id": "samplechips",
+      "name": "Sample Chips",
+      "kind": "listed",
+      "ticker": "SCHP",
+      "first_mention": "2019-01-01",
+      "source": "https://example.com/sample"
+    },
+    {
+      "id": "samplefund",
+      "name": "Sample Fund",
+      "kind": "listed",
+      "ticker": "SFND",
+      "first_mention": "2019-01-01",
+      "source": "https://example.com/sample"
+    },
+    {
+      "id": "samplelab",
+      "name": "Sample Lab",
+      "kind": "private",
+      "first_mention": "2019-01-01",
+      "source": "https://example.com/sample"
+    },
+    {
+      "id": "g-sample",
+      "name": "Sample Others",
+      "kind": "group",
+      "members": [
+        "Sample A",
+        "Sample B",
+        "Sample C"
+      ],
+      "first_mention": "2019-01-01",
+      "source": "https://example.com/sample"
+    }
+  ]
+}

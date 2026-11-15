@@ -1,0 +1,103 @@
+{
+  "status": "sample",
+  "items": [
+    {
+      "id": "n1",
+      "date": "2020-01-01",
+      "title": "SAMPLE: Lab opens a bigger model",
+      "summary": "SAMPLE: The model is larger and costs more to run.",
+      "players": [
+        "samplelab"
+      ],
+      "kind": "science",
+      "key_date": true,
+      "source": "https://example.com/sample"
+    },
+    {
+      "id": "n2",
+      "date": "2020-01-02",
+      "title": "SAMPLE: Net raises money",
+      "summary": "SAMPLE: The round values the company higher than last year.",
+      "players": [
+        "samplenet"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://example.com/sample"
+    },
+    {
+      "id": "n3",
+      "date": "2020-01-03",
+      "title": "SAMPLE: Chips ship faster",
+      "summary": "SAMPLE: The new chip runs training quicker.",
+      "players": [
+        "samplechips"
+      ],
+      "kind": "science",
+      "key_date": false,
+      "source": "https://example.com/sample"
+    },
+    {
+      "id": "n4",
+      "date": "2020-01-04",
+      "title": "SAMPLE: Cloud signs a big customer",
+      "summary": "SAMPLE: The contract is worth a round number.",
+      "players": [
+        "samplecloud"
+      ],
+      "kind": "money",
+      "key_date": true,
+      "source": "https://example.com/sample"
+    },
+    {
+      "id": "n5",
+      "date": "2020-01-05",
+      "title": "SAMPLE: Fund starts a new fund",
+      "summary": "SAMPLE: The fund says it will back more labs.",
+      "players": [
+        "samplefund"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://example.com/sample"
+    },
+    {
+      "id": "n6",
+      "date": "2020-01-06",
+      "title": "SAMPLE: Lab and Net work together",
+      "summary": "SAMPLE: The two companies share a research result.",
+      "players": [
+        "samplelab",
+        "samplenet"
+      ],
+      "kind": "science",
+      "key_date": false,
+      "source": "https://example.com/sample"
+    },
+    {
+      "id": "n7",
+      "date": "2020-01-07",
+      "title": "SAMPLE: Cloud adds chips",
+      "summary": "SAMPLE: More chips mean more computing to rent.",
+      "players": [
+        "samplecloud",
+        "samplechips"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://example.com/sample"
+    },
+    {
+      "id": "n8",
+      "date": "2020-01-08",
+      "title": "SAMPLE: Others say they will spend",
+      "summary": "SAMPLE: The group of smaller companies plans spending.",
+      "players": [
+        "g-sample"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://example.com/sample"
+    }
+  ]
+}
