@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Chosen direction (desktop)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Instrument+Sans:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0;background:#F5EFE3}
+a{color:#1E3A8A}a:hover{color:#142A66}
+button:disabled{opacity:.35;cursor:default}
+@media (prefers-reduced-motion: reduce){.tl *{transition:none !important}}
+</style>
+</helmet>
+<div style="min-height: 1100px; display: flex; flex-direction: column; background: #F5EFE3; color: #1B1A17; font-family: 'Instrument Sans', system-ui, sans-serif; font-size: 16px; line-height: 1.5;">
+
+<header style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px; padding: 10px 40px; border-bottom: 1px solid #CFC5B2;">
+<a href="#top" style="font-family: 'Instrument Serif', Georgia, serif; font-size: 30px; font-style: italic; line-height: 1; color: #1B1A17; text-decoration: none;">AI Bubble</a>
+<div role="group" aria-label="Mode" style="display: inline-flex; padding: 3px; border: 1px solid #1B1A17; border-radius: 999px;">
+<button type="button" onClick="{{toStory}}" aria-pressed="{{isStory}}" style="min-height: 40px; padding: 0 20px; border: none; border-radius: 999px; background: {{storyBg}}; color: {{storyFg}}; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer;">Story</button>
+<button type="button" onClick="{{toExplore}}" aria-pressed="{{isExplore}}" style="min-height: 40px; padding: 0 20px; border: none; border-radius: 999px; background: {{exploreBg}}; color: {{exploreFg}}; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer;">Explore</button>
+</div>
+<nav aria-label="Main" style="display: flex; flex-wrap: wrap; align-items: center; gap: 20px; font-size: 14px; font-weight: 500;">
+<sc-if value="{{isStory}}" hint-placeholder-val="{{true}}">
+<button type="button" onClick="{{toggle}}" aria-expanded="{{open}}" style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; border: 1px solid #1B1A17; border-radius: 999px; background: transparent; color: #1B1A17; font-family: inherit; font-size: 14px; font-weight: 500; cursor: pointer;">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"></path></svg>
+{{toggleLabel}}
+</button>
+</sc-if>
+<a href="#sources" style="color: #1B1A17; text-decoration: none;">Sources</a>
+<a href="#about" style="color: #1B1A17; text-decoration: none;">About</a>
+</nav>
+</header>
+
+<main style="flex: 1 1 auto; width: 100%; max-width: 1360px; margin: 0 auto; padding: 28px 40px 16px; box-sizing: border-box; display: flex; flex-wrap: wrap; align-items: center; gap: 48px;">
+
+<div style="flex: 1 1 360px; min-width: 0; max-width: 460px; align-self: stretch; display: flex; flex-direction: column; justify-content: center;">
+
+<sc-if value="{{showChapter}}" hint-placeholder-val="{{true}}">
+<div>
+<p style="margin: 0 0 16px; font-size: 13px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: {{accent}};">Chapter {{chapterNo}} of {{total}} · {{era}}</p>
+<p style="margin: 0; font-family: 'Instrument Serif', Georgia, serif; font-size: clamp(64px, 8vw, 124px); line-height: 0.88; letter-spacing: -0.02em;">{{d1}}<br>{{d2}}</p>
+<h1 style="margin: 24px 0 12px; font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: 42px; line-height: 1.05;">{{title}}</h1>
+<p style="margin: 0; font-size: 18px; line-height: 1.6; color: #2E2B26;">[Your chapter text, written from the fact sheet.]</p>
+<a href="#sources" style="display: inline-block; margin-top: 10px; font-size: 14px; color: {{accent}};">Source: [link]</a>
+<div style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px;">
+<button type="button" onClick="{{prev}}" disabled="{{atStart}}" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 20px; border: 1px solid #1B1A17; border-radius: 999px; background: transparent; color: #1B1A17; font-family: inherit; font-size: 15px; font-weight: 500; cursor: pointer;">← Previous</button>
+<button type="button" onClick="{{next}}" disabled="{{atEnd}}" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 22px; border: 1px solid {{accent}}; border-radius: 999px; background: {{accent}}; color: #F5EFE3; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer;">Next chapter →</button>
+</div>
+<button type="button" onClick="{{toggle}}" aria-expanded="{{open}}" style="display: inline-flex; align-items: center; gap: 6px; min-height: 44px; margin-top: 8px; padding: 0; border: none; background: transparent; color: {{accent}}; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer;">Read the whole story, past and next ↓</button>
+</div>
+</sc-if>
+
+<sc-if value="{{showList}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; max-height: 720px; background: #F5EFE3; border: 1px solid #1B1A17;">
+<div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 8px 8px 20px; border-bottom: 1px solid #1B1A17;">
+<h2 style="margin: 0; font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: 30px; line-height: 1.1;">The story</h2>
+<button type="button" onClick="{{toggle}}" aria-label="Close the story" style="width: 44px; height: 44px; border: none; background: transparent; color: #1B1A17; font-size: 24px; line-height: 1; cursor: pointer;">×</button>
+</div>
+<ol style="list-style: none; margin: 0; padding: 0 20px 8px; overflow-y: auto;">
+<sc-for list="{{chapters}}" as="ch" hint-placeholder-count="7">
+<li>
+<button type="button" onClick="{{ch.go}}" style="display: block; width: 100%; text-align: left; padding: 14px 0 16px; border: none; border-top: {{ch.rule}}; background: transparent; opacity: {{ch.opacity}}; color: #1B1A17; font-family: inherit; cursor: pointer;">
+<span style="display: flex; justify-content: space-between; gap: 12px; font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: {{ch.kickerColor}};"><span>Chapter {{ch.n}} · {{ch.date}}</span><span>{{ch.state}}</span></span>
+<span style="display: block; margin-top: 6px; font-family: 'Instrument Serif', Georgia, serif; font-size: 26px; line-height: 1.1;">{{ch.title}}</span>
+<sc-if value="{{ch.now}}" hint-placeholder-val="{{false}}">
+<span style="display: block; margin-top: 8px; font-size: 16px; line-height: 1.55; color: #2E2B26;">[Your chapter text, written from the fact sheet.]</span>
+</sc-if>
+<sc-if value="{{ch.notNow}}" hint-placeholder-val="{{true}}">
+<span style="display: block; margin-top: 4px; font-size: 14px; color: #57534B;">[One-line summary]</span>
+</sc-if>
+</button>
+</li>
+</sc-for>
+</ol>
+</div>
+</sc-if>
+
+<sc-if value="{{isExplore}}" hint-placeholder-val="{{false}}">
+<div>
+<p style="margin: 0 0 14px; font-size: 13px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: {{accent}};">Explore · news {{newsNo}} of {{newsTotal}}</p>
+<p style="margin: 0; font-family: 'Instrument Serif', Georgia, serif; font-size: clamp(52px, 6vw, 84px); line-height: 0.92; letter-spacing: -0.02em;">{{nDate}}</p>
+<span style="display: inline-flex; align-items: center; gap: 8px; margin-top: 18px; padding: 4px 12px; border: 1px solid {{kindColor}}; border-radius: 999px; font-size: 13px; font-weight: 600; color: {{kindColor}};"><span aria-hidden="true" style="width: 16px; border-top: 2px solid {{kindColor}};"></span>{{kindLabel}}</span>
+<h1 style="margin: 12px 0 10px; font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: 38px; line-height: 1.08;">{{nTitle}}</h1>
+<p style="margin: 0; font-size: 17px; line-height: 1.6; color: #2E2B26;">[Approved summary of this news item.]</p>
+<a href="#sources" style="display: inline-block; margin-top: 8px; font-size: 14px; color: {{accent}};">Source: [link]</a>
+<p style="margin: 18px 0 0; font-size: 14px; color: #57534B;">The view follows the players: <strong style="font-weight: 600; color: #1B1A17;">{{nNames}}</strong></p>
+<div style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 22px;">
+<button type="button" onClick="{{prevNews}}" disabled="{{newsStart}}" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 20px; border: 1px solid #1B1A17; border-radius: 999px; background: transparent; color: #1B1A17; font-family: inherit; font-size: 15px; font-weight: 500; cursor: pointer;">← Earlier</button>
+<button type="button" onClick="{{nextNews}}" disabled="{{newsEnd}}" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 22px; border: 1px solid {{accent}}; border-radius: 999px; background: {{accent}}; color: #F5EFE3; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer;">Later →</button>
+</div>
+</div>
+</sc-if>
+</div>
+
+<div style="flex: 1 1 560px; min-width: 0; max-width: 680px; margin: 0 auto;">
+<div style="position: relative;">
+<dc-import name="Bubble" step="{{bStep}}" fit="{{fit}}" zoom="{{zoom}}" dim-others="{{dim}}" mark-new="{{markNew}}" focus="none" show-links="{{yes}}" label-scale="{{scale}}" accent="{{accent}}" ink="#1B1A17" ink2="#57534B" paper="#F5EFE3" muted="#ECE4D5" font="'Instrument Sans', system-ui, sans-serif" hint-size="100%,680px"></dc-import>
+<div style="position: absolute; right: 0; bottom: 6%; display: flex; flex-direction: column; background: #F5EFE3; border: 1px solid #1B1A17;">
+<button type="button" onClick="{{zoomIn}}" disabled="{{maxZoom}}" aria-label="Zoom in" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border: none; background: transparent; color: #1B1A17; cursor: pointer;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"></path></svg></button>
+<button type="button" onClick="{{zoomOut}}" disabled="{{minZoom}}" aria-label="Zoom out" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border: none; border-top: 1px solid #CFC5B2; background: transparent; color: #1B1A17; cursor: pointer;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"></path></svg></button>
+<button type="button" onClick="{{zoomReset}}" aria-label="Fit the view to the players" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border: none; border-top: 1px solid #CFC5B2; background: transparent; color: #1B1A17; cursor: pointer;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"></path></svg></button>
+</div>
+</div>
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 24px; margin-top: 6px; font-size: 13px; color: #57534B;">
+<span>All AI companies on {{viewDate}} · total [value]</span>
+<sc-if value="{{hasNew}}" hint-placeholder-val="{{true}}">
+<span>{{newLabel}}: <strong style="font-weight: 600; color: {{accent}};">{{newNames}}</strong></span>
+</sc-if>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 6px 20px; margin-top: 10px; font-size: 13px; color: #57534B;">
+<span style="font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; font-size: 11px; align-self: center;">Money flow</span>
+<span style="display: inline-flex; align-items: center; gap: 8px;"><span aria-hidden="true" style="width: 22px; border-top: 2px solid {{accent}};"></span>Investment</span>
+<span style="display: inline-flex; align-items: center; gap: 8px;"><span aria-hidden="true" style="width: 22px; border-top: 2px solid #C2410C;"></span>Cloud deal</span>
+<span style="display: inline-flex; align-items: center; gap: 8px;"><span aria-hidden="true" style="width: 22px; border-top: 2px solid #0F766E;"></span>Chip deal</span>
+<span style="display: inline-flex; align-items: center; gap: 8px;"><span aria-hidden="true" style="width: 14px; height: 14px; border-radius: 3px; border: 1px dashed #1B1A17;"></span>Logo (B/W)</span>
+</div>
+</div>
+</main>
+
+<section class="tl" aria-label="Timeline" style="border-top: 1px solid #1B1A17; padding: 14px 40px 20px;">
+<div style="position: relative; height: 180px; max-width: 1360px; margin: 0 auto;">
+<span style="position: absolute; left: 14px; top: 52px; font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #57534B;">Science</span>
+<span style="position: absolute; left: 14px; top: 98px; font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #57534B;">Money</span>
+<div style="position: absolute; left: 0; width: 58%; top: 70px; height: 20px; box-sizing: border-box; padding: 0 10px 0 64px; background: #ECE4D5; display: flex; align-items: center; font-size: 11px; font-weight: 500; color: #57534B;">Before ChatGPT</div>
+<div style="position: absolute; left: 58%; right: 0; top: 70px; height: 20px; box-sizing: border-box; padding: 0 10px; background: #DFE5F1; display: flex; align-items: center; font-size: 11px; font-weight: 500; color: #1B1A17;">After ChatGPT</div>
+<div style="position: absolute; left: 0; right: 0; top: 90px; border-top: 1px solid #1B1A17;"></div>
+<div aria-hidden="true" style="position: absolute; left: {{handlePos}}%; top: 0; height: 160px; border-left: 1px dashed {{accent}}; transition: left 700ms ease;"></div>
+<sc-for list="{{dots}}" as="ch" hint-placeholder-count="7">
+<div aria-hidden="true" style="position: absolute; left: {{ch.pos}}%; top: {{ch.tickTop}}px; height: {{ch.tickH}}px; border-left: 1px solid #1B1A17;"></div>
+<button type="button" onClick="{{ch.go}}" aria-label="{{ch.aria}}" style="position: absolute; left: {{ch.pos}}%; top: {{ch.dotTop}}px; width: 32px; height: 32px; margin-left: -16px; padding: 0; border: none; background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer;"><span style="width: {{ch.dot}}px; height: {{ch.dot}}px; box-sizing: border-box; border-radius: 50%; background: {{ch.dotFill}}; border: 1.5px solid {{ch.dotBorder}}; transition: all 300ms ease;"></span></button>
+<sc-if value="{{ch.showLabel}}" hint-placeholder-val="{{false}}">
+<span style="position: absolute; left: {{ch.pos}}%; top: {{ch.labelTop}}px; transform: translateX({{ch.shift}}); font-size: 13px; font-weight: {{ch.labelWeight}}; white-space: nowrap; color: {{ch.kickerColor}};">{{ch.short}}</span>
+</sc-if>
+</sc-for>
+<span style="position: absolute; left: 5.8%; top: 162px; transform: translateX(-50%); font-size: 12px; color: #57534B;">2018</span>
+<span style="position: absolute; left: 16.4%; top: 162px; transform: translateX(-50%); font-size: 12px; color: #57534B;">2019</span>
+<span style="position: absolute; left: 27%; top: 162px; transform: translateX(-50%); font-size: 12px; color: #57534B;">2020</span>
+<span style="position: absolute; left: 37.6%; top: 162px; transform: translateX(-50%); font-size: 12px; color: #57534B;">2021</span>
+<span style="position: absolute; left: 48.3%; top: 162px; transform: translateX(-50%); font-size: 12px; color: #57534B;">2022</span>
+<span style="position: absolute; left: 58.9%; top: 162px; transform: translateX(-50%); font-size: 12px; color: #57534B;">2023</span>
+<span style="position: absolute; left: 69.5%; top: 162px; transform: translateX(-50%); font-size: 12px; color: #57534B;">2024</span>
+<span style="position: absolute; left: 80.1%; top: 162px; transform: translateX(-50%); font-size: 12px; color: #57534B;">2025</span>
+<span style="position: absolute; left: 90.7%; top: 162px; transform: translateX(-50%); font-size: 12px; color: #57534B;">2026</span>
+</div>
+<p style="max-width: 1360px; margin: 4px auto 0; font-size: 12px; color: #57534B;">{{timelineNote}}</p>
+</section>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#1E3A8A","options":["#1E3A8A","#1D4ED8","#173F5F","#2B3A67"]},"$preview":{"width":1440,"height":1100}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { mode: 'story', step: 2, news: 4, open: false, z: 1 };
+  }
+  renderVals() {
+    const self = this;
+    const accent = this.props.accent ?? '#1E3A8A';
+    // Manual zoom on top of the automatic camera; index 1 = follow the players exactly.
+    const ZOOMS = [0.4, 1, 1.5, 2.25];
+    const st = this.state;
+    const story = st.mode === 'story';
+    const step = st.step;
+    const KIND = {
+      investment: { label: 'Investment', color: accent },
+      cloud: { label: 'Cloud deal', color: '#C2410C' },
+      chips: { label: 'Chip deal', color: '#0F766E' },
+      science: { label: 'Science', color: '#57534B' },
+      milestone: { label: 'Value milestone', color: '#1B1A17' }
+    };
+    // Sample chapters: real ones come from the user's fact sheet. fit = players the camera frames (loose in the story).
+    const CH = [
+      { date: '12 Jun 2017', d1: '12 Jun', d2: '2017', title: 'Attention Is All You Need', short: 'Transformer paper', lane: 'science', pos: 0, fit: 'alphabet', era: 'Before ChatGPT', newNames: 'Alphabet (Google)' },
+      { date: '22 Jul 2019', d1: '22 Jul', d2: '2019', title: 'Microsoft invests in OpenAI', short: 'Microsoft → OpenAI', lane: 'money', pos: 22.3, fit: 'microsoft,openai', era: 'Before ChatGPT', newNames: 'Microsoft, OpenAI' },
+      { date: '30 Nov 2022', d1: '30 Nov', d2: '2022', title: 'ChatGPT launches', short: 'ChatGPT', lane: 'science', pos: 58, fit: 'openai', era: 'After ChatGPT', newNames: '' },
+      { date: '30 May 2023', d1: '30 May', d2: '2023', title: 'Nvidia passes $1 trillion', short: 'Nvidia $1T', lane: 'money', pos: 63.3, fit: 'nvidia', era: 'After ChatGPT', newNames: 'Nvidia' },
+      { date: '25 Sep 2023', d1: '25 Sep', d2: '2023', title: 'Amazon invests in Anthropic', short: 'Amazon → Anthropic', lane: 'money', pos: 66.7, fit: 'amazon,anthropic', era: 'After ChatGPT', newNames: 'Amazon, Anthropic' },
+      { date: 'Sep 2025', d1: 'Sep', d2: '2025', title: '[Chapter title: the deal loop]', short: 'Deal loop', lane: 'money', pos: 87.6, fit: 'openai,oracle,amd,nvidia', era: 'After ChatGPT', newNames: 'Oracle, AMD' },
+      { date: 'today', d1: 'Today', d2: '[date]', title: 'The bubble today', short: 'Today', lane: 'now', pos: 100, fit: '', era: 'After ChatGPT', newNames: 'Meta, Broadcom, TSMC, xAI, CoreWeave and grouped smaller companies' }
+    ];
+    // Sample news items for Explore: the camera frames exactly these players.
+    const NEWS = [
+      { date: '12 Jun 2017', title: 'Google researchers publish the Transformer paper', short: 'Transformer paper', kind: 'science', pos: 0, step: 0, fit: 'alphabet', names: 'Alphabet (Google)' },
+      { date: '22 Jul 2019', title: 'Microsoft invests in OpenAI', short: 'Microsoft → OpenAI', kind: 'investment', pos: 22.3, step: 1, fit: 'microsoft,openai', names: 'Microsoft, OpenAI' },
+      { date: '30 Nov 2022', title: 'OpenAI launches ChatGPT', short: 'ChatGPT', kind: 'science', pos: 58, step: 2, fit: 'openai', names: 'OpenAI' },
+      { date: '30 May 2023', title: 'Nvidia passes $1 trillion in value', short: 'Nvidia $1T', kind: 'milestone', pos: 63.3, step: 3, fit: 'nvidia', names: 'Nvidia' },
+      { date: '25 Sep 2023', title: 'Amazon invests in Anthropic', short: 'Amazon → Anthropic', kind: 'investment', pos: 66.7, step: 4, fit: 'amazon,anthropic', names: 'Amazon, Anthropic' },
+      { date: '[date]', title: 'Google invests in Anthropic', short: 'Google → Anthropic', kind: 'investment', pos: 67.3, step: 4, fit: 'alphabet,anthropic', names: 'Alphabet, Anthropic' },
+      { date: 'Sep 2025', title: 'OpenAI signs a cloud deal with Oracle', short: 'OpenAI → Oracle', kind: 'cloud', pos: 87.4, step: 5, fit: 'openai,oracle', names: 'OpenAI, Oracle' },
+      { date: 'Sep 2025', title: 'Nvidia plans to invest in OpenAI', short: 'Nvidia → OpenAI', kind: 'investment', pos: 87.9, step: 5, fit: 'nvidia,openai', names: 'Nvidia, OpenAI' },
+      { date: 'Oct 2025', title: 'OpenAI signs a chip deal with AMD', short: 'OpenAI → AMD', kind: 'chips', pos: 88.3, step: 5, fit: 'openai,amd', names: 'OpenAI, AMD' }
+    ];
+    const cur = CH[step];
+    const item = NEWS[st.news];
+    const kind = KIND[item.kind];
+
+    function dotFor(o, i, now, go, label) {
+      const sci = o.lane === 'science';
+      const money = o.lane === 'money';
+      return {
+        pos: o.pos,
+        short: o.short,
+        go: go,
+        now: now,
+        dotTop: sci ? 18 : (money ? 108 : 74),
+        tickTop: sci ? 48 : 90,
+        tickH: (sci || money) ? 22 : 0,
+        labelTop: sci ? 0 : 140,
+        showLabel: now || (story && (sci || o.lane === 'now')),
+        shift: o.pos < 3 ? '0' : (o.pos > 97 ? '-100%' : '-50%'),
+        labelWeight: now ? 600 : 500,
+        kickerColor: now ? accent : '#57534B',
+        dot: now ? 20 : 12,
+        dotFill: now ? accent : '#F5EFE3',
+        dotBorder: now ? accent : '#1B1A17',
+        aria: label
+      };
+    }
+
+    const chapters = CH.map(function (c, i) {
+      const past = i < step;
+      const now = i === step;
+      return {
+        n: i + 1,
+        date: c.date,
+        title: c.title,
+        now: now,
+        notNow: !now,
+        rule: now ? ('3px solid ' + accent) : '1px solid #CFC5B2',
+        opacity: now ? 1 : (past ? 0.72 : 0.5),
+        kickerColor: now ? accent : '#57534B',
+        state: past ? 'Read' : (now ? 'Reading now' : 'Next'),
+        go: function () { self.setState({ step: i, z: 1 }); }
+      };
+    });
+
+    const dots = story
+      ? CH.map(function (c, i) {
+          return dotFor(c, i, i === step, function () { self.setState({ step: i, z: 1 }); }, 'Go to chapter ' + (i + 1) + ': ' + c.date + ', ' + c.title);
+        })
+      : NEWS.map(function (n, i) {
+          const o = { pos: n.pos, short: n.short, lane: n.kind === 'science' ? 'science' : 'money' };
+          return dotFor(o, i, i === st.news, function () { self.setState({ news: i, z: 1 }); }, 'News ' + (i + 1) + ': ' + n.date + ', ' + n.title);
+        });
+
+    return {
+      accent: accent,
+      isStory: story,
+      isExplore: !story,
+      showChapter: story && !st.open,
+      showList: story && st.open,
+      storyBg: story ? '#1B1A17' : 'transparent',
+      storyFg: story ? '#F5EFE3' : '#1B1A17',
+      exploreBg: story ? 'transparent' : '#1B1A17',
+      exploreFg: story ? '#1B1A17' : '#F5EFE3',
+      toStory: function () { self.setState({ mode: 'story', z: 1 }); },
+      toExplore: function () { self.setState({ mode: 'explore', open: false, z: 1 }); },
+      chapters: chapters,
+      dots: dots,
+      open: st.open,
+      toggleLabel: st.open ? 'Close the story' : 'Read the story',
+      toggle: function () { self.setState({ open: !self.state.open }); },
+      prev: function () { self.setState({ step: Math.max(0, self.state.step - 1), z: 1 }); },
+      next: function () { self.setState({ step: Math.min(CH.length - 1, self.state.step + 1), z: 1 }); },
+      atStart: step === 0,
+      atEnd: step === CH.length - 1,
+      prevNews: function () { self.setState({ news: Math.max(0, self.state.news - 1), z: 1 }); },
+      nextNews: function () { self.setState({ news: Math.min(NEWS.length - 1, self.state.news + 1), z: 1 }); },
+      newsStart: st.news === 0,
+      newsEnd: st.news === NEWS.length - 1,
+      zoomIn: function () { self.setState({ z: Math.min(ZOOMS.length - 1, self.state.z + 1) }); },
+      zoomOut: function () { self.setState({ z: Math.max(0, self.state.z - 1) }); },
+      zoomReset: function () { self.setState({ z: 1 }); },
+      maxZoom: st.z === ZOOMS.length - 1,
+      minZoom: st.z === 0,
+      zoom: ZOOMS[st.z],
+      bStep: story ? step : item.step,
+      fit: story ? cur.fit : item.fit,
+      dim: !story,
+      markNew: story,
+      d1: cur.d1,
+      d2: cur.d2,
+      title: cur.title,
+      era: cur.era,
+      chapterNo: step + 1,
+      total: CH.length,
+      newsNo: st.news + 1,
+      newsTotal: NEWS.length,
+      nDate: item.date,
+      nTitle: item.title,
+      nNames: item.names,
+      kindLabel: kind.label,
+      kindColor: kind.color,
+      viewDate: story ? cur.date : item.date,
+      hasNew: story ? cur.newNames !== '' : true,
+      newLabel: story ? 'New in this chapter' : 'Players',
+      newNames: story ? cur.newNames : item.names,
+      handlePos: story ? cur.pos : item.pos,
+      timelineNote: story ? 'Sample chapters. On the real site the slider moves day by day; dots are the key dates.' : 'Sample news items. On the real site every approved item is a dot; the view flies to its players.',
+      yes: true,
+      scale: 1.05
+    };
+  }
+}
+</script>
+</body>
+</html>

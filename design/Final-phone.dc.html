@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Chosen direction (phone)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Instrument+Sans:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0;background:#F5EFE3}
+a{color:#1E3A8A}a:hover{color:#142A66}
+button:disabled{opacity:.35;cursor:default}
+@media (prefers-reduced-motion: reduce){.mp *{transition:none !important}}
+</style>
+</helmet>
+<div class="mp" style="position: relative; width: 390px; height: 844px; box-sizing: border-box; overflow: hidden; background-color: #F5EFE3; background-image: radial-gradient(#D6CCB9 1px, transparent 1px); background-size: 20px 20px; color: #1B1A17; font-family: 'Instrument Sans', system-ui, sans-serif; font-size: 15px; line-height: 1.45;">
+
+<div style="position: absolute; left: -85px; top: 0px; width: 560px;">
+<dc-import name="Bubble" step="{{bStep}}" fit="{{fit}}" zoom="{{zoom}}" dim-others="{{dim}}" mark-new="{{markNew}}" focus="none" show-links="{{yes}}" label-scale="{{scale}}" accent="{{accent}}" ink="#1B1A17" ink2="#57534B" paper="#F5EFE3" muted="#ECE4D5" font="'Instrument Sans', system-ui, sans-serif" hint-size="560px,560px"></dc-import>
+</div>
+
+<div style="position: absolute; left: 12px; right: 12px; top: 12px; display: flex; align-items: center; gap: 8px;">
+<span style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 12px; box-sizing: border-box; background: #F5EFE3; border: 1px solid #1B1A17; font-family: 'Instrument Serif', Georgia, serif; font-size: 22px; font-style: italic;">AI Bubble</span>
+<sc-if value="{{isStory}}" hint-placeholder-val="{{true}}">
+<button type="button" onClick="{{toggle}}" aria-expanded="{{open}}" style="flex: 1 1 auto; min-width: 0; display: inline-flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 44px; padding: 0 12px; background: #F5EFE3; border: 1px solid #1B1A17; color: #1B1A17; font-family: inherit; font-size: 13px; cursor: pointer;"><span style="font-weight: 600; color: {{accent}};">Story · {{chapterNo}} of {{total}}</span><span>{{toggleLabel}}</span></button>
+</sc-if>
+</div>
+
+<div style="position: absolute; right: 12px; top: 72px; display: flex; flex-direction: column; background: #F5EFE3; border: 1px solid #1B1A17;">
+<button type="button" onClick="{{zoomIn}}" disabled="{{maxZoom}}" aria-label="Zoom in" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border: none; background: transparent; color: #1B1A17; cursor: pointer;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"></path></svg></button>
+<button type="button" onClick="{{zoomOut}}" disabled="{{minZoom}}" aria-label="Zoom out" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border: none; border-top: 1px solid #CFC5B2; background: transparent; color: #1B1A17; cursor: pointer;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"></path></svg></button>
+<button type="button" onClick="{{zoomReset}}" aria-label="Fit the view to the players" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border: none; border-top: 1px solid #CFC5B2; background: transparent; color: #1B1A17; cursor: pointer;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"></path></svg></button>
+</div>
+
+<sc-if value="{{showSheet}}" hint-placeholder-val="{{true}}">
+<section aria-label="{{sheetLabel}}" style="position: absolute; left: 0; right: 0; bottom: 0; padding: 8px 16px 14px; background: #F5EFE3; border-top: 1px solid #1B1A17; box-shadow: 0 -10px 24px rgba(27, 26, 23, 0.10);">
+<div style="width: 36px; height: 4px; margin: 0 auto 8px; border-radius: 2px; background: #CFC5B2;"></div>
+<div role="group" aria-label="Mode" style="display: flex; padding: 3px; margin-bottom: 10px; border: 1px solid #1B1A17; border-radius: 999px;">
+<button type="button" onClick="{{toStory}}" aria-pressed="{{isStory}}" style="flex: 1 1 0; min-height: 38px; border: none; border-radius: 999px; background: {{storyBg}}; color: {{storyFg}}; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer;">Story</button>
+<button type="button" onClick="{{toExplore}}" aria-pressed="{{isExplore}}" style="flex: 1 1 0; min-height: 38px; border: none; border-radius: 999px; background: {{exploreBg}}; color: {{exploreFg}}; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer;">Explore</button>
+</div>
+
+<sc-if value="{{isStory}}" hint-placeholder-val="{{true}}">
+<div>
+<p style="margin: 0; font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: {{accent}};">Chapter {{chapterNo}} · {{date}}</p>
+<h1 style="margin: 2px 0 4px; font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: 28px; line-height: 1.05;">{{title}}</h1>
+<sc-if value="{{hasNew}}" hint-placeholder-val="{{true}}">
+<p style="margin: 0; font-size: 13px; color: #57534B;">New: <strong style="font-weight: 600; color: {{accent}};">{{newNames}}</strong></p>
+</sc-if>
+</div>
+</sc-if>
+<sc-if value="{{isExplore}}" hint-placeholder-val="{{false}}">
+<div>
+<p style="margin: 0; font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: {{accent}};">News {{newsNo}} of {{newsTotal}} · {{nDate}}</p>
+<h1 style="margin: 2px 0 6px; font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: 26px; line-height: 1.08;">{{nTitle}}</h1>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-size: 13px; color: #57534B;">
+<span style="display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px; border: 1px solid {{kindColor}}; border-radius: 999px; font-weight: 600; color: {{kindColor}};"><span aria-hidden="true" style="width: 12px; border-top: 2px solid {{kindColor}};"></span>{{kindLabel}}</span>
+<span>Players: <strong style="font-weight: 600; color: #1B1A17;">{{nNames}}</strong></span>
+</div>
+</div>
+</sc-if>
+
+<div style="display: flex; gap: 14px; margin-top: 8px; font-size: 12px; color: #57534B;">
+<span style="display: inline-flex; align-items: center; gap: 6px;"><span aria-hidden="true" style="width: 16px; border-top: 2px solid {{accent}};"></span>Investment</span>
+<span style="display: inline-flex; align-items: center; gap: 6px;"><span aria-hidden="true" style="width: 16px; border-top: 2px solid #C2410C;"></span>Cloud</span>
+<span style="display: inline-flex; align-items: center; gap: 6px;"><span aria-hidden="true" style="width: 16px; border-top: 2px solid #0F766E;"></span>Chips</span>
+</div>
+<div style="position: relative; height: 18px; margin-top: 8px;">
+<div style="position: absolute; left: 0; right: 0; top: 8px; border-top: 1px solid #1B1A17;"></div>
+<div style="position: absolute; left: 0; width: {{handlePos}}%; top: 7px; border-top: 3px solid {{accent}}; transition: width 700ms ease;"></div>
+<span aria-hidden="true" style="position: absolute; left: {{handlePos}}%; top: 1px; width: 16px; height: 16px; margin-left: -8px; box-sizing: border-box; border-radius: 50%; background: {{accent}}; border: 2px solid #F5EFE3; box-shadow: 0 0 0 1px {{accent}}; transition: left 700ms ease;"></span>
+</div>
+<div style="display: flex; justify-content: space-between; font-size: 11px; color: #57534B;"><span>Jun 2017</span><span>Today</span></div>
+<div style="display: flex; justify-content: space-between; margin-top: 2px;">
+<sc-for list="{{dots}}" as="ch" hint-placeholder-count="7">
+<button type="button" onClick="{{ch.go}}" aria-label="{{ch.aria}}" style="width: 38px; height: 40px; padding: 0; border: none; background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer;"><span style="width: {{ch.dot}}px; height: {{ch.dot}}px; box-sizing: border-box; border-radius: 50%; background: {{ch.dotFill}}; border: 1.5px solid {{ch.dotBorder}}; transition: all 300ms ease;"></span></button>
+</sc-for>
+</div>
+<div style="display: flex; gap: 10px; margin-top: 4px;">
+<button type="button" onClick="{{back}}" disabled="{{atStart}}" style="flex: 1 1 0; min-height: 44px; border: 1px solid #1B1A17; border-radius: 999px; background: transparent; color: #1B1A17; font-family: inherit; font-size: 15px; font-weight: 500; cursor: pointer;">{{backLabel}}</button>
+<button type="button" onClick="{{forward}}" disabled="{{atEnd}}" style="flex: 1.4 1 0; min-height: 44px; border: 1px solid {{accent}}; border-radius: 999px; background: {{accent}}; color: #F5EFE3; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer;">{{forwardLabel}}</button>
+</div>
+</section>
+</sc-if>
+
+<sc-if value="{{showList}}" hint-placeholder-val="{{false}}">
+<section aria-label="The story" style="position: absolute; left: 0; right: 0; top: 120px; bottom: 0; display: flex; flex-direction: column; background: #F5EFE3; border-top: 1px solid #1B1A17; box-shadow: 0 -10px 24px rgba(27, 26, 23, 0.12);">
+<div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 6px 6px 16px; border-bottom: 1px solid #1B1A17;">
+<h2 style="margin: 0; font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: 28px; line-height: 1.1;">The story</h2>
+<button type="button" onClick="{{toggle}}" aria-label="Close the story" style="width: 44px; height: 44px; border: none; background: transparent; color: #1B1A17; font-size: 24px; line-height: 1; cursor: pointer;">×</button>
+</div>
+<ol style="list-style: none; margin: 0; padding: 0 16px 12px; overflow-y: auto;">
+<sc-for list="{{chapters}}" as="ch" hint-placeholder-count="7">
+<li>
+<button type="button" onClick="{{ch.goClose}}" style="display: block; width: 100%; text-align: left; padding: 12px 0 14px; border: none; border-top: {{ch.rule}}; background: transparent; opacity: {{ch.opacity}}; color: #1B1A17; font-family: inherit; cursor: pointer;">
+<span style="display: flex; justify-content: space-between; gap: 12px; font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: {{ch.kickerColor}};"><span>Chapter {{ch.n}} · {{ch.date}}</span><span>{{ch.state}}</span></span>
+<span style="display: block; margin-top: 4px; font-family: 'Instrument Serif', Georgia, serif; font-size: 23px; line-height: 1.1;">{{ch.title}}</span>
+<sc-if value="{{ch.now}}" hint-placeholder-val="{{false}}">
+<span style="display: block; margin-top: 6px; font-size: 15px; line-height: 1.5; color: #2E2B26;">[Your chapter text, written from the fact sheet.]</span>
+</sc-if>
+<sc-if value="{{ch.notNow}}" hint-placeholder-val="{{true}}">
+<span style="display: block; margin-top: 2px; font-size: 13px; color: #57534B;">[One-line summary]</span>
+</sc-if>
+</button>
+</li>
+</sc-for>
+</ol>
+</section>
+</sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#1E3A8A","options":["#1E3A8A","#1D4ED8","#173F5F","#2B3A67"]},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { mode: 'story', step: 2, news: 4, open: false, z: 1 };
+  }
+  renderVals() {
+    const self = this;
+    const accent = this.props.accent ?? '#1E3A8A';
+    const ZOOMS = [0.4, 1, 1.5, 2.25];
+    const st = this.state;
+    const story = st.mode === 'story';
+    const step = st.step;
+    const KIND = {
+      investment: { label: 'Investment', color: accent },
+      cloud: { label: 'Cloud deal', color: '#C2410C' },
+      chips: { label: 'Chip deal', color: '#0F766E' },
+      science: { label: 'Science', color: '#57534B' },
+      milestone: { label: 'Value milestone', color: '#1B1A17' }
+    };
+    // Same sample chapters and news as the desktop.
+    const CH = [
+      { date: '12 Jun 2017', title: 'Attention Is All You Need', pos: 0, fit: 'alphabet', newNames: 'Alphabet (Google)' },
+      { date: '22 Jul 2019', title: 'Microsoft invests in OpenAI', pos: 22.3, fit: 'microsoft,openai', newNames: 'Microsoft, OpenAI' },
+      { date: '30 Nov 2022', title: 'ChatGPT launches', pos: 58, fit: 'openai', newNames: '' },
+      { date: '30 May 2023', title: 'Nvidia passes $1 trillion', pos: 63.3, fit: 'nvidia', newNames: 'Nvidia' },
+      { date: '25 Sep 2023', title: 'Amazon invests in Anthropic', pos: 66.7, fit: 'amazon,anthropic', newNames: 'Amazon, Anthropic' },
+      { date: 'Sep 2025', title: '[Chapter title: the deal loop]', pos: 87.6, fit: 'openai,oracle,amd,nvidia', newNames: 'Oracle, AMD' },
+      { date: 'Today', title: 'The bubble today', pos: 100, fit: '', newNames: 'Meta, Broadcom, TSMC, xAI, CoreWeave, smaller groups' }
+    ];
+    const NEWS = [
+      { date: '12 Jun 2017', title: 'Google researchers publish the Transformer paper', kind: 'science', pos: 0, step: 0, fit: 'alphabet', names: 'Alphabet (Google)' },
+      { date: '22 Jul 2019', title: 'Microsoft invests in OpenAI', kind: 'investment', pos: 22.3, step: 1, fit: 'microsoft,openai', names: 'Microsoft, OpenAI' },
+      { date: '30 Nov 2022', title: 'OpenAI launches ChatGPT', kind: 'science', pos: 58, step: 2, fit: 'openai', names: 'OpenAI' },
+      { date: '30 May 2023', title: 'Nvidia passes $1 trillion in value', kind: 'milestone', pos: 63.3, step: 3, fit: 'nvidia', names: 'Nvidia' },
+      { date: '25 Sep 2023', title: 'Amazon invests in Anthropic', kind: 'investment', pos: 66.7, step: 4, fit: 'amazon,anthropic', names: 'Amazon, Anthropic' },
+      { date: '[date]', title: 'Google invests in Anthropic', kind: 'investment', pos: 67.3, step: 4, fit: 'alphabet,anthropic', names: 'Alphabet, Anthropic' },
+      { date: 'Sep 2025', title: 'OpenAI signs a cloud deal with Oracle', kind: 'cloud', pos: 87.4, step: 5, fit: 'openai,oracle', names: 'OpenAI, Oracle' },
+      { date: 'Sep 2025', title: 'Nvidia plans to invest in OpenAI', kind: 'investment', pos: 87.9, step: 5, fit: 'nvidia,openai', names: 'Nvidia, OpenAI' },
+      { date: 'Oct 2025', title: 'OpenAI signs a chip deal with AMD', kind: 'chips', pos: 88.3, step: 5, fit: 'openai,amd', names: 'OpenAI, AMD' }
+    ];
+    const cur = CH[step];
+    const item = NEWS[st.news];
+    const kind = KIND[item.kind];
+    function dot(now) {
+      return { dot: now ? 18 : 10, dotFill: now ? accent : '#F5EFE3', dotBorder: now ? accent : '#1B1A17' };
+    }
+    const chapters = CH.map(function (c, i) {
+      const past = i < step;
+      const now = i === step;
+      return {
+        n: i + 1,
+        date: c.date,
+        title: c.title,
+        now: now,
+        notNow: !now,
+        rule: now ? ('3px solid ' + accent) : '1px solid #CFC5B2',
+        opacity: now ? 1 : (past ? 0.72 : 0.5),
+        kickerColor: now ? accent : '#57534B',
+        state: past ? 'Read' : (now ? 'Reading now' : 'Next'),
+        goClose: function () { self.setState({ step: i, open: false, z: 1 }); }
+      };
+    });
+    const dots = story
+      ? CH.map(function (c, i) {
+          const d = dot(i === step);
+          d.go = function () { self.setState({ step: i, z: 1 }); };
+          d.aria = 'Go to chapter ' + (i + 1) + ': ' + c.date + ', ' + c.title;
+          return d;
+        })
+      : NEWS.map(function (n, i) {
+          const d = dot(i === st.news);
+          d.go = function () { self.setState({ news: i, z: 1 }); };
+          d.aria = 'News ' + (i + 1) + ': ' + n.date + ', ' + n.title;
+          return d;
+        });
+    return {
+      accent: accent,
+      isStory: story,
+      isExplore: !story,
+      showSheet: !(story && st.open),
+      showList: story && st.open,
+      sheetLabel: story ? 'Chapter' : 'News item',
+      storyBg: story ? '#1B1A17' : 'transparent',
+      storyFg: story ? '#F5EFE3' : '#1B1A17',
+      exploreBg: story ? 'transparent' : '#1B1A17',
+      exploreFg: story ? '#1B1A17' : '#F5EFE3',
+      toStory: function () { self.setState({ mode: 'story', z: 1 }); },
+      toExplore: function () { self.setState({ mode: 'explore', open: false, z: 1 }); },
+      chapters: chapters,
+      dots: dots,
+      open: st.open,
+      toggleLabel: st.open ? 'Close' : 'Read all',
+      toggle: function () { self.setState({ open: !self.state.open }); },
+      back: story
+        ? function () { self.setState({ step: Math.max(0, self.state.step - 1), z: 1 }); }
+        : function () { self.setState({ news: Math.max(0, self.state.news - 1), z: 1 }); },
+      forward: story
+        ? function () { self.setState({ step: Math.min(CH.length - 1, self.state.step + 1), z: 1 }); }
+        : function () { self.setState({ news: Math.min(NEWS.length - 1, self.state.news + 1), z: 1 }); },
+      backLabel: story ? '← Previous' : '← Earlier',
+      forwardLabel: story ? 'Next chapter →' : 'Later →',
+      atStart: story ? step === 0 : st.news === 0,
+      atEnd: story ? step === CH.length - 1 : st.news === NEWS.length - 1,
+      zoomIn: function () { self.setState({ z: Math.min(ZOOMS.length - 1, self.state.z + 1) }); },
+      zoomOut: function () { self.setState({ z: Math.max(0, self.state.z - 1) }); },
+      zoomReset: function () { self.setState({ z: 1 }); },
+      maxZoom: st.z === ZOOMS.length - 1,
+      minZoom: st.z === 0,
+      zoom: ZOOMS[st.z],
+      bStep: story ? step : item.step,
+      fit: story ? cur.fit : item.fit,
+      dim: !story,
+      markNew: story,
+      title: cur.title,
+      date: cur.date,
+      chapterNo: step + 1,
+      total: CH.length,
+      newNames: cur.newNames,
+      hasNew: cur.newNames !== '',
+      newsNo: st.news + 1,
+      newsTotal: NEWS.length,
+      nDate: item.date,
+      nTitle: item.title,
+      nNames: item.names,
+      kindLabel: kind.label,
+      kindColor: kind.color,
+      handlePos: story ? cur.pos : item.pos,
+      yes: true,
+      scale: 0.95
+    };
+  }
+}
+</script>
+</body>
+</html>

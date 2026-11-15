@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Company bubble</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+@media (prefers-reduced-motion: reduce){.bub *{transition:none !important}}
+</style>
+</helmet>
+<div class="bub" role="img" aria-label="{{ariaLabel}}" style="position: relative; width: 100%; aspect-ratio: 1 / 1; font-family: {{font}}; color: {{ink}};">
+<div style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; clip-path: circle(48% at 50% 50%);">
+<div style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; transform-origin: 0 0; transform: translate({{tx}}%, {{ty}}%) scale({{z}}); transition: transform 900ms cubic-bezier(0.65, 0, 0.35, 1);">
+<sc-for list="{{circles}}" as="c" hint-placeholder-count="0">
+<div style="position: absolute; left: {{c.left}}%; top: {{c.top}}%; width: {{c.size}}%; height: {{c.size}}%; border-radius: 50%; box-sizing: border-box; border: {{c.border}}; background: {{c.fill}}; opacity: {{c.opacity}}; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 1px; transition: left 700ms ease, top 700ms ease, width 700ms ease, height 700ms ease, opacity 500ms ease;">
+<sc-if value="{{c.showLogo}}" hint-placeholder-val="{{false}}">
+<span aria-hidden="true" style="display: flex; align-items: center; justify-content: center; width: {{c.logo}}px; height: {{c.logo}}px; margin-bottom: {{c.logoGap}}px; box-sizing: border-box; border: {{c.logoBorder}}px dashed {{c.text}}; border-radius: 4px; font-size: {{c.logoFs}}px; font-weight: 600; color: {{c.text}};">{{c.initial}}</span>
+</sc-if>
+<sc-if value="{{c.showLabel}}" hint-placeholder-val="{{true}}">
+<span style="font-size: {{c.fs}}px; font-weight: 600; line-height: 1.05; color: {{c.text}};">{{c.name}}</span>
+</sc-if>
+<sc-if value="{{c.showValue}}" hint-placeholder-val="{{false}}">
+<span style="font-size: {{c.fs2}}px; line-height: 1.2; margin-top: 2px; color: {{c.text2}};">[value]</span>
+</sc-if>
+</div>
+</sc-for>
+<sc-for list="{{links}}" as="l" hint-placeholder-count="0">
+<div style="position: absolute; left: {{l.x}}%; top: {{l.y}}%; width: {{l.len}}%; height: 0; border-top: {{l.weight}}px solid {{l.color}}; opacity: {{l.opacity}}; transform-origin: 0 0; transform: rotate({{l.angle}}deg); pointer-events: none; transition: opacity 500ms ease;">
+<div style="position: absolute; right: 1px; top: -3.5px; width: 7px; height: 7px; border-top: {{l.weight}}px solid {{l.color}}; border-right: {{l.weight}}px solid {{l.color}}; transform: rotate(45deg);"></div>
+</div>
+</sc-for>
+</div>
+</div>
+<div style="position: absolute; left: 2%; top: 2%; width: 96%; height: 96%; border-radius: 50%; border: 1.5px solid {{ink}}; box-sizing: border-box; pointer-events: none;"></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"step":{"editor":"int","min":0,"max":6,"default":6},"fit":{"editor":"text","default":""},"zoom":{"editor":"float","min":0.5,"max":3,"step":0.1,"default":1},"dimOthers":{"editor":"boolean","default":false},"focus":{"editor":"enum","options":["none","nvidia","microsoft","alphabet","amazon","meta","openai","broadcom","tsmc","oracle","amd","anthropic","coreweave","xai"],"default":"none"},"markNew":{"editor":"boolean","default":false},"showLinks":{"editor":"boolean","default":true},"labelScale":{"editor":"float","min":0.4,"max":2,"step":0.05,"default":1},"accent":{"editor":"color","default":"#1E3A8A","options":["#1E3A8A","#1D4ED8","#173F5F","#2B3A67"]},"cloudColor":{"editor":"color","default":"#C2410C","options":["#C2410C","#B45309","#BE185D"]},"chipColor":{"editor":"color","default":"#0F766E","options":["#0F766E","#15803D","#6D28D9"]},"ink":{"editor":null,"default":"#1B1A17"},"ink2":{"editor":null,"default":"#57534B"},"paper":{"editor":null,"default":"#F5EFE3"},"muted":{"editor":null,"default":"#ECE4D5"},"font":{"editor":null,"default":"system-ui, sans-serif"},"$preview":{"width":640,"height":640}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const ink = p.ink ?? '#1B1A17';
+    const ink2 = p.ink2 ?? '#57534B';
+    const paper = p.paper ?? '#F5EFE3';
+    const muted = p.muted ?? '#ECE4D5';
+    const accent = p.accent ?? '#1E3A8A';
+    const font = p.font ?? 'system-ui, sans-serif';
+    const focus = (p.focus && p.focus !== 'none') ? p.focus : '';
+    const showLinks = p.showLinks ?? true;
+    const markNew = p.markNew ?? false;
+    const dimOthers = p.dimOthers ?? false;
+    const s = p.labelScale ?? 1;
+    const manual = p.zoom ?? 1;
+    const step = Math.max(0, Math.min(6, Math.round(p.step ?? 6)));
+    // Money-flow colours by kind of deal.
+    const COL = {
+      investment: accent,
+      cloud: p.cloudColor ?? '#C2410C',
+      chips: p.chipColor ?? '#0F766E'
+    };
+
+    // Sample layout in a 100 x 100 square: x, y = centre, r = radius at "today".
+    // since = the sample chapter (0-6) where the company is first mentioned; it enters the bubble then.
+    // Sizes and growth are illustrative, not data. The dashed square is a slot for the company's B/W logo.
+    const C = [
+      { id: 'nvidia', name: 'Nvidia', x: 36, y: 38, r: 17, since: 3 },
+      { id: 'microsoft', name: 'Microsoft', x: 67, y: 32, r: 13.5, since: 1 },
+      { id: 'alphabet', name: 'Alphabet', x: 62, y: 63, r: 13, since: 0 },
+      { id: 'amazon', name: 'Amazon', x: 36, y: 70, r: 12, since: 4 },
+      { id: 'meta', name: 'Meta', x: 83, y: 53, r: 8.5, since: 6 },
+      { id: 'openai', name: 'OpenAI', x: 56, y: 86, r: 8, since: 1 },
+      { id: 'broadcom', name: 'Broadcom', x: 50, y: 15, r: 7, since: 6 },
+      { id: 'tsmc', name: 'TSMC', x: 16, y: 52, r: 7, since: 6 },
+      { id: 'oracle', name: 'Oracle', x: 80, y: 75, r: 6, since: 5 },
+      { id: 'amd', name: 'AMD', x: 20, y: 20, r: 5, since: 5 },
+      { id: 'anthropic', name: 'Anthropic', x: 20, y: 76, r: 5, since: 4 },
+      { id: 'coreweave', name: 'CoreWeave', x: 86, y: 38, r: 4, since: 6 },
+      { id: 'xai', name: 'xAI', x: 73, y: 88, r: 3.5, since: 6 },
+      { id: 'g-chips', name: 'Other chips', x: 8, y: 40, r: 4, group: true, since: 6 },
+      { id: 'g-software', name: 'Other software', x: 66, y: 12, r: 4.5, group: true, since: 6 },
+      { id: 'g-cloud', name: 'Other cloud', x: 38, y: 92, r: 4, group: true, since: 6 },
+      { id: 'g-labs', name: 'Other labs', x: 90, y: 64, r: 3.5, group: true, since: 6 }
+    ];
+    // Money flows: from, to, chapter where it first appears, kind.
+    const L = [
+      ['microsoft', 'openai', 1, 'investment'],
+      ['amazon', 'anthropic', 4, 'investment'],
+      ['alphabet', 'anthropic', 4, 'investment'],
+      ['nvidia', 'openai', 5, 'investment'],
+      ['openai', 'oracle', 5, 'cloud'],
+      ['oracle', 'nvidia', 5, 'chips'],
+      ['openai', 'amd', 5, 'chips'],
+      ['nvidia', 'coreweave', 6, 'investment'],
+      ['microsoft', 'coreweave', 6, 'cloud']
+    ];
+    const GROW = [0.5, 0.56, 0.62, 0.74, 0.82, 0.94, 1];
+    const g = GROW[step];
+
+    const byId = {};
+    C.forEach(function (c) { byId[c.id] = c; });
+
+    // Camera: frame the companies named in `fit` (the players in the current news item or chapter).
+    const fitIds = String(p.fit || '').split(',').map(function (t) { return t.trim(); }).filter(function (t) {
+      return t && byId[t] && byId[t].since <= step;
+    });
+    const inFit = {};
+    fitIds.forEach(function (id) { inFit[id] = true; });
+    let bx = 50;
+    let by = 50;
+    let autoZ = 1;
+    if (fitIds.length) {
+      let x0 = 100, y0 = 100, x1 = 0, y1 = 0;
+      fitIds.forEach(function (id) {
+        const c = byId[id];
+        const r = c.r * g;
+        x0 = Math.min(x0, c.x - r);
+        y0 = Math.min(y0, c.y - r);
+        x1 = Math.max(x1, c.x + r);
+        y1 = Math.max(y1, c.y + r);
+      });
+      const span = Math.max(x1 - x0, y1 - y0, 1);
+      autoZ = Math.min(3.2, Math.max(1, 56 / span));
+      bx = (x0 + x1) / 2;
+      by = (y0 + y1) / 2;
+    }
+    const Z = Math.min(4, Math.max(1, autoZ * manual));
+    const pull = Math.min(1, (Z - 1) / 0.5);
+    const cx = 50 + (bx - 50) * pull;
+    const cy = 50 + (by - 50) * pull;
+
+    const near = {};
+    if (focus) {
+      L.forEach(function (l) {
+        if (l[2] > step) return;
+        if (l[0] === focus) near[l[1]] = true;
+        if (l[1] === focus) near[l[0]] = true;
+      });
+    }
+
+    const circles = C.map(function (c) {
+      const on = c.since <= step;
+      const r = on ? c.r * g : 0;
+      const isFocus = c.id === focus;
+      const isNear = !!near[c.id];
+      const isNew = markNew && c.since === step;
+      const isPlayer = !!inFit[c.id];
+      const dim = (!!focus && !isFocus && !isNear) || (dimOthers && fitIds.length > 0 && !isPlayer);
+      const vis = r * s * Z;
+      const fsVis = Math.min(22, Math.max(10, Math.round(r * 0.95 * s * Z)));
+      const fs2Vis = Math.min(15, Math.max(10, Math.round(r * 0.6 * s * Z)));
+      const logoVis = Math.min(40, Math.max(16, Math.round(r * 1.5 * s * Z)));
+      let border = '1px solid ' + ink;
+      if (c.group) border = '1px dashed ' + ink2;
+      else if (isFocus || isNear || isNew) border = '1.5px solid ' + accent;
+      else if (dimOthers && isPlayer) border = '2px solid ' + ink;
+      return {
+        name: c.name,
+        initial: c.name.charAt(0),
+        left: (c.x - r).toFixed(2),
+        top: (c.y - r).toFixed(2),
+        size: (r * 2).toFixed(2),
+        border: border.replace(/^([\d.]+)px/, function (m, w) { return (parseFloat(w) / Z).toFixed(3) + 'px'; }),
+        fill: isFocus ? accent : (c.group ? 'transparent' : muted),
+        text: isFocus ? paper : (isNew ? accent : ink),
+        text2: isFocus ? paper : ink2,
+        opacity: !on ? 0 : (dim ? 0.38 : 1),
+        showLogo: on && !c.group && vis >= 6.5,
+        logo: (logoVis / Z).toFixed(2),
+        logoFs: (logoVis * 0.5 / Z).toFixed(2),
+        logoBorder: (1 / Z).toFixed(3),
+        logoGap: (3 / Z).toFixed(2),
+        showLabel: on && vis >= 3.4,
+        showValue: on && vis >= 11,
+        fs: (fsVis / Z).toFixed(2),
+        fs2: (fs2Vis / Z).toFixed(2)
+      };
+    });
+
+    const links = !showLinks ? [] : L.map(function (l) {
+      const a = byId[l[0]];
+      const b = byId[l[1]];
+      const ra = a.r * g;
+      const rb = b.r * g;
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      const d = Math.sqrt(dx * dx + dy * dy);
+      const ux = dx / d;
+      const uy = dy / d;
+      const x1 = a.x + ux * (ra + 0.5);
+      const y1 = a.y + uy * (ra + 0.5);
+      const x2 = b.x - ux * (rb + 0.8);
+      const y2 = b.y - uy * (rb + 0.8);
+      const live = l[2] <= step && a.since <= step && b.since <= step;
+      const onFocus = !focus || l[0] === focus || l[1] === focus;
+      const onFit = !(dimOthers && fitIds.length > 0) || (inFit[l[0]] && inFit[l[1]]);
+      const strong = (focus && onFocus) || (dimOthers && fitIds.length > 0 && onFit);
+      return {
+        x: x1.toFixed(2),
+        y: y1.toFixed(2),
+        len: Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)).toFixed(2),
+        angle: (Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI).toFixed(2),
+        color: COL[l[3]],
+        weight: ((strong ? 2.5 : 1.75) / Z).toFixed(3),
+        opacity: !live ? 0 : ((onFocus && onFit) ? 1 : 0.15)
+      };
+    });
+
+    return {
+      circles: circles,
+      links: links,
+      ink: ink,
+      font: font,
+      z: Z.toFixed(3),
+      tx: (50 - cx * Z).toFixed(2),
+      ty: (50 - cy * Z).toFixed(2),
+      ariaLabel: 'Bubble of AI companies sized by value, with coloured arrows for money flows. Sample layout, not real data.'
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>C · The Market Map (phone)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0;background:#F5EFE3}
+a{color:#1E3A8A}a:hover{color:#142A66}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; box-sizing: border-box; overflow: hidden; background-color: #F5EFE3; background-image: radial-gradient(#D6CCB9 1px, transparent 1px); background-size: 20px 20px; color: #1B1A17; font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: 15px; line-height: 1.45;">
+
+<div style="position: absolute; left: -152px; top: -203px; width: 620px;">
+<dc-import name="Bubble" focus="openai" show-links="{{yes}}" label-scale="{{scale}}" accent="{{accent}}" ink="#1B1A17" ink2="#57534B" paper="#F5EFE3" muted="#ECE4D5" font="'IBM Plex Sans', system-ui, sans-serif" hint-size="620px,620px"></dc-import>
+</div>
+
+<div style="position: absolute; left: 12px; right: 12px; top: 12px; display: flex; align-items: center; gap: 8px;">
+<span style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 12px; box-sizing: border-box; background: #F5EFE3; border: 1px solid #1B1A17; font-family: 'Source Serif 4', Georgia, serif; font-size: 19px; font-weight: 600;">AI Bubble</span>
+<a href="#story" style="flex: 1 1 auto; min-width: 0; display: inline-flex; align-items: center; min-height: 44px; padding: 0 12px; box-sizing: border-box; background: #F5EFE3; border: 1px solid #1B1A17; color: #1B1A17; text-decoration: none; font-size: 13px; white-space: nowrap; overflow: hidden;"><span style="font-weight: 600; color: {{accent}};">Story 3 of [n]</span><span style="margin-left: 6px;">→</span></a>
+</div>
+
+<div style="position: absolute; right: 12px; top: 72px; display: flex; flex-direction: column; background: #F5EFE3; border: 1px solid #1B1A17;">
+<button type="button" aria-label="Zoom in" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border: none; background: transparent; color: #1B1A17; cursor: pointer;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"></path></svg></button>
+<button type="button" aria-label="Zoom out" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border: none; border-top: 1px solid #CFC5B2; background: transparent; color: #1B1A17; cursor: pointer;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"></path></svg></button>
+<button type="button" aria-label="Reset view" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border: none; border-top: 1px solid #CFC5B2; background: transparent; color: #1B1A17; cursor: pointer;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.3-5.6"></path><path d="M4 4v4h4"></path></svg></button>
+</div>
+
+<section aria-label="Selected company" style="position: absolute; left: 0; right: 0; bottom: 0; padding: 8px 16px 16px; background: #F5EFE3; border-top: 1px solid #1B1A17; box-shadow: 0 -10px 24px rgba(27, 26, 23, 0.10);">
+<div style="width: 36px; height: 4px; margin: 0 auto 10px; border-radius: 2px; background: #CFC5B2;"></div>
+<div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 12px;">
+<div>
+<span style="font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: {{accent}};">Selected · private lab</span>
+<h2 style="margin: 2px 0 0; font-family: 'Source Serif 4', Georgia, serif; font-weight: 600; font-size: 30px; line-height: 1;">OpenAI</h2>
+</div>
+<div style="text-align: right;">
+<span style="display: block; font-size: 11px; color: #57534B;">Value on [date]</span>
+<strong style="font-weight: 600; font-size: 17px;">[value]</strong>
+</div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 12px; padding: 10px 0; border-top: 1px solid #CFC5B2; border-bottom: 1px solid #CFC5B2; font-size: 13px;">
+<div>
+<span style="display: block; font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #57534B;">Money in</span>
+<span style="display: block;">Microsoft · [amount]</span>
+<span style="display: block;">Nvidia · [amount]</span>
+</div>
+<div>
+<span style="display: block; font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #57534B;">Money out</span>
+<span style="display: block;">Oracle · [amount]</span>
+<span style="display: block;">AMD · [amount]</span>
+</div>
+</div>
+<div style="display: flex; gap: 8px; margin-top: 10px; overflow-x: auto;">
+<button type="button" style="flex: 0 0 auto; min-height: 44px; padding: 0 14px; border: 1px solid {{accent}}; border-radius: 999px; background: transparent; color: {{accent}}; font-family: inherit; font-size: 14px; cursor: pointer;">Microsoft</button>
+<button type="button" style="flex: 0 0 auto; min-height: 44px; padding: 0 14px; border: 1px solid {{accent}}; border-radius: 999px; background: transparent; color: {{accent}}; font-family: inherit; font-size: 14px; cursor: pointer;">Nvidia</button>
+<button type="button" style="flex: 0 0 auto; min-height: 44px; padding: 0 14px; border: 1px solid {{accent}}; border-radius: 999px; background: transparent; color: {{accent}}; font-family: inherit; font-size: 14px; cursor: pointer;">Oracle</button>
+<button type="button" style="flex: 0 0 auto; min-height: 44px; padding: 0 14px; border: 1px solid {{accent}}; border-radius: 999px; background: transparent; color: {{accent}}; font-family: inherit; font-size: 14px; cursor: pointer;">AMD</button>
+</div>
+<div style="margin-top: 12px;">
+<div style="display: flex; justify-content: space-between; align-items: baseline;">
+<span style="font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #57534B;">Showing</span>
+<span style="font-family: 'Source Serif 4', Georgia, serif; font-size: 20px;">[selected date]</span>
+</div>
+<div style="position: relative; height: 50px;">
+<div style="position: absolute; left: 0; right: 0; top: 20px; border-top: 1px solid #1B1A17;"></div>
+<div style="position: absolute; left: 0; width: 86%; top: 19px; border-top: 3px solid {{accent}};"></div>
+<span style="position: absolute; left: 0%; top: 16px; width: 9px; height: 9px; box-sizing: border-box; border-radius: 50%; background: #F5EFE3; border: 1.5px solid #1B1A17;"></span>
+<span style="position: absolute; left: 58%; top: 16px; width: 9px; height: 9px; box-sizing: border-box; border-radius: 50%; background: #F5EFE3; border: 1.5px solid #1B1A17; transform: translateX(-50%);"></span>
+<span style="position: absolute; left: 70%; top: 16px; width: 9px; height: 9px; box-sizing: border-box; border-radius: 50%; background: #F5EFE3; border: 1.5px solid #1B1A17; transform: translateX(-50%);"></span>
+<button type="button" aria-label="Timeline handle, drag to change the date" style="position: absolute; left: 86%; top: 7px; width: 28px; height: 28px; padding: 0; border-radius: 50%; border: 3px solid #F5EFE3; background: {{accent}}; box-shadow: 0 0 0 1px {{accent}}; transform: translateX(-50%); cursor: grab;"></button>
+<span style="position: absolute; left: 0; top: 34px; font-size: 11px; color: #57534B;">Jun 2017</span>
+<span style="position: absolute; left: 58%; top: 34px; transform: translateX(-50%); font-size: 11px; color: #57534B;">ChatGPT</span>
+<span style="position: absolute; right: 0; top: 34px; font-size: 11px; color: #57534B;">Today</span>
+</div>
+</div>
+</section>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#1E3A8A","options":["#1E3A8A","#1D4ED8","#173F5F","#2B3A67"]},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      accent: this.props.accent ?? '#1E3A8A',
+      yes: true,
+      scale: 1.0
+    };
+  }
+}
+</script>
+</body>
+</html>
