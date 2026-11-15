@@ -1,0 +1,386 @@
+{
+  "status": "draft",
+  "items": [
+    {
+      "id": "1995-08-09-netscape-first-day",
+      "date": "1995-08-09",
+      "title": "Netscape shares reach $75 on day one",
+      "summary": "The stock touched $75 on its first day of trading, a near record, and became the model for internet listings.",
+      "players": [],
+      "kind": "money",
+      "key_date": true,
+      "source": "https://www.wired.com/2011/08/0809netscape-bright-future/"
+    },
+    {
+      "id": "1996-02-08-telecoms-act",
+      "date": "1996-02-08",
+      "title": "Telecoms Act signed into law",
+      "summary": "The first big rewrite of US telecoms law in 60 years was signed on 8 February 1996, letting phone and cable firms compete.",
+      "players": [],
+      "kind": "money",
+      "key_date": true,
+      "source": "https://en.wikipedia.org/wiki/Telecommunications_Act_of_1996"
+    },
+    {
+      "id": "1996-09-30-lucent-spinoff",
+      "date": "1996-09-30",
+      "title": "Lucent becomes a separate company",
+      "summary": "AT&T split off its equipment arm, which included Bell Labs, on 30 September 1996 as Lucent Technologies.",
+      "players": [
+        "lucent"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://en.wikipedia.org/wiki/Lucent_Technologies"
+    },
+    {
+      "id": "1996-12-05-irrational-exuberance",
+      "date": "1996-12-05",
+      "title": "Greenspan asks about irrational exuberance",
+      "summary": "The Federal Reserve chairman asked how we know when irrational exuberance has pushed asset values too high.",
+      "players": [],
+      "kind": "money",
+      "key_date": true,
+      "source": "https://www.federalreserve.gov/boarddocs/speeches/1996/19961205.htm"
+    },
+    {
+      "id": "1997-05-14-amazon-share-sale",
+      "date": "1997-05-14",
+      "title": "Amazon sells shares at $18 each",
+      "summary": "Amazon, an online bookseller, offered 3 million shares at $18 each in its first public sale.",
+      "players": [
+        "amazon"
+      ],
+      "kind": "money",
+      "key_date": true,
+      "source": "https://press.aboutamazon.com/1997/5/amazon-com-inc-announces-initial-public-offering-of-3-000-000-shares-of-common-stock"
+    },
+    {
+      "id": "1998-11-13-theglobe-first-day",
+      "date": "1998-11-13",
+      "title": "theGlobe.com posts the biggest first day",
+      "summary": "theGlobe.com listed on 13 November 1998 and posted the largest first-day gain of any IPO up to that date.",
+      "players": [],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://en.wikipedia.org/wiki/TheGlobe.com"
+    },
+    {
+      "id": "1999-01-28-yahoo-geocities",
+      "date": "1999-01-28",
+      "title": "Yahoo buys GeoCities",
+      "summary": "Yahoo acquired GeoCities on 28 January 1999, when the free web-hosting site was the third most visited on the web.",
+      "players": [
+        "yahoo"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://en.wikipedia.org/wiki/GeoCities"
+    },
+    {
+      "id": "1999-01-29-jdsu-merger",
+      "date": "1999-01-29",
+      "title": "JDS Fitel and Uniphase agree to merge",
+      "summary": "JDS Fitel and Uniphase, two makers of optical parts, agreed to combine as JDS Uniphase.",
+      "players": [],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://en.wikipedia.org/w/index.php?title=JDSU&action=raw"
+    },
+    {
+      "id": "1999-06-21-worldcom-peak",
+      "date": "1999-06-21",
+      "title": "WorldCom worth $180bn",
+      "summary": "WorldCom reached a market value of $180.01bn on 21 June 1999, before its long slide.",
+      "players": [
+        "worldcom"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://companiesmarketcap.com/worldcom/marketcap/"
+    },
+    {
+      "id": "1999-12-09-lucent-peak",
+      "date": "1999-12-09",
+      "title": "Lucent worth $264bn at its peak",
+      "summary": "Lucent reached a market value of $264.50bn on 9 December 1999.",
+      "players": [
+        "lucent"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://companiesmarketcap.com/lucent-technologies/marketcap/"
+    },
+    {
+      "id": "1999-12-31-qualcomm-year",
+      "date": "1999-12-31",
+      "title": "Qualcomm shares rise 2,619% in 1999",
+      "summary": "In 1999 Qualcomm shares rose 2,619% and the Nasdaq 85.6%, even though more stocks fell than rose.",
+      "players": [
+        "qualcomm"
+      ],
+      "kind": "money",
+      "key_date": true,
+      "source": "https://en.wikipedia.org/wiki/Dot-com_bubble"
+    },
+    {
+      "id": "2000-01-10-aol-time-warner",
+      "date": "2000-01-10",
+      "title": "AOL agrees to merge with Time Warner",
+      "summary": "AOL, worth about $164bn, agreed to buy Time Warner, worth about $83bn, in an all-share deal announced on 10 January 2000.",
+      "players": [
+        "aol",
+        "time-warner"
+      ],
+      "kind": "money",
+      "key_date": true,
+      "source": "https://www.theguardian.com/business/2000/jan/10/efinance.internet"
+    },
+    {
+      "id": "2000-01-30-super-bowl-ads",
+      "date": "2000-01-30",
+      "title": "Seventeen dot-coms buy Super Bowl ads",
+      "summary": "Seventeen internet companies bought Super Bowl ads in 2000, at up to $2.2m for 30 seconds; a year later three did.",
+      "players": [],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://en.wikipedia.org/wiki/Dot-com_bubble"
+    },
+    {
+      "id": "2000-02-16-global-crossing-peak",
+      "date": "2000-02-16",
+      "title": "Global Crossing worth $49bn",
+      "summary": "Global Crossing reached a market value of $49.12bn on 16 February 2000.",
+      "players": [
+        "global-crossing"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://companiesmarketcap.com/global-crossing/marketcap/"
+    },
+    {
+      "id": "2000-03-10-nasdaq-peak",
+      "date": "2000-03-10",
+      "title": "Nasdaq peaks at 5,048.62",
+      "summary": "The Nasdaq Composite closed at 5,048.62 on 10 March 2000, the top of the boom.",
+      "players": [],
+      "kind": "money",
+      "key_date": true,
+      "source": "https://en.wikipedia.org/wiki/Dot-com_bubble"
+    },
+    {
+      "id": "2000-03-13-japan-recession",
+      "date": "2000-03-13",
+      "title": "Japan recession news sparks a sell-off",
+      "summary": "News that Japan had slipped back into recession set off a global sell-off that hit technology shares hardest.",
+      "players": [],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://en.wikipedia.org/wiki/Dot-com_bubble"
+    },
+    {
+      "id": "2000-03-20-barrons-burning-up",
+      "date": "2000-03-20",
+      "title": "Barron magazine warns of burning cash",
+      "summary": "The Barron cover story Burning Up said internet companies were running out of cash, and investors began to rethink.",
+      "players": [],
+      "kind": "money",
+      "key_date": true,
+      "source": "https://en.wikipedia.org/wiki/Dot-com_bubble"
+    },
+    {
+      "id": "2000-03-20-microstrategy-restatement",
+      "date": "2000-03-20",
+      "title": "MicroStrategy restates its revenue",
+      "summary": "MicroStrategy announced a revenue restatement and the shares fell 62% in a single day.",
+      "players": [],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://en.wikipedia.org/wiki/Dot-com_bubble"
+    },
+    {
+      "id": "2000-03-27-cisco-tops-microsoft",
+      "date": "2000-03-27",
+      "title": "Cisco briefly the most valuable company",
+      "summary": "Cisco shares reached $82, valuing the company at $569bn and briefly putting it ahead of Microsoft.",
+      "players": [
+        "cisco"
+      ],
+      "kind": "money",
+      "key_date": true,
+      "source": "https://heritage.cisco.com/2000_marketcap/"
+    },
+    {
+      "id": "2000-04-03-microsoft-ruling",
+      "date": "2000-04-03",
+      "title": "Judge rules Microsoft broke antitrust law",
+      "summary": "A US judge found Microsoft had abused its monopoly; the shares fell 15% in a day and the Nasdaq 8%.",
+      "players": [
+        "microsoft"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://en.wikipedia.org/wiki/Dot-com_bubble"
+    },
+    {
+      "id": "2000-04-14-nasdaq-falls-9pc",
+      "date": "2000-04-14",
+      "title": "Nasdaq falls 9% in one day",
+      "summary": "The Nasdaq fell 9% on 14 April 2000, ending a week in which it lost 25%.",
+      "players": [],
+      "kind": "money",
+      "key_date": true,
+      "source": "https://en.wikipedia.org/wiki/Dot-com_bubble"
+    },
+    {
+      "id": "2000-08-08-qwest-peak",
+      "date": "2000-08-08",
+      "title": "Qwest worth $90bn",
+      "summary": "Qwest reached a market value of $89.68bn on 8 August 2000.",
+      "players": [
+        "qwest"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://companiesmarketcap.com/qwest-communications-international/marketcap/"
+    },
+    {
+      "id": "2000-08-23-enron-peak",
+      "date": "2000-08-23",
+      "title": "Enron worth $67bn",
+      "summary": "Enron reached a market value of $67.05bn on 23 August 2000.",
+      "players": [
+        "enron"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://companiesmarketcap.com/enron/marketcap/"
+    },
+    {
+      "id": "2000-09-01-sun-peak",
+      "date": "2000-09-01",
+      "title": "Sun worth $205bn at its peak",
+      "summary": "Sun Microsystems reached a market value of $205.14bn on 1 September 2000.",
+      "players": [
+        "sun-microsystems"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://companiesmarketcap.com/sun-microsystems/marketcap/"
+    },
+    {
+      "id": "2000-11-09-pets-com-closes",
+      "date": "2000-11-09",
+      "title": "Pets.com goes out of business",
+      "summary": "Pets.com, backed by Amazon and known for its sock puppet ads, shut nine months after its listing.",
+      "players": [
+        "amazon"
+      ],
+      "kind": "money",
+      "key_date": true,
+      "source": "https://en.wikipedia.org/wiki/Dot-com_bubble"
+    },
+    {
+      "id": "2000-12-21-lucent-warning",
+      "date": "2000-12-21",
+      "title": "Lucent warning drags telecoms shares down",
+      "summary": "Lucent warned of a far bigger loss than expected; the shares fell nearly 20% and had lost 80% in 2000.",
+      "players": [
+        "lucent"
+      ],
+      "kind": "money",
+      "key_date": true,
+      "source": "https://news.bbc.co.uk/2/hi/business/1081846.stm"
+    },
+    {
+      "id": "2001-04-17-cisco-warning",
+      "date": "2001-04-17",
+      "title": "Cisco warns as unsold kit piles up",
+      "summary": "Cisco warned sales would fall, took a $4bn charge, cut a fifth of its jobs and was worth under $100bn.",
+      "players": [
+        "cisco"
+      ],
+      "kind": "money",
+      "key_date": true,
+      "source": "https://news.bbc.co.uk/2/hi/business/1281307.stm"
+    },
+    {
+      "id": "2001-07-27-jdsu-loss",
+      "date": "2001-07-27",
+      "title": "JDS Uniphase posts a $50.6bn loss",
+      "summary": "JDS Uniphase lost $50.6bn in the year to June after writing down acquisitions, and planned 16,000 job cuts.",
+      "players": [],
+      "kind": "money",
+      "key_date": true,
+      "source": "https://news.bbc.co.uk/2/hi/business/1459756.stm"
+    },
+    {
+      "id": "2001-09-11-attacks",
+      "date": "2001-09-11",
+      "title": "Attacks speed the market fall",
+      "summary": "The 11 September attacks deepened the stock market decline that had begun in 2000.",
+      "players": [],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://en.wikipedia.org/wiki/Dot-com_bubble"
+    },
+    {
+      "id": "2001-10-03-nortel-cuts",
+      "date": "2001-10-03",
+      "title": "Nortel cuts 20,000 more jobs",
+      "summary": "Nortel warned of a $3.6bn quarterly loss, cut 20,000 jobs and named Frank Dunn chief executive.",
+      "players": [
+        "nortel"
+      ],
+      "kind": "money",
+      "key_date": true,
+      "source": "https://news.bbc.co.uk/2/hi/business/1576230.stm"
+    },
+    {
+      "id": "2001-12-02-enron-bankruptcy",
+      "date": "2001-12-02",
+      "title": "Enron files for bankruptcy",
+      "summary": "Enron filed for bankruptcy on 2 December 2001, then the largest in US history, after fraud was revealed.",
+      "players": [
+        "enron"
+      ],
+      "kind": "money",
+      "key_date": true,
+      "source": "https://en.wikipedia.org/wiki/Enron"
+    },
+    {
+      "id": "2002-01-28-global-crossing-bankruptcy",
+      "date": "2002-01-28",
+      "title": "Global Crossing files for bankruptcy",
+      "summary": "Global Crossing filed for Chapter 11 with $22.4bn of assets and $12.4bn of debts; the shares had fallen 96% in a year.",
+      "players": [
+        "global-crossing"
+      ],
+      "kind": "money",
+      "key_date": true,
+      "source": "https://news.bbc.co.uk/2/hi/business/1787203.stm"
+    },
+    {
+      "id": "2002-07-21-worldcom-bankruptcy",
+      "date": "2002-07-21",
+      "title": "WorldCom files the biggest bankruptcy",
+      "summary": "WorldCom entered Chapter 11 with $104bn of assets, a month after admitting accounting fraud.",
+      "players": [
+        "worldcom"
+      ],
+      "kind": "money",
+      "key_date": true,
+      "source": "https://news.bbc.co.uk/2/hi/business/2142421.stm"
+    },
+    {
+      "id": "2002-10-09-nasdaq-low",
+      "date": "2002-10-09",
+      "title": "Nasdaq at its low, down 78%",
+      "summary": "By 9 October 2002 the Nasdaq had fallen 78% from its peak and stocks had lost $5tn of value.",
+      "players": [],
+      "kind": "money",
+      "key_date": true,
+      "source": "https://en.wikipedia.org/wiki/Dot-com_bubble"
+    }
+  ]
+}

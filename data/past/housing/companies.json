@@ -1,0 +1,165 @@
+{
+  "status": "draft",
+  "items": [
+    {
+      "id": "citigroup",
+      "name": "Citigroup",
+      "kind": "listed",
+      "ticker": "C",
+      "first_mention": "2003-01-02",
+      "source": "https://companiesmarketcap.com/citigroup/marketcap/"
+    },
+    {
+      "id": "bank-of-america",
+      "name": "Bank of America",
+      "kind": "listed",
+      "ticker": "BAC",
+      "first_mention": "2003-01-02",
+      "source": "https://companiesmarketcap.com/bank-of-america/marketcap/"
+    },
+    {
+      "id": "jpmorgan-chase",
+      "name": "JPMorgan Chase",
+      "kind": "listed",
+      "ticker": "JPM",
+      "first_mention": "2003-01-02",
+      "source": "https://companiesmarketcap.com/jp-morgan-chase/marketcap/"
+    },
+    {
+      "id": "wells-fargo",
+      "name": "Wells Fargo",
+      "kind": "listed",
+      "ticker": "WFC",
+      "first_mention": "2003-01-02",
+      "source": "https://companiesmarketcap.com/wells-fargo/marketcap/"
+    },
+    {
+      "id": "wachovia",
+      "name": "Wachovia",
+      "kind": "listed",
+      "ticker": "WB",
+      "first_mention": "2003-01-02",
+      "source": "https://companiesmarketcap.com/wachovia/marketcap/"
+    },
+    {
+      "id": "washington-mutual",
+      "name": "Washington Mutual",
+      "kind": "listed",
+      "ticker": "WM",
+      "first_mention": "2003-01-02",
+      "source": "https://companiesmarketcap.com/washington-mutual/marketcap/"
+    },
+    {
+      "id": "goldman-sachs",
+      "name": "Goldman Sachs",
+      "kind": "listed",
+      "ticker": "GS",
+      "first_mention": "2003-01-02",
+      "source": "https://companiesmarketcap.com/goldman-sachs/marketcap/"
+    },
+    {
+      "id": "morgan-stanley",
+      "name": "Morgan Stanley",
+      "kind": "listed",
+      "ticker": "MS",
+      "first_mention": "2003-01-02",
+      "source": "https://companiesmarketcap.com/morgan-stanley/marketcap/"
+    },
+    {
+      "id": "merrill-lynch",
+      "name": "Merrill Lynch",
+      "kind": "listed",
+      "ticker": "MER",
+      "first_mention": "2007-10-30",
+      "source": "https://en.wikipedia.org/wiki/Stan_O%27Neal"
+    },
+    {
+      "id": "lehman-brothers",
+      "name": "Lehman Brothers",
+      "kind": "listed",
+      "ticker": "LEH",
+      "first_mention": "2003-01-02",
+      "source": "https://companiesmarketcap.com/lehman-brothers/marketcap/"
+    },
+    {
+      "id": "bear-stearns",
+      "name": "Bear Stearns",
+      "kind": "listed",
+      "ticker": "BSC",
+      "first_mention": "2003-01-02",
+      "source": "https://companiesmarketcap.com/bear-stearns/marketcap/"
+    },
+    {
+      "id": "aig",
+      "name": "AIG",
+      "kind": "listed",
+      "ticker": "AIG",
+      "first_mention": "2003-01-02",
+      "source": "https://companiesmarketcap.com/aig/marketcap/"
+    },
+    {
+      "id": "fannie-mae",
+      "name": "Fannie Mae",
+      "kind": "listed",
+      "ticker": "FNMA",
+      "first_mention": "2003-01-02",
+      "source": "https://companiesmarketcap.com/fannie-mae/marketcap/"
+    },
+    {
+      "id": "freddie-mac",
+      "name": "Freddie Mac",
+      "kind": "listed",
+      "ticker": "FMCC",
+      "first_mention": "2003-01-02",
+      "source": "https://companiesmarketcap.com/freddie-mac/marketcap/"
+    },
+    {
+      "id": "countrywide",
+      "name": "Countrywide Financial",
+      "kind": "listed",
+      "ticker": "CFC",
+      "first_mention": "2007-01-11",
+      "source": "https://en.wikipedia.org/wiki/Countrywide_Financial"
+    },
+    {
+      "id": "hsbc",
+      "name": "HSBC",
+      "kind": "listed",
+      "ticker": "HSBC",
+      "first_mention": "2003-01-02",
+      "source": "https://companiesmarketcap.com/hsbc/marketcap/"
+    },
+    {
+      "id": "ubs",
+      "name": "UBS",
+      "kind": "listed",
+      "ticker": "UBS",
+      "first_mention": "2003-01-02",
+      "source": "https://companiesmarketcap.com/ubs/marketcap/"
+    },
+    {
+      "id": "royal-bank-of-scotland",
+      "name": "Royal Bank of Scotland",
+      "kind": "listed",
+      "ticker": "RBS",
+      "first_mention": "2007-12-07",
+      "source": "https://www.theguardian.com/business/2007/dec/07/rbs"
+    },
+    {
+      "id": "berkshire-hathaway",
+      "name": "Berkshire Hathaway",
+      "kind": "listed",
+      "ticker": "BRK.A",
+      "first_mention": "2003-01-02",
+      "source": "https://companiesmarketcap.com/berkshire-hathaway/marketcap/"
+    },
+    {
+      "id": "mitsubishi-ufj",
+      "name": "Mitsubishi UFJ Financial Group",
+      "kind": "listed",
+      "ticker": "8306.T",
+      "first_mention": "2003-01-02",
+      "source": "https://companiesmarketcap.com/mitsubishi-ufj-financial/marketcap/"
+    }
+  ]
+}

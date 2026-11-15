@@ -1,11 +1,25 @@
-// The Explore page's behaviour. There is one state — the selected day and, optionally, the
-// selected news item or company — and everything on the page follows it.
+// The page's behaviour, Explore and Story (the AI bubble only; a past bubble has no Story):
+// there is one state — the selected day with, optionally, the selected news item or company, or
+// the chapter being read — and everything on the page follows it.
 
-import { companies, deals, news, valueOn, values, valuePointOn } from "../lib/data.ts";
+import {
+  companies,
+  datasetId,
+  datasetTitle,
+  deals,
+  news,
+  pillClass,
+  pillLabel,
+  useDataset,
+  valueOn,
+  values,
+  valuePointOn,
+} from "../lib/data.ts";
 import type { Company, NewsItem } from "../lib/data.ts";
 import { arrowsForDate, bubblesForDate, defaultDate, formatValue, totalForDate } from "../lib/layout.ts";
 import { renderBubble } from "../lib/bubble.ts";
 import { ZOOMS } from "../lib/camera.ts";
+import type { Chapter } from "../lib/story.ts";
 import {
   dateAt,
   dayIndex,
@@ -14,13 +28,19 @@ import {
   FIRST_DAY,
   latestOnOrBefore,
   neighbour,
-  PILL_LABELS,
   pillKind,
   placeLabels,
   publisherName,
+  timelineScale,
 } from "../lib/timeline.ts";
 
-// Explore walks money news only, from the ChatGPT launch on; the other news waits for its own tab.
+// The page says which data set it shows; it is chosen before anything is read from the data.
+const requested = document.body.dataset.dataset;
+useDataset(requested === "dotcom" || requested === "housing" ? requested : "ai");
+// A past page has no Story mode: no chapters, and ?chapter= is ignored.
+const isPast = datasetId !== "ai";
+
+// Explore walks money news only, from the set's first day on; the other news waits for its own tab.
 const ordered = inDateOrder(news.filter((item) => item.kind === "money" && item.date >= FIRST_DAY));
 const byId = new Map(ordered.map((item) => [item.id, item]));
 const place = new Map(ordered.map((item, index) => [item.id, index + 1]));
@@ -29,6 +49,14 @@ const companyById = new Map(companies.map((company) => [company.id, company]));
 const lastDate = defaultDate();
 const lastDay = dayIndex(lastDate);
 const newest: NewsItem | undefined = ordered[ordered.length - 1];
+// The timeline's day scale, built once from the days that carry a dot: busy months are wider.
+const scale = timelineScale(lastDate, ordered.filter((item) => item.key_date));
+// Story mode's chapters, written into the page while it was built so the browser never reads
+// docs/story itself.
+const chaptersData = document.querySelector<HTMLScriptElement>("[data-story-chapters]");
+const chapters: Chapter[] = chaptersData?.textContent
+  ? (JSON.parse(chaptersData.textContent) as Chapter[])
+  : [];
 
 // What the site says about each kind of value, in plain words, the first time it is shown.
 const VALUE_NOTES: Record<Company["kind"], string> = {
@@ -37,12 +65,19 @@ const VALUE_NOTES: Record<Company["kind"], string> = {
   group: "Several smaller companies, added together.",
 };
 
-// The two things the page remembers: the day, and the news item or company chosen for it.
+// The three things the page remembers: the day, the news item or company chosen for it, and the
+// chapter being read. A chapter is a mode: while one is open the page is Story, not Explore.
 let day = newest ? newest.date : lastDate;
 let itemId: string | null = newest ? newest.id : null;
 let companyId: string | null = null;
+let chapterIndex: number | null = null;
+// Whether "Read the story" has the list of chapters open.
+let storyListOpen = false;
 // The reader's own zoom on top of the camera; index 1 = follow the players exactly.
 let zoomIndex = 1;
+// The mode whose titles over the timeline were placed last: Explore's news titles or Story's
+// chapter titles, one set at a time.
+let labelsPlacedFor: string | null = null;
 
 function setText(name: string, text: string): void {
   for (const element of document.querySelectorAll<HTMLElement>(`[data-bind="${name}"]`)) {
@@ -50,8 +85,8 @@ function setText(name: string, text: string): void {
   }
 }
 
-function namesOf(item: NewsItem): string {
-  return item.players.map((id) => nameOf.get(id) ?? id).join(", ");
+function namesOf(ids: readonly string[]): string {
+  return ids.map((id) => nameOf.get(id) ?? id).join(", ");
 }
 
 // The companies on the company's money lines that day: the ones the camera frames with it.
@@ -121,6 +156,9 @@ function renderCompany(company: Company): void {
 function render(soon = false): void {
   // A company the chosen day does not show goes back to the quiet day.
   if (companyId !== null && !isCompanyShown(companyId, day)) companyId = null;
+  const storyAt = chapterIndex;
+  const storyChapter = storyAt === null ? null : (chapters[storyAt] ?? null);
+  if (storyAt !== null && storyChapter === null) chapterIndex = null;
   const item = itemId === null ? null : (byId.get(itemId) ?? null);
   const company = companyId === null ? null : (companyById.get(companyId) ?? null);
   // In the quieter state the column follows the latest item on or before the chosen day.
@@ -128,26 +166,92 @@ function render(soon = false): void {
   const count = ordered.length;
 
   // Which of the states the card is in. A day before every item has no latest item to offer.
-  const state = company !== null ? "company" : item !== null ? "item" : anchor !== null ? "quiet" : "none";
+  const state =
+    storyChapter !== null
+      ? storyListOpen
+        ? "story-list"
+        : "story"
+      : company !== null
+        ? "company"
+        : item !== null
+          ? "item"
+          : anchor !== null
+            ? "quiet"
+            : "none";
   for (const block of document.querySelectorAll<HTMLElement>("[data-block]")) {
     block.hidden = block.dataset.block !== state;
   }
 
-  if (item) {
-    setText("kicker-desktop", `Explore · news ${place.get(item.id)} of ${count}`);
+  // The stylesheet follows the mode: Story shows the chapter's dots and hides Explore's masthead.
+  const mode = storyChapter !== null ? "story" : "explore";
+  document.body.dataset.mode = mode;
+  // The header tab and the phone's switch mark the mode they lead to. The body carries
+  // data-mode itself, so it is left out; with it, everything inside it would take the tab's
+  // underline.
+  for (const control of document.querySelectorAll<HTMLElement>("[data-mode]:not(body)")) {
+    const active = (control.dataset.mode === "story") === (storyChapter !== null);
+    control.classList.toggle("nav-current", active);
+    if (active) control.setAttribute("aria-current", "page");
+    else control.removeAttribute("aria-current");
+  }
+  // Each mode has its own titles over the timeline, so they are placed when the mode changes.
+  if (labelsPlacedFor !== mode) placeTimelineLabels();
+  for (const sheet of document.querySelectorAll<HTMLElement>("[data-sheet]")) {
+    sheet.setAttribute("aria-label", storyChapter !== null ? "Chapter" : "News item");
+  }
+
+  if (storyChapter && storyAt !== null) {
+    const number = storyAt + 1;
+    setText("story-kicker", `Chapter ${number} of ${chapters.length}`);
+    setText("story-title", storyChapter.title);
+    setText("story-names", namesOf(storyChapter.players));
+    for (const line of document.querySelectorAll<HTMLElement>('[data-players-line="story"]')) {
+      line.hidden = storyChapter.players.length === 0;
+    }
+    // Every paragraph, word for word, in a plain text block rather than markup.
+    for (const text of document.querySelectorAll<HTMLElement>('[data-bind="story-text"]')) {
+      text.textContent = "";
+      for (const paragraph of storyChapter.paragraphs) {
+        const element = document.createElement("p");
+        element.textContent = paragraph;
+        text.appendChild(element);
+      }
+    }
+    for (const button of document.querySelectorAll<HTMLButtonElement>('[data-action="chapter-earlier"]')) {
+      button.disabled = storyAt === 0;
+    }
+    const atLastChapter = storyAt === chapters.length - 1;
+    for (const button of document.querySelectorAll<HTMLButtonElement>('[data-action="chapter-next"]')) {
+      button.textContent = atLastChapter ? "Explore any day" : "Next chapter →";
+    }
+    for (const button of document.querySelectorAll<HTMLElement>('[data-action="story-open"]')) {
+      button.setAttribute("aria-expanded", String(storyListOpen));
+    }
+    // The chapter's dot on the timeline and its row in the list are the current ones.
+    for (const marker of document.querySelectorAll<HTMLElement>("[data-chapter]")) {
+      const current = Number(marker.dataset.chapter) === number;
+      if (marker.classList.contains("chapter-row")) {
+        if (current) marker.setAttribute("aria-current", "true");
+        else marker.removeAttribute("aria-current");
+      } else {
+        marker.classList.toggle("is-current", current);
+      }
+    }
+  } else if (item) {
+    setText("kicker-desktop", `${datasetTitle} · news ${place.get(item.id)} of ${count}`);
     setText("kicker-phone", `News ${place.get(item.id)} of ${count} · ${dayLabel(item.date)}`);
     setText("title", item.title);
     setText("summary", item.summary);
-    setText("names-desktop", namesOf(item));
-    setText("names-phone", namesOf(item));
+    setText("names-desktop", namesOf(item.players));
+    setText("names-phone", namesOf(item.players));
     for (const line of document.querySelectorAll<HTMLElement>("[data-players-line]")) {
       line.hidden = item.players.length === 0;
     }
     const kind = pillKind(item, deals);
     for (const pill of document.querySelectorAll<HTMLElement>('[data-bind="pill"]')) {
-      pill.className = `pill pill-${kind}`;
+      pill.className = `pill pill-${pillClass(kind)}`;
     }
-    setText("pill-label", PILL_LABELS[kind]);
+    setText("pill-label", pillLabel(kind));
     for (const link of document.querySelectorAll<HTMLAnchorElement>('[data-bind="source"]')) {
       const publisher = publisherName(item.source);
       link.href = item.source;
@@ -155,26 +259,29 @@ function render(soon = false): void {
       link.setAttribute("aria-label", `Source: ${publisher}, opens in a new tab`);
     }
   } else if (company) {
-    setText("kicker-desktop", `Explore · ${dayLabel(day)}`);
-    setText("kicker-phone", `Explore · ${dayLabel(day)}`);
+    setText("kicker-desktop", `${datasetTitle} · ${dayLabel(day)}`);
+    setText("kicker-phone", `${datasetTitle} · ${dayLabel(day)}`);
     renderCompany(company);
   } else {
-    setText("kicker-desktop", `Explore · ${dayLabel(day)}`);
-    setText("kicker-phone", `Explore · ${dayLabel(day)}`);
+    setText("kicker-desktop", `${datasetTitle} · ${dayLabel(day)}`);
+    setText("kicker-phone", `${datasetTitle} · ${dayLabel(day)}`);
     setText("latest-title", anchor ? anchor.title : "");
   }
 
   setText("date", dayLabel(day));
   setText(
     "companies",
-    `All AI companies on ${dayLabel(day)} · total ${formatValue(totalForDate(day))}`,
+    `${isPast ? "All companies shown" : "All AI companies"} on ${dayLabel(day)} · total ${formatValue(
+      totalForDate(day),
+    )}`,
   );
 
   for (const marker of document.querySelectorAll<HTMLElement>("[data-news]")) {
     marker.classList.toggle("is-current", item !== null && marker.dataset.news === item.id);
   }
   for (const slider of document.querySelectorAll<HTMLInputElement>("[data-slider]")) {
-    slider.value = String(dayIndex(day));
+    slider.value = String(Math.round(scale.percentOf(day) * 100));
+    slider.setAttribute("aria-valuetext", dayLabel(day));
   }
 
   // Earlier and Later walk every news item in date order and stop at the ends.
@@ -194,9 +301,16 @@ function render(soon = false): void {
     button.disabled = zoomIndex <= 0;
   }
 
-  // The bubble follows the day; a chosen item frames its players, a chosen company frames itself
-  // and the companies it has money lines with, and a plain day shows the whole frame.
-  const players = item ? item.players : company ? [company.id, ...partnersOf(company.id, day)] : [];
+  // The bubble follows the day; a chapter frames its players as a news item does, a chosen item
+  // frames its players, a chosen company frames itself and the companies it has money lines
+  // with, and a plain day shows the whole frame.
+  const players = storyChapter
+    ? storyChapter.players
+    : item
+      ? item.players
+      : company
+        ? [company.id, ...partnersOf(company.id, day)]
+        : [];
   for (const svg of document.querySelectorAll<SVGSVGElement>("[data-bubble]")) {
     renderBubble(svg, day, { players, focus: company?.id, manual: ZOOMS[zoomIndex] });
   }
@@ -205,15 +319,19 @@ function render(soon = false): void {
   else writeAddress();
 }
 
-// The address keeps working for ?date=YYYY-MM-DD, ?news=<news id> and ?company=<company id>, so a
-// view can be linked. While the slider is dragged it is written once the reader pauses, which keeps
-// phone browsers happy.
+// The address keeps working for ?chapter=<number>, ?date=YYYY-MM-DD, ?news=<news id> and
+// ?company=<company id>, so a view can be linked. While the slider is dragged it is written once
+// the reader pauses, which keeps phone browsers happy.
 let addressTimer: ReturnType<typeof setTimeout> | null = null;
 
 function writeAddress(): void {
   if (addressTimer !== null) {
     clearTimeout(addressTimer);
     addressTimer = null;
+  }
+  if (chapterIndex !== null) {
+    history.replaceState(null, "", `${window.location.pathname}?chapter=${chapterIndex + 1}`);
+    return;
   }
   const params = new URLSearchParams({ date: day });
   if (itemId !== null) params.set("news", itemId);
@@ -226,6 +344,47 @@ function writeAddressSoon(): void {
   addressTimer = setTimeout(writeAddress, 200);
 }
 
+// A chapter the reader can see: focus it, skipping the copy the other layout keeps hidden.
+function focusVisible(selector: string): void {
+  for (const element of document.querySelectorAll<HTMLElement>(selector)) {
+    if (element.offsetParent === null) continue;
+    element.focus();
+    return;
+  }
+}
+
+function goToChapter(index: number): void {
+  const chapter = chapters[index];
+  if (!chapter) return;
+  chapterIndex = index;
+  storyListOpen = false;
+  itemId = null;
+  companyId = null;
+  day = chapter.date;
+  zoomIndex = 1;
+  render();
+  // A chapter opens at its first line, never where the last one was left.
+  for (const text of document.querySelectorAll<HTMLElement>('[data-bind="story-text"]')) {
+    text.scrollTop = 0;
+  }
+}
+
+// Dragging the slider to a day that is not a chapter's leaves Story for Explore on that day.
+function leaveStory(date: string): void {
+  chapterIndex = null;
+  storyListOpen = false;
+  itemId = null;
+  zoomIndex = 1;
+  day = date;
+  render(true);
+}
+
+function openStoryList(open: boolean): void {
+  storyListOpen = open;
+  render();
+  focusVisible(open ? '[data-action="story-close"]' : '[data-action="story-open"]');
+}
+
 function selectItem(id: string): void {
   const item = byId.get(id);
   if (!item) return;
@@ -236,9 +395,12 @@ function selectItem(id: string): void {
   render();
 }
 
-// A bubble opens its company; the same company again, or Back, goes to the quiet day.
+// A bubble opens its company; the same company again, or Back, goes to the quiet day. In Story it
+// also leaves the chapter, as Explore's own company panel does.
 function chooseCompany(id: string): void {
   if (!companyById.has(id)) return;
+  chapterIndex = null;
+  storyListOpen = false;
   companyId = companyId === id ? null : id;
   itemId = null;
   zoomIndex = 1;
@@ -259,8 +421,8 @@ function step(direction: -1 | 1): void {
   if (target) selectItem(target.id);
 }
 
-function moveTo(index: number): void {
-  day = dateAt(Math.min(lastDay, Math.max(0, index)));
+function moveTo(date: string): void {
+  day = date;
   itemId = null;
   zoomIndex = 1;
   render(true);
@@ -268,11 +430,18 @@ function moveTo(index: number): void {
 
 document.addEventListener("click", (event) => {
   const target = event.target instanceof Element ? event.target : null;
-  const control = target?.closest<HTMLElement>("[data-news], [data-action], [data-zoom]");
+  const control = target?.closest<HTMLElement>("[data-news], [data-chapter], [data-action], [data-zoom]");
   if (!control) return;
 
   if (control.dataset.news) {
     selectItem(control.dataset.news);
+    return;
+  }
+  if (control.dataset.chapter) {
+    // A chapter chosen from the list closes the list; focus goes to the chapter it opened.
+    const fromList = storyListOpen;
+    goToChapter(Number(control.dataset.chapter) - 1);
+    if (fromList) focusVisible('[data-bind="story-title"]');
     return;
   }
 
@@ -286,6 +455,24 @@ document.addEventListener("click", (event) => {
     if (anchor) selectItem(anchor.id);
   } else if (action === "company-back") {
     clearCompany();
+  } else if (action === "chapter-earlier") {
+    if (chapterIndex !== null) goToChapter(chapterIndex - 1);
+  } else if (action === "chapter-next") {
+    if (chapterIndex !== null) {
+      if (chapterIndex === chapters.length - 1) {
+        // The last chapter's "Explore any day" shows Explore on that chapter's day.
+        chapterIndex = null;
+        storyListOpen = false;
+        itemId = null;
+        render();
+      } else {
+        goToChapter(chapterIndex + 1);
+      }
+    }
+  } else if (action === "story-open") {
+    openStoryList(true);
+  } else if (action === "story-close") {
+    openStoryList(false);
   }
 
   const zoom = control.dataset.zoom;
@@ -301,9 +488,43 @@ document.addEventListener("click", (event) => {
   }
 });
 
+// Escape closes the chapter list, as a dialog would.
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape" || !storyListOpen) return;
+  openStoryList(false);
+});
+
+// The slider's value is a place on the line from 0 to 10000, so a drag lands on the nearest day.
+// In Story a chapter's day jumps to that chapter, and any other day leaves Story for Explore.
+// One step of the value is not one day, so Left and Right (and Up and Down) move a day and Home
+// and End jump to the first and last day, handled here rather than by the browser.
+function sliderTo(date: string): void {
+  const chapterAt = chapters.findIndex((chapter) => chapter.date === date);
+  if (chapterIndex !== null && chapterAt >= 0) {
+    goToChapter(chapterAt);
+    return;
+  }
+  if (chapterIndex !== null) {
+    leaveStory(date);
+    return;
+  }
+  moveTo(date);
+}
+
 for (const slider of document.querySelectorAll<HTMLInputElement>("[data-slider]")) {
   slider.addEventListener("input", () => {
-    moveTo(Number(slider.value));
+    sliderTo(scale.dateOf(Number(slider.value) / 100));
+  });
+  slider.addEventListener("keydown", (event) => {
+    const at = dayIndex(day);
+    let to: number;
+    if (event.key === "ArrowLeft" || event.key === "ArrowDown") to = at - 1;
+    else if (event.key === "ArrowRight" || event.key === "ArrowUp") to = at + 1;
+    else if (event.key === "Home") to = 0;
+    else if (event.key === "End") to = lastDay;
+    else return;
+    event.preventDefault();
+    sliderTo(dateAt(Math.min(lastDay, Math.max(0, to))));
   });
 }
 
@@ -327,9 +548,22 @@ for (const svg of document.querySelectorAll<SVGSVGElement>("[data-bubble]")) {
   });
 }
 
-// Read the address once, then draw. Without a day, a company or an item the newest item shows.
+// Read the address once, then draw. A chapter opens Story on its day; without one, ?news=,
+// ?company= or ?date= picks the view, and a plain page shows the newest item. A past page has
+// no Story mode, so it ignores ?chapter=.
 function readAddress(): void {
   const params = new URLSearchParams(window.location.search);
+  // ?chapter=3 opens chapter 3; a number that is not a chapter opens the first.
+  if (!isPast && params.has("chapter") && chapters.length > 0) {
+    const wanted = Number(params.get("chapter"));
+    const at = Number.isInteger(wanted) && wanted >= 1 && wanted <= chapters.length ? wanted - 1 : 0;
+    chapterIndex = at;
+    storyListOpen = false;
+    itemId = null;
+    companyId = null;
+    day = chapters[at].date;
+    return;
+  }
   const wantedId = params.get("news");
   const wanted = wantedId ? byId.get(wantedId) : undefined;
   if (wanted) {
@@ -372,24 +606,31 @@ function readAddress(): void {
 readAddress();
 render();
 
-// The titles above the timeline are placed from their real widths, on the first of the two heights
-// that has room; one that fits on neither is hidden rather than drawn over another.
+// The titles above the timeline are placed from their real widths after wrapping, on the first
+// of the three heights that has room, with a gap between neighbours; one that fits on none is
+// hidden rather than drawn over another. A title that needs more than two lines (28px at a 14px
+// line) is hidden too, since each height is only as tall as two lines. Story places the chapter
+// titles the same way, in place of the news titles, so the band above the line is used.
 function placeTimelineLabels(): void {
   const inner = document.querySelector<HTMLElement>("[data-timeline]");
   if (!inner) return;
-  const labels = Array.from(inner.querySelectorAll<HTMLElement>("[data-timeline-label]"));
+  const story = document.body.dataset.mode === "story";
+  labelsPlacedFor = story ? "story" : "explore";
+  const labels = Array.from(
+    inner.querySelectorAll<HTMLElement>(story ? "[data-story-label]" : "[data-timeline-label]"),
+  );
   if (labels.length === 0) return;
 
   for (const label of labels) label.hidden = false;
-  const placed = placeLabels(
-    labels.map((label, index) => ({
-      id: String(index),
+  const boxes = labels
+    .map((label, index) => ({ id: String(index), label }))
+    .filter(({ label }) => label.offsetHeight > 0 && label.offsetHeight <= 28)
+    .map(({ id, label }) => ({
+      id,
       percent: Number.parseFloat(label.style.left) || 0,
       width: label.offsetWidth,
-    })),
-    inner.clientWidth,
-    10,
-  );
+    }));
+  const placed = placeLabels(boxes, inner.clientWidth);
 
   labels.forEach((label, index) => {
     const spot = placed.get(String(index));
@@ -400,6 +641,5 @@ function placeTimelineLabels(): void {
   });
 }
 
-placeTimelineLabels();
 window.addEventListener("resize", placeTimelineLabels);
 document.fonts.ready.then(placeTimelineLabels, () => {});

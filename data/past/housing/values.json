@@ -1,0 +1,880 @@
+{
+  "status": "draft",
+  "items": [
+    {
+      "company": "aig",
+      "date": "2003-12-31",
+      "value_usd_bn": 172.88,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/aig/marketcap/"
+    },
+    {
+      "company": "aig",
+      "date": "2004-12-31",
+      "value_usd_bn": 170.5,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/aig/marketcap/"
+    },
+    {
+      "company": "aig",
+      "date": "2005-12-31",
+      "value_usd_bn": 177.16,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/aig/marketcap/"
+    },
+    {
+      "company": "aig",
+      "date": "2006-12-31",
+      "value_usd_bn": 187.21,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/aig/marketcap/"
+    },
+    {
+      "company": "aig",
+      "date": "2007-12-31",
+      "value_usd_bn": 147.47,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/aig/marketcap/"
+    },
+    {
+      "company": "aig",
+      "date": "2008-12-31",
+      "value_usd_bn": 4.22,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/aig/marketcap/"
+    },
+    {
+      "company": "aig",
+      "date": "2009-12-31",
+      "value_usd_bn": 4.04,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/aig/marketcap/"
+    },
+    {
+      "company": "bank-of-america",
+      "date": "2003-12-31",
+      "value_usd_bn": 116.05,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/bank-of-america/marketcap/"
+    },
+    {
+      "company": "bank-of-america",
+      "date": "2004-12-31",
+      "value_usd_bn": 190.48,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/bank-of-america/marketcap/"
+    },
+    {
+      "company": "bank-of-america",
+      "date": "2005-12-31",
+      "value_usd_bn": 214.54,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/bank-of-america/marketcap/"
+    },
+    {
+      "company": "bank-of-america",
+      "date": "2006-12-31",
+      "value_usd_bn": 238.77,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/bank-of-america/marketcap/"
+    },
+    {
+      "company": "bank-of-america",
+      "date": "2007-12-31",
+      "value_usd_bn": 183.28,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/bank-of-america/marketcap/"
+    },
+    {
+      "company": "bank-of-america",
+      "date": "2008-12-31",
+      "value_usd_bn": 70.64,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/bank-of-america/marketcap/"
+    },
+    {
+      "company": "bank-of-america",
+      "date": "2009-12-31",
+      "value_usd_bn": 130.27,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/bank-of-america/marketcap/"
+    },
+    {
+      "company": "bear-stearns",
+      "date": "2003-12-31",
+      "value_usd_bn": 7.83,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/bear-stearns/marketcap/"
+    },
+    {
+      "company": "bear-stearns",
+      "date": "2004-12-31",
+      "value_usd_bn": 10.61,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/bear-stearns/marketcap/"
+    },
+    {
+      "company": "bear-stearns",
+      "date": "2005-12-31",
+      "value_usd_bn": 13.09,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/bear-stearns/marketcap/"
+    },
+    {
+      "company": "bear-stearns",
+      "date": "2006-12-31",
+      "value_usd_bn": 19.09,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/bear-stearns/marketcap/"
+    },
+    {
+      "company": "bear-stearns",
+      "date": "2007-01-18",
+      "value_usd_bn": 20.24,
+      "what": "peak, all-time high intraday",
+      "source": "https://companiesmarketcap.com/bear-stearns/marketcap/"
+    },
+    {
+      "company": "bear-stearns",
+      "date": "2007-12-31",
+      "value_usd_bn": 10.18,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/bear-stearns/marketcap/"
+    },
+    {
+      "company": "bear-stearns",
+      "date": "2008-03-24",
+      "value_usd_bn": 1.2,
+      "what": "last day, revised sale price to JPMorgan at $10 a share",
+      "source": "https://en.wikipedia.org/wiki/Bear_Stearns"
+    },
+    {
+      "company": "berkshire-hathaway",
+      "date": "2003-12-31",
+      "value_usd_bn": 129.51,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/berkshire-hathaway/marketcap/"
+    },
+    {
+      "company": "berkshire-hathaway",
+      "date": "2004-12-31",
+      "value_usd_bn": 135.3,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/berkshire-hathaway/marketcap/"
+    },
+    {
+      "company": "berkshire-hathaway",
+      "date": "2005-12-31",
+      "value_usd_bn": 136.38,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/berkshire-hathaway/marketcap/"
+    },
+    {
+      "company": "berkshire-hathaway",
+      "date": "2006-12-31",
+      "value_usd_bn": 169.64,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/berkshire-hathaway/marketcap/"
+    },
+    {
+      "company": "berkshire-hathaway",
+      "date": "2007-12-31",
+      "value_usd_bn": 219.37,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/berkshire-hathaway/marketcap/"
+    },
+    {
+      "company": "berkshire-hathaway",
+      "date": "2008-12-31",
+      "value_usd_bn": 149.56,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/berkshire-hathaway/marketcap/"
+    },
+    {
+      "company": "berkshire-hathaway",
+      "date": "2009-12-31",
+      "value_usd_bn": 153.62,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/berkshire-hathaway/marketcap/"
+    },
+    {
+      "company": "citigroup",
+      "date": "2003-12-31",
+      "value_usd_bn": 250.31,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/citigroup/marketcap/"
+    },
+    {
+      "company": "citigroup",
+      "date": "2004-12-31",
+      "value_usd_bn": 250.27,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/citigroup/marketcap/"
+    },
+    {
+      "company": "citigroup",
+      "date": "2005-12-31",
+      "value_usd_bn": 250.26,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/citigroup/marketcap/"
+    },
+    {
+      "company": "citigroup",
+      "date": "2006-12-31",
+      "value_usd_bn": 273.59,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/citigroup/marketcap/"
+    },
+    {
+      "company": "citigroup",
+      "date": "2007-12-31",
+      "value_usd_bn": 161.25,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/citigroup/marketcap/"
+    },
+    {
+      "company": "citigroup",
+      "date": "2008-11-17",
+      "value_usd_bn": 6,
+      "what": "low, after four quarters of losses",
+      "source": "https://en.wikipedia.org/wiki/Citigroup"
+    },
+    {
+      "company": "citigroup",
+      "date": "2008-12-31",
+      "value_usd_bn": 38.05,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/citigroup/marketcap/"
+    },
+    {
+      "company": "citigroup",
+      "date": "2009-12-31",
+      "value_usd_bn": 94.27,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/citigroup/marketcap/"
+    },
+    {
+      "company": "countrywide",
+      "date": "2007-01-11",
+      "value_usd_bn": 24,
+      "what": "peak, market value about a year before the sale",
+      "source": "https://en.wikipedia.org/wiki/Countrywide_Financial"
+    },
+    {
+      "company": "countrywide",
+      "date": "2008-01-11",
+      "value_usd_bn": 4.1,
+      "what": "last day, agreed sale price to Bank of America",
+      "source": "https://en.wikipedia.org/wiki/Countrywide_Financial"
+    },
+    {
+      "company": "fannie-mae",
+      "date": "2003-12-31",
+      "value_usd_bn": 68.01,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/fannie-mae/marketcap/"
+    },
+    {
+      "company": "fannie-mae",
+      "date": "2004-12-31",
+      "value_usd_bn": 67.89,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/fannie-mae/marketcap/"
+    },
+    {
+      "company": "fannie-mae",
+      "date": "2005-12-31",
+      "value_usd_bn": 47.49,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/fannie-mae/marketcap/"
+    },
+    {
+      "company": "fannie-mae",
+      "date": "2006-12-31",
+      "value_usd_bn": 57.81,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/fannie-mae/marketcap/"
+    },
+    {
+      "company": "fannie-mae",
+      "date": "2007-12-31",
+      "value_usd_bn": 59.19,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/fannie-mae/marketcap/"
+    },
+    {
+      "company": "fannie-mae",
+      "date": "2008-12-31",
+      "value_usd_bn": 1.24,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/fannie-mae/marketcap/"
+    },
+    {
+      "company": "fannie-mae",
+      "date": "2009-12-31",
+      "value_usd_bn": 1.2,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/fannie-mae/marketcap/"
+    },
+    {
+      "company": "freddie-mac",
+      "date": "2003-12-31",
+      "value_usd_bn": 40.15,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/freddie-mac/marketcap/"
+    },
+    {
+      "company": "freddie-mac",
+      "date": "2004-12-31",
+      "value_usd_bn": 50.89,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/freddie-mac/marketcap/"
+    },
+    {
+      "company": "freddie-mac",
+      "date": "2005-12-31",
+      "value_usd_bn": 45.26,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/freddie-mac/marketcap/"
+    },
+    {
+      "company": "freddie-mac",
+      "date": "2006-12-31",
+      "value_usd_bn": 44.89,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/freddie-mac/marketcap/"
+    },
+    {
+      "company": "freddie-mac",
+      "date": "2007-12-31",
+      "value_usd_bn": 22.01,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/freddie-mac/marketcap/"
+    },
+    {
+      "company": "freddie-mac",
+      "date": "2008-12-31",
+      "value_usd_bn": 0.47,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/freddie-mac/marketcap/"
+    },
+    {
+      "company": "freddie-mac",
+      "date": "2009-12-31",
+      "value_usd_bn": 0.95,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/freddie-mac/marketcap/"
+    },
+    {
+      "company": "goldman-sachs",
+      "date": "2003-12-31",
+      "value_usd_bn": 47.1,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/goldman-sachs/marketcap/"
+    },
+    {
+      "company": "goldman-sachs",
+      "date": "2004-12-31",
+      "value_usd_bn": 50.03,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/goldman-sachs/marketcap/"
+    },
+    {
+      "company": "goldman-sachs",
+      "date": "2005-12-31",
+      "value_usd_bn": 55.83,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/goldman-sachs/marketcap/"
+    },
+    {
+      "company": "goldman-sachs",
+      "date": "2006-12-31",
+      "value_usd_bn": 82.26,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/goldman-sachs/marketcap/"
+    },
+    {
+      "company": "goldman-sachs",
+      "date": "2007-12-31",
+      "value_usd_bn": 84.01,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/goldman-sachs/marketcap/"
+    },
+    {
+      "company": "goldman-sachs",
+      "date": "2008-12-31",
+      "value_usd_bn": 33.37,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/goldman-sachs/marketcap/"
+    },
+    {
+      "company": "goldman-sachs",
+      "date": "2009-12-31",
+      "value_usd_bn": 86.97,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/goldman-sachs/marketcap/"
+    },
+    {
+      "company": "hsbc",
+      "date": "2003-12-31",
+      "value_usd_bn": 198.26,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/hsbc/marketcap/"
+    },
+    {
+      "company": "hsbc",
+      "date": "2004-12-31",
+      "value_usd_bn": 218.3,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/hsbc/marketcap/"
+    },
+    {
+      "company": "hsbc",
+      "date": "2005-12-31",
+      "value_usd_bn": 208.31,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/hsbc/marketcap/"
+    },
+    {
+      "company": "hsbc",
+      "date": "2006-12-31",
+      "value_usd_bn": 243.41,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/hsbc/marketcap/"
+    },
+    {
+      "company": "hsbc",
+      "date": "2007-12-31",
+      "value_usd_bn": 227.25,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/hsbc/marketcap/"
+    },
+    {
+      "company": "hsbc",
+      "date": "2008-12-31",
+      "value_usd_bn": 135.21,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/hsbc/marketcap/"
+    },
+    {
+      "company": "hsbc",
+      "date": "2009-12-31",
+      "value_usd_bn": 198.76,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/hsbc/marketcap/"
+    },
+    {
+      "company": "jpmorgan-chase",
+      "date": "2003-12-31",
+      "value_usd_bn": 75.02,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/jp-morgan-chase/marketcap/"
+    },
+    {
+      "company": "jpmorgan-chase",
+      "date": "2004-12-31",
+      "value_usd_bn": 138.72,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/jp-morgan-chase/marketcap/"
+    },
+    {
+      "company": "jpmorgan-chase",
+      "date": "2005-12-31",
+      "value_usd_bn": 138.38,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/jp-morgan-chase/marketcap/"
+    },
+    {
+      "company": "jpmorgan-chase",
+      "date": "2006-12-31",
+      "value_usd_bn": 167.19,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/jp-morgan-chase/marketcap/"
+    },
+    {
+      "company": "jpmorgan-chase",
+      "date": "2007-12-31",
+      "value_usd_bn": 146.98,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/jp-morgan-chase/marketcap/"
+    },
+    {
+      "company": "jpmorgan-chase",
+      "date": "2008-12-31",
+      "value_usd_bn": 117.68,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/jp-morgan-chase/marketcap/"
+    },
+    {
+      "company": "jpmorgan-chase",
+      "date": "2009-12-31",
+      "value_usd_bn": 164.26,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/jp-morgan-chase/marketcap/"
+    },
+    {
+      "company": "lehman-brothers",
+      "date": "2003-12-31",
+      "value_usd_bn": 20.59,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/lehman-brothers/marketcap/"
+    },
+    {
+      "company": "lehman-brothers",
+      "date": "2004-12-31",
+      "value_usd_bn": 23.56,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/lehman-brothers/marketcap/"
+    },
+    {
+      "company": "lehman-brothers",
+      "date": "2005-12-31",
+      "value_usd_bn": 34.79,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/lehman-brothers/marketcap/"
+    },
+    {
+      "company": "lehman-brothers",
+      "date": "2006-12-31",
+      "value_usd_bn": 41.4,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/lehman-brothers/marketcap/"
+    },
+    {
+      "company": "lehman-brothers",
+      "date": "2007-02-07",
+      "value_usd_bn": 45.68,
+      "what": "peak, all-time high intraday",
+      "source": "https://companiesmarketcap.com/lehman-brothers/marketcap/"
+    },
+    {
+      "company": "lehman-brothers",
+      "date": "2007-12-31",
+      "value_usd_bn": 34.68,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/lehman-brothers/marketcap/"
+    },
+    {
+      "company": "lehman-brothers",
+      "date": "2008-12-31",
+      "value_usd_bn": 0.02083,
+      "what": "last recorded trade, after bankruptcy",
+      "source": "https://companiesmarketcap.com/lehman-brothers/marketcap/"
+    },
+    {
+      "company": "merrill-lynch",
+      "date": "2008-09-15",
+      "value_usd_bn": 50,
+      "what": "last day, agreed sale price to Bank of America",
+      "source": "https://en.wikipedia.org/wiki/Merrill_(company)"
+    },
+    {
+      "company": "mitsubishi-ufj",
+      "date": "2003-12-31",
+      "value_usd_bn": 49.76,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/mitsubishi-ufj-financial/marketcap/"
+    },
+    {
+      "company": "mitsubishi-ufj",
+      "date": "2004-12-31",
+      "value_usd_bn": 66.59,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/mitsubishi-ufj-financial/marketcap/"
+    },
+    {
+      "company": "mitsubishi-ufj",
+      "date": "2005-12-31",
+      "value_usd_bn": 89.5,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/mitsubishi-ufj-financial/marketcap/"
+    },
+    {
+      "company": "mitsubishi-ufj",
+      "date": "2006-12-31",
+      "value_usd_bn": 120.31,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/mitsubishi-ufj-financial/marketcap/"
+    },
+    {
+      "company": "mitsubishi-ufj",
+      "date": "2007-12-31",
+      "value_usd_bn": 91.25,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/mitsubishi-ufj-financial/marketcap/"
+    },
+    {
+      "company": "mitsubishi-ufj",
+      "date": "2008-12-31",
+      "value_usd_bn": 71.84,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/mitsubishi-ufj-financial/marketcap/"
+    },
+    {
+      "company": "mitsubishi-ufj",
+      "date": "2009-12-31",
+      "value_usd_bn": 68.67,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/mitsubishi-ufj-financial/marketcap/"
+    },
+    {
+      "company": "morgan-stanley",
+      "date": "2003-12-31",
+      "value_usd_bn": 62.79,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/morgan-stanley/marketcap/"
+    },
+    {
+      "company": "morgan-stanley",
+      "date": "2004-12-31",
+      "value_usd_bn": 60.37,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/morgan-stanley/marketcap/"
+    },
+    {
+      "company": "morgan-stanley",
+      "date": "2005-12-31",
+      "value_usd_bn": 59.77,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/morgan-stanley/marketcap/"
+    },
+    {
+      "company": "morgan-stanley",
+      "date": "2006-12-31",
+      "value_usd_bn": 85.41,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/morgan-stanley/marketcap/"
+    },
+    {
+      "company": "morgan-stanley",
+      "date": "2007-12-31",
+      "value_usd_bn": 56.09,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/morgan-stanley/marketcap/"
+    },
+    {
+      "company": "morgan-stanley",
+      "date": "2008-12-31",
+      "value_usd_bn": 17.23,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/morgan-stanley/marketcap/"
+    },
+    {
+      "company": "morgan-stanley",
+      "date": "2009-12-31",
+      "value_usd_bn": 40.27,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/morgan-stanley/marketcap/"
+    },
+    {
+      "company": "royal-bank-of-scotland",
+      "date": "2008-12-31",
+      "value_usd_bn": 29.92,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/royal-bank-of-scotland/marketcap/"
+    },
+    {
+      "company": "royal-bank-of-scotland",
+      "date": "2009-12-31",
+      "value_usd_bn": 26.46,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/royal-bank-of-scotland/marketcap/"
+    },
+    {
+      "company": "ubs",
+      "date": "2003-12-31",
+      "value_usd_bn": 40.21,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/ubs/marketcap/"
+    },
+    {
+      "company": "ubs",
+      "date": "2004-12-31",
+      "value_usd_bn": 42.89,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/ubs/marketcap/"
+    },
+    {
+      "company": "ubs",
+      "date": "2005-12-31",
+      "value_usd_bn": 46.83,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/ubs/marketcap/"
+    },
+    {
+      "company": "ubs",
+      "date": "2006-12-31",
+      "value_usd_bn": 117.08,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/ubs/marketcap/"
+    },
+    {
+      "company": "ubs",
+      "date": "2007-12-31",
+      "value_usd_bn": 88.11,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/ubs/marketcap/"
+    },
+    {
+      "company": "ubs",
+      "date": "2008-12-31",
+      "value_usd_bn": 41.05,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/ubs/marketcap/"
+    },
+    {
+      "company": "ubs",
+      "date": "2009-12-31",
+      "value_usd_bn": 54.6,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/ubs/marketcap/"
+    },
+    {
+      "company": "wachovia",
+      "date": "2003-12-31",
+      "value_usd_bn": 61.67,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/wachovia/marketcap/"
+    },
+    {
+      "company": "wachovia",
+      "date": "2004-12-31",
+      "value_usd_bn": 68.78,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/wachovia/marketcap/"
+    },
+    {
+      "company": "wachovia",
+      "date": "2005-12-31",
+      "value_usd_bn": 82.11,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/wachovia/marketcap/"
+    },
+    {
+      "company": "wachovia",
+      "date": "2006-12-31",
+      "value_usd_bn": 90.04,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/wachovia/marketcap/"
+    },
+    {
+      "company": "wachovia",
+      "date": "2007-02-21",
+      "value_usd_bn": 112.05,
+      "what": "peak, all-time high intraday",
+      "source": "https://companiesmarketcap.com/wachovia/marketcap/"
+    },
+    {
+      "company": "wachovia",
+      "date": "2007-12-31",
+      "value_usd_bn": 72.28,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/wachovia/marketcap/"
+    },
+    {
+      "company": "wachovia",
+      "date": "2008-10-03",
+      "value_usd_bn": 14.8,
+      "what": "last day, agreed sale price to Wells Fargo",
+      "source": "https://en.wikipedia.org/wiki/Wells_Fargo"
+    },
+    {
+      "company": "washington-mutual",
+      "date": "2003-12-31",
+      "value_usd_bn": 36.08,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/washington-mutual/marketcap/"
+    },
+    {
+      "company": "washington-mutual",
+      "date": "2004-12-31",
+      "value_usd_bn": 36.96,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/washington-mutual/marketcap/"
+    },
+    {
+      "company": "washington-mutual",
+      "date": "2005-12-31",
+      "value_usd_bn": 42.92,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/washington-mutual/marketcap/"
+    },
+    {
+      "company": "washington-mutual",
+      "date": "2006-01-09",
+      "value_usd_bn": 45.32,
+      "what": "peak, all-time high intraday",
+      "source": "https://companiesmarketcap.com/washington-mutual/marketcap/"
+    },
+    {
+      "company": "washington-mutual",
+      "date": "2006-12-31",
+      "value_usd_bn": 42.99,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/washington-mutual/marketcap/"
+    },
+    {
+      "company": "washington-mutual",
+      "date": "2007-12-31",
+      "value_usd_bn": 11.82,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/washington-mutual/marketcap/"
+    },
+    {
+      "company": "washington-mutual",
+      "date": "2008-12-31",
+      "value_usd_bn": 0.008,
+      "what": "last recorded trade, holding company after seizure",
+      "source": "https://companiesmarketcap.com/washington-mutual/marketcap/"
+    },
+    {
+      "company": "wells-fargo",
+      "date": "2003-12-31",
+      "value_usd_bn": 100.49,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/wells-fargo/marketcap/"
+    },
+    {
+      "company": "wells-fargo",
+      "date": "2004-12-31",
+      "value_usd_bn": 105.31,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/wells-fargo/marketcap/"
+    },
+    {
+      "company": "wells-fargo",
+      "date": "2005-12-31",
+      "value_usd_bn": 105.4,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/wells-fargo/marketcap/"
+    },
+    {
+      "company": "wells-fargo",
+      "date": "2006-12-31",
+      "value_usd_bn": 120.09,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/wells-fargo/marketcap/"
+    },
+    {
+      "company": "wells-fargo",
+      "date": "2007-12-31",
+      "value_usd_bn": 99.53,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/wells-fargo/marketcap/"
+    },
+    {
+      "company": "wells-fargo",
+      "date": "2008-12-31",
+      "value_usd_bn": 98.02,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/wells-fargo/marketcap/"
+    },
+    {
+      "company": "wells-fargo",
+      "date": "2009-12-31",
+      "value_usd_bn": 139.77,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/wells-fargo/marketcap/"
+    }
+  ]
+}

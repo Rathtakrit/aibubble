@@ -169,7 +169,7 @@
       ],
       "kind": "science",
       "key_date": true,
-      "source": "https://en.wikipedia.org/wiki/ChatGPT"
+      "source": "https://techcrunch.com/2025/11/30/chatgpt-launched-three-years-ago-today/"
     },
     {
       "id": "2023-02-24-meta-releases-llama-weights",
@@ -550,7 +550,7 @@
       ],
       "kind": "money",
       "key_date": true,
-      "source": "https://blogs.microsoft.com/blog/2019/07/22/openai-forms-multi-year-partnership-with-microsoft/"
+      "source": "https://news.microsoft.com/source/2019/07/22/openai-forms-exclusive-computing-partnership-with-microsoft-to-build-new-azure-ai-supercomputing-technologies/"
     },
     {
       "id": "2020-04-27-nvidia-completes-7bn-mellanox-purchase",
@@ -717,7 +717,7 @@
       ],
       "kind": "money",
       "key_date": false,
-      "source": "https://openai.com/index/openai-announces-leadership-transition/"
+      "source": "https://techcrunch.com/2023/11/17/sam-altman-is-out-as-openais-ceo/"
     },
     {
       "id": "2023-11-21-altman-returns-new-board-seated",
@@ -843,7 +843,7 @@
       ],
       "kind": "money",
       "key_date": false,
-      "source": "https://en.wikipedia.org/wiki/OpenAI"
+      "source": "https://techcrunch.com/2025/03/31/openai-raises-40b-at-300b-post-money-valuation/"
     },
     {
       "id": "2025-05-28-nvidia-takes-a-4-5bn-h20-charge",
@@ -986,7 +986,7 @@
     },
     {
       "id": "2025-11-25-nvidia-memo-answers-the-bubble-charge",
-      "date": "2025-11-25",
+      "date": "2025-11-24",
       "title": "Nvidia memo answers the bubble charge",
       "summary": "Private memo to analysts names Burry and disputes his depreciation and circular-financing claims.",
       "players": [
@@ -994,7 +994,7 @@
       ],
       "kind": "money",
       "key_date": false,
-      "source": "https://www.cnbc.com/2025/11/25/nvidia-pushes-back-on-charges-that-ai-investment-is-a-bubble.html"
+      "source": "https://www.businessinsider.com/read-nvidia-rebuttal-michael-burry-criticism-other-claims-ai-boom-2025-11"
     },
     {
       "id": "2026-01-06-xai-raises-20bn-series-e",
@@ -1007,7 +1007,7 @@
       ],
       "kind": "money",
       "key_date": false,
-      "source": "https://www.cnbc.com/2026/01/06/elon-musk-xai-raises-20-billion-from-nvidia-cisco-investors.html"
+      "source": "https://x.ai/news/series-e"
     },
     {
       "id": "2026-02-02-spacex-absorbs-xai-in-all-stock-deal",
@@ -1032,7 +1032,7 @@
       ],
       "kind": "money",
       "key_date": false,
-      "source": "https://openai.com/index/accelerating-the-next-phase-ai/"
+      "source": "https://web.archive.org/web/2026/https://openai.com/index/accelerating-the-next-phase-ai/"
     },
     {
       "id": "2026-06-01-anthropic-files-confidentially-for-ipo",
@@ -1046,7 +1046,7 @@
       ],
       "kind": "money",
       "key_date": false,
-      "source": "https://www.techstackipo.com/ipo/anthropic"
+      "source": "https://techcrunch.com/2026/06/01/anthropic-files-to-go-public/"
     },
     {
       "id": "2026-06-16-openai-2025-accounts-leak",
@@ -1063,7 +1063,7 @@
     },
     {
       "id": "2026-07-16-s-p-cuts-oracle-to-bbb",
-      "date": "2026-07-16",
+      "date": "2026-07-09",
       "title": "S&P cuts Oracle to BBB-",
       "summary": "Downgrade cites AI spending and concentration on OpenAI; one notch above junk.",
       "players": [
@@ -1072,7 +1072,7 @@
       ],
       "kind": "money",
       "key_date": false,
-      "source": "https://www.bloomberg.com/news/articles/2026-07-16/oracle-risks-falling-behind-in-ai-race-as-spending-binge-bites"
+      "source": "https://www.jsonline.com/story/communities/north/2026/07/16/agency-downgrades-credit-rating-of-tech-giant-oracle-amid-legal-battle/90945654007/"
     },
     {
       "id": "2026-07-20-oracle-credit-insurance-at-18-year-high",
@@ -1084,7 +1084,7 @@
       ],
       "kind": "money",
       "key_date": false,
-      "source": "https://www.bloomberg.com/news/articles/2026-07-20/oracle-credit-risk-hits-near-18-year-high-on-ai-debt-load-angst"
+      "source": "https://biz.heraldcorp.com/article/10815080"
     },
     {
       "id": "2026-07-28-ai-sell-off-hits-korean-chipmakers",
@@ -1170,7 +1170,7 @@
       ],
       "kind": "money",
       "key_date": false,
-      "source": "https://tech-insider.org/anthropic-ipo-s-1-filing-ant-nasdaq-16-3b-revenue-2026/"
+      "source": "https://www.anthropic.com/news/s1-sec"
     },
     {
       "id": "2026-10-28-alphabet-falls-on-weaker-profits",
@@ -1251,7 +1251,7 @@
       ],
       "kind": "money",
       "key_date": false,
-      "source": "https://www.forbes.com/sites/gabrielalinzainescu/2026/11/11/openai-revenue-hits-10-billion-as-losses-reach-109-billion/"
+      "source": "https://finance.yahoo.com/technology/ai/articles/openai-hits-10-billion-quarterly-190211001.html"
     },
     {
       "id": "2026-11-12-jensen-huang-resigns-kress-interim-ceo",

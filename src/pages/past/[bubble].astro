@@ -1,0 +1,13 @@
+---
+import ExplorePage from "../../components/ExplorePage.astro";
+import type { DatasetId } from "../../lib/data.ts";
+
+// The two past bubbles: /past/dotcom/ and /past/housing/.
+export function getStaticPaths() {
+  return [{ params: { bubble: "dotcom" } }, { params: { bubble: "housing" } }];
+}
+
+const id = Astro.params.bubble as DatasetId;
+---
+
+<ExplorePage id={id} />

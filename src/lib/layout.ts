@@ -3,8 +3,8 @@
 
 import { forceSimulation } from "d3-force";
 import type { Force, Simulation, SimulationNodeDatum } from "d3-force";
-import { companies, deals, isShown, news, valueOn, values } from "./data.ts";
-import type { Company, Deal, ValuePoint } from "./data.ts";
+import { companies, datasetId, deals, isShown, LAST_DAY, valueOn, values } from "./data.ts";
+import type { Company, DatasetId, Deal, ValuePoint } from "./data.ts";
 import { FIRST_DAY } from "./timeline.ts";
 
 // The bubble lives in a 100 x 100 square. The frame is the circle with this centre and radius.
@@ -80,9 +80,12 @@ const ENTRY_TICKS = 80;
 // How many directions are tried when a newcomer fits nowhere on the rim.
 const PLACE_STEPS = 72;
 
-// The bend of the first, second and third arrow of a pair, x the distance between centres.
-const BENDS = [0.18, 0.3, 0.42];
+// The bends tried for a pair's first arrow, x the distance between centres, from the closest to
+// the widest curve; and how much wider each further arrow of the pair bends, so they nest.
+const BEND_TRIES = [0.18, 0.3, 0.45, 0.6, 0.8];
 const BEND_STEP = 0.12;
+// How many points are sampled along a candidate curve to count what it runs through.
+const BEND_SAMPLES = 24;
 
 // d3-force needs a random source for degenerate cases; a seeded one keeps the layout the
 // same on every run. Nothing here uses Math.random or the clock.
@@ -814,36 +817,67 @@ export function arrowCurve(from: Placed, to: Placed, bend: number, side: 1 | -1)
   };
 }
 
-// Which side of the from->to line a pair's arrows bend to: the side whose curve passes
-// through fewer of the other bubbles (12 points sampled along each candidate); on a tie,
-// the side facing away from the frame centre.
-export function arrowSide(from: Placed, to: Placed, others: Placed[]): 1 | -1 {
-  const hits = (side: 1 | -1): number => {
-    const curve = arrowCurve(from, to, BENDS[0], side);
-    let count = 0;
-    for (let sample = 1; sample <= 12; sample += 1) {
-      const t = sample / 13;
-      const u = 1 - t;
-      const x = u * u * curve.x1 + 2 * u * t * curve.cx + t * t * curve.x2;
-      const y = u * u * curve.y1 + 2 * u * t * curve.cy + t * t * curve.y2;
-      for (const bubble of others) {
-        if (Math.hypot(x - bubble.x, y - bubble.y) < bubble.r) count += 1;
+// How many of the points along one candidate curve are inside another bubble or outside the frame
+// circle: what a line has to go round. Counting stops at `stopAt`, because a candidate that is
+// already no better than the best one so far cannot win.
+function blockCount(
+  from: Placed,
+  to: Placed,
+  others: Placed[],
+  bend: number,
+  side: 1 | -1,
+  stopAt: number,
+): number {
+  const curve = arrowCurve(from, to, bend, side);
+  let count = 0;
+  for (let sample = 1; sample <= BEND_SAMPLES; sample += 1) {
+    const t = sample / (BEND_SAMPLES + 1);
+    const u = 1 - t;
+    const x = u * u * curve.x1 + 2 * u * t * curve.cx + t * t * curve.x2;
+    const y = u * u * curve.y1 + 2 * u * t * curve.cy + t * t * curve.y2;
+    if (Math.hypot(x - FRAME.cx, y - FRAME.cy) > FRAME.radius) count += 1;
+    for (const bubble of others) {
+      if (Math.hypot(x - bubble.x, y - bubble.y) < bubble.r) {
+        count += 1;
+        break;
       }
     }
-    return count;
-  };
-  const plus = hits(1);
-  const minus = hits(-1);
-  if (plus !== minus) return plus < minus ? 1 : -1;
+    if (count >= stopAt) break;
+  }
+  return count;
+}
 
+// Which side of the from->to line a pair's first arrow bends to, and how far: both sides are tried
+// with every bend in BEND_TRIES, and the curve that runs through the fewest other bubbles and
+// leaves the frame circle the fewest times wins. On a tie the smaller bend wins, and on a tie still
+// the side facing away from the frame centre.
+export function arrowPath(
+  from: Placed,
+  to: Placed,
+  others: Placed[],
+): { side: 1 | -1; bend: number } {
   const dx = to.x - from.x;
   const dy = to.y - from.y;
   const distance = Math.hypot(dx, dy) || 1e-9;
   // The control point farther from the frame centre faces away from it.
   const mx = (from.x + to.x) / 2 - FRAME.cx;
   const my = (from.y + to.y) / 2 - FRAME.cy;
-  const away = (-dy / distance) * mx + (dx / distance) * my;
-  return away >= 0 ? 1 : -1;
+  const away: 1 | -1 = (-dy / distance) * mx + (dx / distance) * my >= 0 ? 1 : -1;
+  // Tried in tie order: the closest curve first, and the side away from the centre before the other.
+  const sides: (1 | -1)[] = [away, away === 1 ? -1 : 1];
+
+  let best = { side: away, bend: BEND_TRIES[0] };
+  let bestCount = blockCount(from, to, others, best.bend, best.side, 2 * BEND_SAMPLES);
+  for (const bend of BEND_TRIES) {
+    if (bestCount === 0) break;
+    for (const side of sides) {
+      const count = blockCount(from, to, others, bend, side, bestCount);
+      if (count >= bestCount) continue;
+      best = { side, bend };
+      bestCount = count;
+    }
+  }
+  return best;
 }
 
 type DealGroup = {
@@ -909,13 +943,14 @@ export function arrowsOn(
     });
     const first = pair[0];
     const others = bubbles.filter((bubble) => bubble.id !== first.from && bubble.id !== first.to);
-    const baseSide = arrowSide(byId.get(first.from)!, byId.get(first.to)!, others);
+    const path = arrowPath(byId.get(first.from)!, byId.get(first.to)!, others);
     pair.forEach((group, index) => {
-      const bend =
-        index < BENDS.length ? BENDS[index] : BENDS[BENDS.length - 1] + (index - BENDS.length + 1) * BEND_STEP;
+      // The pair's other arrows keep the chosen side and bend a little wider each time, so they
+      // nest outside the first one.
+      const bend = path.bend + index * BEND_STEP;
       // An arrow going the other way flips its side so the pair bends to the same side.
       const side: 1 | -1 =
-        group.from === first.from && group.to === first.to ? baseSide : baseSide === 1 ? -1 : 1;
+        group.from === first.from && group.to === first.to ? path.side : path.side === 1 ? -1 : 1;
       const curve = arrowCurve(byId.get(group.from)!, byId.get(group.to)!, bend, side);
       out.push({
         from: group.from,
@@ -965,34 +1000,33 @@ export function formatDate(date: string): string {
   return dateFormatter.format(new Date(`${date}T00:00:00Z`));
 }
 
-// The latest date in the data files, not the clock.
+// The last day of the active data set: the latest date in the AI bubble's files, and the
+// last_day in a past set's meta.json. Never the clock.
 export function defaultDate(): string {
-  const dates = [
-    ...values.map((point) => point.date),
-    ...deals.map((deal) => deal.date),
-    ...news.map((item) => item.date),
-    ...companies.map((company) => company.first_mention),
-  ];
-  return dates.reduce((latest, date) => (date > latest ? date : latest), "2022-11-30");
+  return LAST_DAY;
 }
 
 // Thin wrappers over the real data, for the page and the renderer. The layout is computed
-// once, on first use, and kept per date.
-let realLayout: DayLayouts | null = null;
+// once per data set, on first use, and kept per data set.
+const realLayouts = new Map<DatasetId, DayLayouts>();
 
-function realLayouts(): DayLayouts {
-  if (realLayout === null) realLayout = dayLayouts(companies, values, deals, defaultDate());
-  return realLayout;
+function realLayoutsFor(): DayLayouts {
+  let layout = realLayouts.get(datasetId);
+  if (layout === undefined) {
+    layout = dayLayouts(companies, values, deals, defaultDate());
+    realLayouts.set(datasetId, layout);
+  }
+  return layout;
 }
 
 export function bubblesForDate(date: string): Bubble[] {
-  return bubblesOn(date, companies, values, deals, realLayouts());
+  return bubblesOn(date, companies, values, deals, realLayoutsFor());
 }
 
 export function arrowsForDate(date: string): Arrow[] {
-  return arrowsOn(date, companies, values, deals, realLayouts());
+  return arrowsOn(date, companies, values, deals, realLayoutsFor());
 }
 
 export function totalForDate(date: string): number {
-  return totalOn(date, companies, values, deals, realLayouts());
+  return totalOn(date, companies, values, deals, realLayoutsFor());
 }

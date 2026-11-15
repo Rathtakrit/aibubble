@@ -1,0 +1,157 @@
+{
+  "status": "draft",
+  "items": [
+    {
+      "id": "microsoft",
+      "name": "Microsoft",
+      "kind": "listed",
+      "ticker": "MSFT",
+      "first_mention": "1996-12-31",
+      "source": "https://companiesmarketcap.com/microsoft/marketcap/"
+    },
+    {
+      "id": "cisco",
+      "name": "Cisco",
+      "kind": "listed",
+      "ticker": "CSCO",
+      "first_mention": "1996-12-31",
+      "source": "https://companiesmarketcap.com/cisco/marketcap/"
+    },
+    {
+      "id": "intel",
+      "name": "Intel",
+      "kind": "listed",
+      "ticker": "INTC",
+      "first_mention": "1996-12-31",
+      "source": "https://companiesmarketcap.com/intel/marketcap/"
+    },
+    {
+      "id": "oracle",
+      "name": "Oracle",
+      "kind": "listed",
+      "ticker": "ORCL",
+      "first_mention": "1996-12-31",
+      "source": "https://companiesmarketcap.com/oracle/marketcap/"
+    },
+    {
+      "id": "ibm",
+      "name": "IBM",
+      "kind": "listed",
+      "ticker": "IBM",
+      "first_mention": "1996-12-31",
+      "source": "https://companiesmarketcap.com/ibm/marketcap/"
+    },
+    {
+      "id": "sun-microsystems",
+      "name": "Sun Microsystems",
+      "kind": "listed",
+      "ticker": "JAVA",
+      "first_mention": "1997-12-31",
+      "source": "https://companiesmarketcap.com/sun-microsystems/marketcap/"
+    },
+    {
+      "id": "qualcomm",
+      "name": "Qualcomm",
+      "kind": "listed",
+      "ticker": "QCOM",
+      "first_mention": "1996-12-31",
+      "source": "https://companiesmarketcap.com/qualcomm/marketcap/"
+    },
+    {
+      "id": "lucent",
+      "name": "Lucent Technologies",
+      "kind": "listed",
+      "ticker": "LU",
+      "first_mention": "1996-09-30",
+      "source": "https://en.wikipedia.org/wiki/Lucent_Technologies"
+    },
+    {
+      "id": "nortel",
+      "name": "Nortel Networks",
+      "kind": "listed",
+      "ticker": "NT",
+      "first_mention": "1997-12-31",
+      "source": "https://companiesmarketcap.com/nortel-networks/marketcap/"
+    },
+    {
+      "id": "nokia",
+      "name": "Nokia",
+      "kind": "listed",
+      "ticker": "NOK",
+      "first_mention": "1996-12-31",
+      "source": "https://companiesmarketcap.com/nokia/marketcap/"
+    },
+    {
+      "id": "aol",
+      "name": "AOL Time Warner",
+      "kind": "listed",
+      "ticker": "AOL",
+      "first_mention": "2000-01-10",
+      "source": "https://www.theguardian.com/business/2000/jan/10/efinance.internet"
+    },
+    {
+      "id": "yahoo",
+      "name": "Yahoo",
+      "kind": "listed",
+      "ticker": "YHOO",
+      "first_mention": "1997-12-31",
+      "source": "https://companiesmarketcap.com/yahoo/marketcap/"
+    },
+    {
+      "id": "amazon",
+      "name": "Amazon",
+      "kind": "listed",
+      "ticker": "AMZN",
+      "first_mention": "1997-05-14",
+      "source": "https://press.aboutamazon.com/1997/5/amazon-com-inc-announces-initial-public-offering-of-3-000-000-shares-of-common-stock"
+    },
+    {
+      "id": "ebay",
+      "name": "eBay",
+      "kind": "listed",
+      "ticker": "EBAY",
+      "first_mention": "1998-12-31",
+      "source": "https://companiesmarketcap.com/ebay/marketcap/"
+    },
+    {
+      "id": "worldcom",
+      "name": "WorldCom",
+      "kind": "listed",
+      "ticker": "WCOM",
+      "first_mention": "1997-12-31",
+      "source": "https://companiesmarketcap.com/worldcom/marketcap/"
+    },
+    {
+      "id": "global-crossing",
+      "name": "Global Crossing",
+      "kind": "listed",
+      "ticker": "GLBC",
+      "first_mention": "1998-12-31",
+      "source": "https://companiesmarketcap.com/global-crossing/marketcap/"
+    },
+    {
+      "id": "qwest",
+      "name": "Qwest",
+      "kind": "listed",
+      "ticker": "Q",
+      "first_mention": "1997-12-31",
+      "source": "https://companiesmarketcap.com/qwest-communications-international/marketcap/"
+    },
+    {
+      "id": "enron",
+      "name": "Enron",
+      "kind": "listed",
+      "ticker": "ENE",
+      "first_mention": "1997-12-31",
+      "source": "https://companiesmarketcap.com/enron/marketcap/"
+    },
+    {
+      "id": "time-warner",
+      "name": "Time Warner",
+      "kind": "listed",
+      "ticker": "TWX",
+      "first_mention": "1997-12-31",
+      "source": "https://companiesmarketcap.com/time-warner/marketcap/"
+    }
+  ]
+}

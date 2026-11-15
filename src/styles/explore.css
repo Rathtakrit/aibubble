@@ -301,7 +301,8 @@
   color: var(--ink-2);
 }
 
-/* A key-date dot: filled in the colour of its kind, ringed in paper so it sits on the line. */
+/* A key-date dot: ink on the line, ringed in paper so it sits on the line. The dot of the chosen
+   item is the deep blue of the accent. */
 .dot {
   box-sizing: border-box;
   width: 10px;
@@ -312,25 +313,10 @@
   transition: all 300ms ease;
 }
 
-.dot-investment {
-  background: var(--investment);
-}
-
-.dot-cloud {
-  background: var(--cloud);
-}
-
-.dot-chip {
-  background: var(--chip);
-}
-
-.dot-money {
-  background: var(--ink-2);
-}
-
 .is-current .dot {
   width: 14px;
   height: 14px;
+  background: var(--accent);
   border-color: var(--ink);
 }
 
@@ -362,13 +348,15 @@
 
 /* --- the day slider: its track is the timeline line, the handle rides on it --- */
 
+/* The slider's value is a place on the line, so the handle has to sit exactly on the dot of the
+   day it shows. A range input keeps its handle half a handle inside each end, so the input is
+   stretched by that half at both ends: the handle's middle then runs the full width of the line. */
 .day-range {
   -webkit-appearance: none;
   appearance: none;
   position: absolute;
-  left: 0;
-  right: 0;
-  width: 100%;
+  left: -9px;
+  width: calc(100% + 18px);
   height: 44px;
   margin: 0;
   padding: 0;
@@ -585,13 +573,14 @@
   color: var(--ink-2);
 }
 
-/* With a company chosen the sheet is taller and the news list scrolls inside it, so the legend,
-   the day line and Earlier / Later stay in view below the list. */
+/* With a company chosen the sheet keeps to the same height as the news sheet, and the news list
+   scrolls inside it, so the kicker, Back, the name and value and the legend, day line and Earlier /
+   Later stay in view without the page scrolling. */
 .sheet:has([data-block="company"]:not([hidden])) {
   display: flex;
   flex-direction: column;
-  max-height: 78vh;
-  max-height: 78dvh;
+  max-height: 55vh;
+  max-height: 55dvh;
 }
 
 .sheet:has([data-block="company"]:not([hidden])) > * {
@@ -608,6 +597,291 @@
 .sheet:has([data-block="company"]:not([hidden])) .company-news {
   flex: 1 1 auto;
   min-height: 0;
+}
+
+/* --- story mode: the chapter in the text panel or the bottom sheet --- */
+
+/* A kicker belongs to one mode: Story's waits while the page is in Explore. */
+body[data-mode="explore"] .story-only {
+  display: none;
+}
+
+/* In Story the chapter's own kicker and dots show; the Explore kicker, news dots and news
+   titles step aside so the timeline keeps one set of dots, and the chapter titles take the
+   place of the news titles above it, as Review 1 asks. */
+body[data-mode="story"] .explore-only,
+body[data-mode="story"] .timeline-dot[data-news],
+body[data-mode="story"] .timeline-label[data-timeline-label],
+body[data-mode="explore"] .timeline-label[data-story-label] {
+  display: none;
+}
+
+.story-dot {
+  display: none;
+  width: 44px;
+  margin-left: -22px;
+}
+
+body[data-mode="story"] .story-dot {
+  display: flex;
+}
+
+/* The chapter's text: body style, a line short enough to read, and every paragraph as written. */
+.chapter-text {
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--text-body);
+}
+
+.chapter-text p {
+  margin: 0 0 14px;
+}
+
+.chapter-text p:last-child {
+  margin-bottom: 0;
+}
+
+.read-story {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-top: 8px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--accent);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.read-story:hover {
+  color: var(--accent-dark);
+}
+
+/* The list of every chapter, past and next, as the design shows it: one row each, the chapter
+   being read marked with the accent. */
+.chapter-list {
+  display: flex;
+  flex-direction: column;
+  max-height: 60vh;
+  background: var(--paper);
+  border: 1px solid var(--ink);
+}
+
+.chapter-list-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 8px 8px 20px;
+  border-bottom: 1px solid var(--ink);
+}
+
+.chapter-list-title {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: 30px;
+  line-height: 1.1;
+}
+
+.chapter-list-close {
+  width: 44px;
+  height: 44px;
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.chapter-list-items {
+  list-style: none;
+  min-height: 0;
+  margin: 0;
+  padding: 0 20px 8px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.chapter-row {
+  display: block;
+  width: 100%;
+  padding: 14px 0 16px;
+  border: none;
+  border-top: 1px solid var(--rule);
+  background: transparent;
+  color: var(--ink);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.chapter-list-items li:first-child .chapter-row {
+  border-top: none;
+}
+
+.chapter-row-kicker {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+.chapter-row-title {
+  display: block;
+  margin-top: 6px;
+  font-family: var(--font-serif);
+  font-size: 26px;
+  line-height: 1.1;
+}
+
+.chapter-row:hover .chapter-row-title {
+  color: var(--accent);
+}
+
+.chapter-row[aria-current="true"] {
+  border-top: 3px solid var(--accent);
+}
+
+.chapter-row[aria-current="true"] .chapter-row-kicker {
+  color: var(--accent);
+}
+
+/* The phone's Story / Explore switch, from the design's bottom sheet. */
+.mode-switch {
+  display: flex;
+  padding: 3px;
+  margin-bottom: 10px;
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+}
+
+.mode-button {
+  flex: 1 1 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  border-radius: 999px;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.mode-switch .nav-current {
+  background: var(--ink);
+  color: var(--paper);
+  text-decoration: none;
+}
+
+/* A past page's switch between the two past bubbles, above the date: the phone's switch with a
+   little less padding, and labels that wrap onto a second line on a narrow phone rather than
+   running past the pill. Each button keeps its 44px tap height. */
+.past-switch .mode-button {
+  padding: 2px 10px;
+  font-size: 13px;
+  line-height: 1.15;
+  text-align: center;
+  white-space: normal;
+}
+
+/* On the phone the chapter lives in the sheet: kicker, title, note, players and buttons stay
+   put and the text scrolls inside them, so the sheet never grows past its 55dvh and nothing is
+   drawn over the buttons or the day line. The legend has no room left in Story and is left out;
+   Explore keeps it. */
+body[data-mode="story"] .sheet > .legend {
+  display: none;
+}
+
+.sheet:has([data-block="story"]:not([hidden])),
+.sheet:has([data-block="story-list"]:not([hidden])) {
+  display: flex;
+  flex-direction: column;
+}
+
+.sheet:has([data-block="story"]:not([hidden])) > *,
+.sheet:has([data-block="story-list"]:not([hidden])) > * {
+  flex: 0 0 auto;
+}
+
+.sheet:has([data-block="story"]:not([hidden])) [data-block="story"] {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.sheet [data-block="story"] .chapter-text {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* A few pixels less between the lines that stay put leaves the chapter text more of the
+   55dvh to read in. */
+body[data-mode="story"] .sheet .mode-switch {
+  margin-bottom: 8px;
+}
+
+body[data-mode="story"] .sheet .status,
+body[data-mode="story"] .sheet .players-line {
+  margin-top: 6px;
+}
+
+body[data-mode="story"] .sheet .read-story {
+  margin-top: 4px;
+}
+
+body[data-mode="story"] .sheet .sheet-timeline {
+  margin-top: 6px;
+}
+
+.sheet [data-block="story"] .chapter-text p {
+  margin: 4px 0 10px;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.sheet [data-block="story"] .players-line {
+  margin: 8px 0 0;
+  font-size: 13px;
+}
+
+.sheet:has([data-block="story-list"]:not([hidden])) [data-block="story-list"] {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.chapter-list-sheet {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+  border: none;
+}
+
+.chapter-list-sheet .chapter-list-items {
+  padding: 0 16px 12px;
+}
+
+.chapter-list-sheet .chapter-row-kicker {
+  font-size: 11px;
+}
+
+.chapter-list-sheet .chapter-row-title {
+  margin-top: 4px;
+  font-size: 23px;
 }
 
 /* --- desktop: news beside the bubble, one-line timeline below (layout B) --- */
@@ -665,6 +939,7 @@
     min-height: 44px;
     color: var(--ink-2);
     opacity: 0.6;
+    text-decoration: none;
   }
 
   .nav-current {
@@ -753,39 +1028,66 @@
     margin-top: 22px;
   }
 
-  /* The company panel keeps its news inside the column, so the timeline keeps its place. */
+  .story-column .chapter-text {
+    margin-top: 4px;
+  }
+
+  /* The story's sample note starts at the column's left edge, as every other line there does.
+     The timeline's own status line keeps its wide band and its centred margins, which would
+     centre the note too if it kept them inside the column. */
+  .story-column [data-block="story"] .status {
+    margin: 10px 0 0;
+  }
+
+  /* The company panel keeps its news inside the column, so the timeline keeps its place: the list
+     takes the room the window has left over after the header, the date, the panel's own lines and
+     the timeline, and scrolls inside it. */
   .story-column .company-news {
-    max-height: 32vh;
+    max-height: min(32vh, calc(100vh - 700px));
+    max-height: min(32vh, calc(100dvh - 700px));
   }
 
   .latest-label {
     margin: 18px 0 0;
   }
 
+  /* The bubble is a square, and everything else on the page has to stay in view without
+     scrolling: the header, the padding, the two lines under the bubble and the timeline take
+     380px of the window's height, so the bubble gives back whatever the window has above that.
+     The room comes from the space above the date and around the bubble, not from the text. */
   .bubble-column {
+    /* The zoom buttons stand in a strip of their own beside the square, 10px clear of it, so the
+       frame's circle is never under them however small the window makes the bubble. The column is
+       the square plus that strip; the square keeps the size the window's height allows. */
+    --zoom-strip: 56px;
     flex: 1 1 560px;
     min-width: 0;
-    max-width: 680px;
+    max-width: min(calc(680px + var(--zoom-strip)), calc(100vh - 380px + var(--zoom-strip)));
+    max-width: min(calc(680px + var(--zoom-strip)), calc(100dvh - 380px + var(--zoom-strip)));
     margin: 0 auto;
   }
 
   .bubble-wrap {
     position: relative;
+    width: calc(100% - var(--zoom-strip));
   }
 
   .bubble-column .zoom-buttons {
     position: absolute;
-    right: 0;
+    right: calc(-1 * var(--zoom-strip));
     bottom: 6%;
   }
 
+  /* The lines under the bubble follow the square, not the strip beside it. */
   .bubble-meta {
+    width: calc(100% - var(--zoom-strip));
     margin-top: 6px;
     font-size: 13px;
     color: var(--ink-2);
   }
 
   .bubble-column .legend {
+    width: calc(100% - var(--zoom-strip));
     margin-top: 10px;
   }
 
@@ -796,40 +1098,48 @@
 
   .timeline-inner {
     position: relative;
-    height: 76px;
+    height: 152px;
     max-width: 1360px;
     margin: 0 auto;
   }
 
-  /* The one line: labels above it, dots on it, day ticks and years below it. */
+  /* The one line: three heights of titles above it, dots on it, day ticks and years below it.
+     Each height is 28px, a two-line title, and the next one starts 32px above it, so no title
+     can sit on the one above it however it wraps. The furthest height ends 10px below the top
+     of the box, and the line sits low enough for the furthest height. */
   .timeline-inner .timeline-axis {
-    top: 34px;
+    top: 110px;
   }
 
   .timeline-inner .day-range {
-    top: 12px;
+    top: 88px;
     z-index: 1;
   }
 
   .timeline-inner .timeline-dot {
-    top: 12px;
+    top: 88px;
   }
 
   .timeline-label {
     position: absolute;
+    width: max-content;
+    max-width: 150px;
     font-size: 12px;
     line-height: 14px;
     color: var(--ink-2);
-    white-space: nowrap;
     pointer-events: none;
   }
 
   .timeline-label[data-row="0"] {
-    top: 0;
+    bottom: 50px;
   }
 
   .timeline-label[data-row="1"] {
-    top: 16px;
+    bottom: 82px;
+  }
+
+  .timeline-label[data-row="2"] {
+    bottom: 114px;
   }
 
   .timeline-label[data-align="center"] {
@@ -846,19 +1156,19 @@
   }
 
   .timeline-tick-year {
-    top: 34px;
+    top: 110px;
     height: 9px;
   }
 
   .timeline-tick-quarter {
-    top: 34px;
+    top: 110px;
     height: 5px;
     border-left-color: var(--ink-2);
   }
 
   .timeline-year {
     position: absolute;
-    top: 44px;
+    top: 120px;
     transform: translateX(-50%);
     font-size: 12px;
     line-height: 14px;
@@ -869,7 +1179,7 @@
     position: absolute;
     left: 0;
     right: 0;
-    top: 60px;
+    top: 135px;
     line-height: 14px;
   }
 
@@ -878,6 +1188,96 @@
     margin: 4px auto 0;
     font-size: 12px;
     color: var(--ink-2);
+  }
+}
+
+/* --- Story on desktop: the page keeps the window's height and the chapter text scrolls --- */
+
+/* Story keeps the page the height of the window, as Explore does, so the timeline never falls
+   below it. The page is read as three bands: the header, the main area and the timeline. The
+   header and the timeline keep their heights and the main area is given whatever is left over, so
+   it is a share of the window and never the height of the chapter. The text column fills that
+   area, and the chapter text is the one part that shrinks and scrolls inside it: the kicker, date,
+   title, sample note, the players line, the buttons and "Read the story" keep their places around
+   it, above the timeline.
+   The 1048px is where the two columns stop sitting side by side: their sizes (360px and 560px), the
+   gap and the page's side padding add up to that, and below it the columns stack and the page
+   scrolls in Explore too, so Story behaves the same there. */
+@media (min-width: 1048px) {
+  body[data-mode="story"] .layout-desktop {
+    height: 100vh;
+    height: 100dvh;
+  }
+
+  body[data-mode="story"] .layout-desktop > .site-header,
+  body[data-mode="story"] .layout-desktop > .timeline {
+    flex: 0 0 auto;
+  }
+
+  /* The main area is the window less the header and the timeline, not the height of what it holds:
+     its size starts at zero and it grows into the room left between them. Nothing is drawn outside
+     it, so neither column can reach the timeline's line.
+     One line, not wrapping: above 1048px the two columns always fit side by side, and a wrapping
+     area sizes its line by the tallest thing in it — the chapter — so the column would be handed
+     the chapter's height again instead of the room between the header and the timeline. */
+  body[data-mode="story"] .explore-main {
+    flex: 1 1 0;
+    flex-wrap: nowrap;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  /* The text column fills that area from the top and hands the room it has to its one growing
+     child, the chapter block. Its height is the area's own content box, whatever the chapter's
+     length, so the block and the chapter text have a shorter height to shrink into. */
+  body[data-mode="story"] .story-column {
+    height: 100%;
+    min-height: 0;
+    justify-content: flex-start;
+  }
+
+  body[data-mode="story"] .story-column > * {
+    flex: 0 0 auto;
+  }
+
+  /* Inside the column the kicker, the date and, in the block, the title, the sample note, the
+     players line, the buttons and "Read the story" keep their natural height; the chapter text is
+     the only part that grows into the leftover room and shrinks below its content to scroll. */
+  body[data-mode="story"] .story-column [data-block="story"]:not([hidden]) {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  body[data-mode="story"] .story-column [data-block="story"] > * {
+    flex: 0 0 auto;
+  }
+
+  body[data-mode="story"] .story-column [data-block="story"] .chapter-text {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  /* The chapter list is a panel in the same column; it gives the column's leftover room to its
+     scrolling rows, so opening it never pushes the timeline off screen either. */
+  body[data-mode="story"] .story-column [data-block="story-list"]:not([hidden]) {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  body[data-mode="story"] .story-column .chapter-list {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  body[data-mode="story"] .story-column .chapter-list-items {
+    flex: 1 1 auto;
+    min-height: 0;
   }
 }
 

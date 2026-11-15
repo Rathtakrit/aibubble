@@ -1,10 +1,17 @@
 // Pure helpers for the Explore page's day slider and one-line timeline.
-// No DOM here; explore.ts and index.astro use the results.
+// No DOM here; ExplorePage.astro and explore.ts use the results.
 
 import type { Deal, NewsItem } from "./data.ts";
 
-// The day the site starts: ChatGPT opened to the public on 30 November 2022.
-export const FIRST_DAY = "2022-11-30";
+// The day the active data set starts: ChatGPT opened to the public on 30 November 2022, and the
+// past sets start on the first day in their meta.json. `useDataset` in data.ts sets it.
+export let FIRST_DAY = "2022-11-30";
+
+// Sets the first day of the active data set. Called by useDataset, not by the page.
+export function setFirstDay(date: string): void {
+  FIRST_DAY = date;
+}
+
 const DAY_MS = 86_400_000;
 
 function midnight(date: string): number {
@@ -15,21 +22,92 @@ function clamp(min: number, value: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
 
-// Days since 30 November 2022, so a slider can step one day at a time: dayIndex("2022-11-30") is 0.
+// Days since the set's first day: dayIndex(FIRST_DAY) is 0.
 export function dayIndex(date: string): number {
   return Math.round((midnight(date) - midnight(FIRST_DAY)) / DAY_MS);
 }
 
-// The day that many days after 30 November 2022, as YYYY-MM-DD. The slider's value back to a date.
+// The day that many days after the set's first day, as YYYY-MM-DD.
 export function dateAt(index: number): string {
   return new Date(midnight(FIRST_DAY) + index * DAY_MS).toISOString().slice(0, 10);
 }
 
-// Where a day sits along the timeline: 0% on 30 November 2022, 100% on the last day of the data.
-export function dayPercent(date: string, lastDate: string): number {
-  const span = dayIndex(lastDate);
-  if (span <= 0) return 0;
-  return clamp(0, (dayIndex(date) / span) * 100, 100);
+// --- the day scale: busy months get more room, empty ones less ---
+
+// A month of the line in days since FIRST_DAY, and the share of the line it has earned. `start` is
+// the weight of every month before it, so a weight can be turned into a place on the line.
+type MonthSpan = { first: number; days: number; start: number; weight: number };
+
+// A month with four key-date dots is seven times as wide as a month with none.
+const MAX_MONTH_WEIGHT = 7;
+
+// One span per calendar month from the first day to the last: a weight of 1, plus 1.5 for each
+// key-date dot in that month, up to 7. Every day of the month gets an equal share of the weight.
+function monthSpans(lastDate: string, dots: readonly Dated[]): MonthSpan[] {
+  const dotsInMonth = new Map<string, number>();
+  for (const dot of dots) {
+    const month = dot.date.slice(0, 7);
+    dotsInMonth.set(month, (dotsInMonth.get(month) ?? 0) + 1);
+  }
+
+  const lastDay = dayIndex(lastDate);
+  const spans: MonthSpan[] = [];
+  let start = 0;
+  let year = Number(FIRST_DAY.slice(0, 4));
+  let month = Number(FIRST_DAY.slice(5, 7));
+  const lastYear = Number(lastDate.slice(0, 4));
+  const lastMonth = Number(lastDate.slice(5, 7));
+
+  while (year < lastYear || (year === lastYear && month <= lastMonth)) {
+    const key = `${year}-${String(month).padStart(2, "0")}`;
+    // Day 0 of the next month is the last day of this one.
+    const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
+    const first = Math.max(0, dayIndex(`${key}-01`));
+    const last = Math.min(lastDay, dayIndex(`${key}-${String(daysInMonth).padStart(2, "0")}`));
+    const weight = Math.min(MAX_MONTH_WEIGHT, 1 + 1.5 * (dotsInMonth.get(key) ?? 0));
+    spans.push({ first, days: last - first + 1, start, weight });
+    start += weight;
+    month += 1;
+    if (month > 12) {
+      month = 1;
+      year += 1;
+    }
+  }
+  return spans;
+}
+
+export type TimelineScale = {
+  // 0% on the set's first day, 100% on the last day of the data, with busy months given more room.
+  percentOf(date: string): number;
+  // The day nearest that place on the line, as YYYY-MM-DD.
+  dateOf(percent: number): string;
+};
+
+// The timeline's day scale, built once from the days that carry a dot. Days move evenly inside
+// their month, the order of days never changes, and the first day is at 0 and the last at 100.
+export function timelineScale(lastDate: string, dots: readonly Dated[]): TimelineScale {
+  const spans = monthSpans(lastDate, dots);
+  const lastDay = dayIndex(lastDate);
+  const lastSpan = spans[spans.length - 1];
+  // The weight between the first day and the last, the ends of the line.
+  const end = lastSpan.start + (lastSpan.weight * (lastSpan.days - 1)) / lastSpan.days;
+
+  function percentOf(date: string): number {
+    const day = clamp(0, dayIndex(date), lastDay);
+    const span = spans.find((one) => day < one.first + one.days) ?? lastSpan;
+    const inside = (day - span.first) / span.days;
+    return clamp(0, ((span.start + span.weight * inside) / end) * 100, 100);
+  }
+
+  function dateOf(percent: number): string {
+    const place = (clamp(0, percent, 100) / 100) * end;
+    // A place on the line is the nearest day, so the end of one month stays its own last day.
+    const span = spans.find((one) => place < one.start + one.weight) ?? lastSpan;
+    const inside = clamp(0, (place - span.start) / span.weight, 1);
+    return dateAt(clamp(0, span.first + Math.round(inside * span.days), lastDay));
+  }
+
+  return { percentOf, dateOf };
 }
 
 const shortDateFormat = new Intl.DateTimeFormat("en-GB", {
@@ -133,16 +211,11 @@ export function neighbour<T extends Dated>(items: readonly T[], id: string, step
   return ordered[at + step] ?? null;
 }
 
-// Which pill a news item shows.
-export type PillKind = "science" | "money" | "investment" | "cloud" | "chip";
+// Which pill a news item shows: "science", "money", or the id of the deal kind it belongs to.
+export type PillKind = "science" | "money" | Deal["kind"];
 
-export const PILL_LABELS: Record<PillKind, string> = {
-  science: "Science",
-  investment: "Investment",
-  cloud: "Cloud deal",
-  chip: "Chip deal",
-  money: "Money",
-};
+// The names a pill can carry live in data.ts: Science and Money are fixed, and a deal kind takes
+// the active set's own name (see pillLabel there).
 
 // Science news is "Science". Money news shows the kind of its deal when the item's players are
 // the two ends of a deal announced that day; otherwise it is plain "Money".
@@ -156,21 +229,21 @@ export function pillKind(item: Pick<NewsItem, "date" | "players" | "kind">, deal
   return "money";
 }
 
-// --- timeline labels: two heights over the line, and never two on top of each other ---
+// --- timeline labels: three heights over the line, and never two on top of each other ---
 
 export type LabelBox = { id: string; percent: number; width: number };
 
 export type LabelPlacement = {
-  // 0 is the height nearer the line, 1 the one above it.
-  row: 0 | 1;
+  // 0 is the height nearest the line, 2 the one furthest above it.
+  row: 0 | 1 | 2;
   // Where the text sits against its date: centred on it, or pushed in at an end of the line.
   align: "start" | "center" | "end";
 };
 
 // Places each label beside the ones already placed. A label goes on the first height where its
 // real box - aligned to the start, the middle or the end of its text against the date - clears
-// the box already on that height, plus a little room; one that fits on neither is left out
-// rather than drawn on top of another.
+// the box already on that height, plus a little room; one that fits on none of the three is left
+// out rather than drawn on top of another.
 export function placeLabels(
   boxes: readonly LabelBox[],
   containerWidth: number,
@@ -178,8 +251,9 @@ export function placeLabels(
 ): Map<string, LabelPlacement> {
   const out = new Map<string, LabelPlacement>();
   if (containerWidth <= 0) return out;
-  // The box already taken on each of the two heights: [left, right] in pixels.
+  // The box already taken on each of the three heights: [left, right] in pixels.
   const taken: [number, number][] = [
+    [-Infinity, -Infinity],
     [-Infinity, -Infinity],
     [-Infinity, -Infinity],
   ];
@@ -194,7 +268,7 @@ export function placeLabels(
     const left = clamp(0, alignedLeft, containerWidth - width);
     const right = left + width;
 
-    for (const row of [0, 1] as const) {
+    for (const row of [0, 1, 2] as const) {
       const [takenLeft, takenRight] = taken[row];
       // Two boxes clash when each reaches into the other, with the extra room between them.
       if (left < takenRight + gap && right > takenLeft - gap) continue;
