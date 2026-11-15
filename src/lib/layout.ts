@@ -237,7 +237,7 @@ export function defaultDate(): string {
     ...news.map((item) => item.date),
     ...companies.map((company) => company.first_mention),
   ];
-  return dates.reduce((latest, date) => (date > latest ? date : latest), "2017-06-12");
+  return dates.reduce((latest, date) => (date > latest ? date : latest), "2022-11-30");
 }
 
 // Thin wrappers over the real data, for the page and the renderer.

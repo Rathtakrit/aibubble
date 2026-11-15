@@ -10,16 +10,18 @@ import {
   dateAt,
   dayIndex,
   dayLabel,
-  dayPercent,
   inDateOrder,
+  FIRST_DAY,
   latestOnOrBefore,
   neighbour,
   PILL_LABELS,
   pillKind,
-  siteName,
+  placeLabels,
+  publisherName,
 } from "../lib/timeline.ts";
 
-const ordered = inDateOrder(news);
+// Explore walks money news only, from the ChatGPT launch on; the other news waits for its own tab.
+const ordered = inDateOrder(news.filter((item) => item.kind === "money" && item.date >= FIRST_DAY));
 const byId = new Map(ordered.map((item) => [item.id, item]));
 const place = new Map(ordered.map((item, index) => [item.id, index + 1]));
 const nameOf = new Map(companies.map((company) => [company.id, company.name]));
@@ -71,8 +73,10 @@ function render(soon = false): void {
     }
     setText("pill-label", PILL_LABELS[kind]);
     for (const link of document.querySelectorAll<HTMLAnchorElement>('[data-bind="source"]')) {
+      const publisher = publisherName(item.source);
       link.href = item.source;
-      link.textContent = `Source: ${siteName(item.source)}`;
+      link.textContent = `${publisher} · ${dayLabel(item.date)} ↗`;
+      link.setAttribute("aria-label", `Source: ${publisher}, opens in a new tab`);
     }
   } else {
     setText("kicker-desktop", `Explore · ${dayLabel(day)}`);
@@ -86,11 +90,8 @@ function render(soon = false): void {
     `All AI companies on ${dayLabel(day)} · total ${formatValue(totalForDate(day))}`,
   );
 
-  for (const marker of document.querySelectorAll<HTMLElement>("[data-marker]")) {
-    marker.style.left = `${dayPercent(day, lastDate)}%`;
-  }
-  for (const dot of document.querySelectorAll<HTMLElement>("[data-news]")) {
-    dot.classList.toggle("is-current", item !== null && dot.dataset.news === item.id);
+  for (const marker of document.querySelectorAll<HTMLElement>("[data-news]")) {
+    marker.classList.toggle("is-current", item !== null && marker.dataset.news === item.id);
   }
   for (const slider of document.querySelectorAll<HTMLInputElement>("[data-slider]")) {
     slider.value = String(dayIndex(day));
@@ -236,3 +237,35 @@ function readAddress(): void {
 
 readAddress();
 render();
+
+// The titles above the timeline are placed from their real widths, on the first of the two heights
+// that has room; one that fits on neither is hidden rather than drawn over another.
+function placeTimelineLabels(): void {
+  const inner = document.querySelector<HTMLElement>("[data-timeline]");
+  if (!inner) return;
+  const labels = Array.from(inner.querySelectorAll<HTMLElement>("[data-timeline-label]"));
+  if (labels.length === 0) return;
+
+  for (const label of labels) label.hidden = false;
+  const placed = placeLabels(
+    labels.map((label, index) => ({
+      id: String(index),
+      percent: Number.parseFloat(label.style.left) || 0,
+      width: label.offsetWidth,
+    })),
+    inner.clientWidth,
+    10,
+  );
+
+  labels.forEach((label, index) => {
+    const spot = placed.get(String(index));
+    label.hidden = spot === undefined;
+    if (!spot) return;
+    label.dataset.row = String(spot.row);
+    label.dataset.align = spot.align;
+  });
+}
+
+placeTimelineLabels();
+window.addEventListener("resize", placeTimelineLabels);
+document.fonts.ready.then(placeTimelineLabels, () => {});

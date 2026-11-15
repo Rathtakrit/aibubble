@@ -1,10 +1,10 @@
-// Pure helpers for the Explore page's day slider and two-lane timeline.
+// Pure helpers for the Explore page's day slider and one-line timeline.
 // No DOM here; explore.ts and index.astro use the results.
 
 import type { Deal, NewsItem } from "./data.ts";
 
-// The day the site starts: "Attention Is All You Need" came out on 12 June 2017.
-export const FIRST_DAY = "2017-06-12";
+// The day the site starts: ChatGPT opened to the public on 30 November 2022.
+export const FIRST_DAY = "2022-11-30";
 const DAY_MS = 86_400_000;
 
 function midnight(date: string): number {
@@ -15,17 +15,17 @@ function clamp(min: number, value: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
 
-// Days since 12 June 2017, so a slider can step one day at a time: dayIndex("2017-06-12") is 0.
+// Days since 30 November 2022, so a slider can step one day at a time: dayIndex("2022-11-30") is 0.
 export function dayIndex(date: string): number {
   return Math.round((midnight(date) - midnight(FIRST_DAY)) / DAY_MS);
 }
 
-// The day that many days after 12 June 2017, as YYYY-MM-DD. The slider's value back to a date.
+// The day that many days after 30 November 2022, as YYYY-MM-DD. The slider's value back to a date.
 export function dateAt(index: number): string {
   return new Date(midnight(FIRST_DAY) + index * DAY_MS).toISOString().slice(0, 10);
 }
 
-// Where a day sits along the timeline: 0% on 12 June 2017, 100% on the last day of the data.
+// Where a day sits along the timeline: 0% on 30 November 2022, 100% on the last day of the data.
 export function dayPercent(date: string, lastDate: string): number {
   const span = dayIndex(lastDate);
   if (span <= 0) return 0;
@@ -50,6 +50,54 @@ export function siteName(url: string): string {
     return new URL(url).hostname.replace(/^www\./, "");
   } catch {
     return url;
+  }
+}
+
+// The publisher's own name for each host the news and deals cite, without www.
+const PUBLISHERS: Record<string, string> = {
+  "techcrunch.com": "TechCrunch",
+  "anthropic.com": "Anthropic",
+  "nvidianews.nvidia.com": "Nvidia",
+  "cnbc.com": "CNBC",
+  "en.wikipedia.org": "Wikipedia",
+  "theguardian.com": "The Guardian",
+  "blogs.microsoft.com": "Microsoft",
+  "aboutamazon.com": "Amazon",
+  "press.aboutamazon.com": "Amazon",
+  "ai.meta.com": "Meta",
+  "coreweave.com": "CoreWeave",
+  "group.softbank": "SoftBank",
+  "blog.google": "Google",
+  "mistral.ai": "Mistral AI",
+  "bis.gov": "US Bureau of Industry and Security",
+  "openai.com": "OpenAI",
+  "bloomberg.com": "Bloomberg",
+  "finance.yahoo.com": "Yahoo Finance",
+  "x.ai": "xAI",
+  "bbc.com": "BBC",
+  "bbc.co.uk": "BBC",
+  "businessinsider.com": "Business Insider",
+  "sec.gov": "US SEC",
+  "ir.amd.com": "AMD",
+  "reuters.com": "Reuters",
+  "forbes.com": "Forbes",
+  "fortune.com": "Fortune",
+  "cnn.com": "CNN",
+  "arstechnica.com": "Ars Technica",
+  "companiesmarketcap.com": "CompaniesMarketCap",
+  "geekwire.com": "GeekWire",
+  "engadget.com": "Engadget",
+  "euronews.com": "Euronews",
+  "pbs.org": "PBS",
+  "cbsnews.com": "CBS News",
+};
+
+// "Forbes" from "https://www.forbes.com/...", and the host itself when the name is not known.
+export function publisherName(url: string): string {
+  try {
+    return PUBLISHERS[new URL(url).hostname.replace(/^www\./, "")] ?? siteName(url);
+  } catch {
+    return siteName(url);
   }
 }
 
@@ -106,4 +154,48 @@ export function pillKind(item: Pick<NewsItem, "date" | "players" | "kind">, deal
     if (players.has(deal.from) && players.has(deal.to)) return deal.kind;
   }
   return "money";
+}
+
+// --- timeline labels: two heights over the line, and never two on top of each other ---
+
+export type LabelBox = { id: string; percent: number; width: number };
+
+export type LabelPlacement = {
+  // 0 is the height nearer the line, 1 the one above it.
+  row: 0 | 1;
+  // Where the text sits against its date: centred on it, or pushed in at an end of the line.
+  align: "start" | "center" | "end";
+};
+
+// Places each label beside the ones already placed. A label goes on the first height where its
+// box clears the last one there; one that fits on neither is left out rather than drawn on top
+// of another.
+export function placeLabels(
+  boxes: readonly LabelBox[],
+  containerWidth: number,
+  gap = 8,
+): Map<string, LabelPlacement> {
+  const out = new Map<string, LabelPlacement>();
+  if (containerWidth <= 0) return out;
+  const rightEdge = [-Infinity, -Infinity];
+
+  for (const box of [...boxes].sort((a, b) => a.percent - b.percent)) {
+    const width = Math.min(box.width, containerWidth);
+    const middle = (box.percent / 100) * containerWidth;
+    const left = clamp(0, middle - width / 2, containerWidth - width);
+    const align: LabelPlacement["align"] =
+      left === 0 && middle - width / 2 < 0
+        ? "start"
+        : left === containerWidth - width && middle + width / 2 > containerWidth
+          ? "end"
+          : "center";
+
+    for (const row of [0, 1] as const) {
+      if (left < rightEdge[row] + gap) continue;
+      rightEdge[row] = left + width;
+      out.set(box.id, { row, align });
+      break;
+    }
+  }
+  return out;
 }
