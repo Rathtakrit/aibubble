@@ -1,0 +1,49 @@
+{
+  "status": "sample",
+  "items": [
+    {
+      "id": "2019-07-22-microsoft-openai",
+      "date": "2019-07-22",
+      "from": "microsoft",
+      "to": "openai",
+      "kind": "investment",
+      "amount_usd_bn": 1,
+      "amount_type": "paid",
+      "title": "SAMPLE: Microsoft puts money into OpenAI",
+      "source": "https://example.com/sample"
+    },
+    {
+      "id": "2023-01-23-microsoft-openai-cloud",
+      "date": "2023-01-23",
+      "from": "microsoft",
+      "to": "openai",
+      "kind": "cloud",
+      "amount_usd_bn": 10,
+      "amount_type": "committed",
+      "title": "SAMPLE: Microsoft promises cloud capacity to OpenAI",
+      "source": "https://example.com/sample"
+    },
+    {
+      "id": "2023-05-25-nvidia-g-chips",
+      "date": "2023-05-25",
+      "from": "nvidia",
+      "to": "g-chips",
+      "kind": "chip",
+      "amount_usd_bn": 4,
+      "amount_type": "up to",
+      "title": "SAMPLE: Nvidia orders chips from the group",
+      "source": "https://example.com/sample"
+    },
+    {
+      "id": "2024-03-14-amazon-openai",
+      "date": "2024-03-14",
+      "from": "amazon",
+      "to": "openai",
+      "kind": "investment",
+      "amount_usd_bn": null,
+      "amount_type": "reported",
+      "title": "SAMPLE: Amazon stake in OpenAI reported",
+      "source": "https://example.com/sample"
+    }
+  ]
+}

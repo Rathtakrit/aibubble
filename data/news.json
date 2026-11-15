@@ -1,0 +1,85 @@
+{
+  "status": "sample",
+  "items": [
+    {
+      "id": "2017-06-12-attention-paper",
+      "date": "2017-06-12",
+      "title": "SAMPLE: The attention paper is published",
+      "summary": "SAMPLE: A research paper describes a way to read a whole sentence at once.",
+      "players": [],
+      "kind": "science",
+      "key_date": true,
+      "source": "https://example.com/sample"
+    },
+    {
+      "id": "2019-07-22-microsoft-openai",
+      "date": "2019-07-22",
+      "title": "SAMPLE: Microsoft invests in OpenAI",
+      "summary": "SAMPLE: A listed company puts money into a private lab.",
+      "players": ["microsoft", "openai"],
+      "kind": "money",
+      "key_date": true,
+      "source": "https://example.com/sample"
+    },
+    {
+      "id": "2020-01-02-cloud-market",
+      "date": "2020-01-02",
+      "title": "SAMPLE: Cloud spending keeps rising",
+      "summary": "SAMPLE: Three listed companies report more money from rented computing.",
+      "players": ["microsoft", "amazon", "alphabet"],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://example.com/sample"
+    },
+    {
+      "id": "2021-06-09-science-model",
+      "date": "2021-06-09",
+      "title": "SAMPLE: A bigger language model",
+      "summary": "SAMPLE: A research lab describes a larger language model.",
+      "players": ["alphabet"],
+      "kind": "science",
+      "key_date": false,
+      "source": "https://example.com/sample"
+    },
+    {
+      "id": "2022-11-30-chatgpt",
+      "date": "2022-11-30",
+      "title": "SAMPLE: A chat tool is released",
+      "summary": "SAMPLE: A private lab lets the public try a chat tool.",
+      "players": ["openai"],
+      "kind": "science",
+      "key_date": true,
+      "source": "https://example.com/sample"
+    },
+    {
+      "id": "2023-05-25-chip-orders",
+      "date": "2023-05-25",
+      "title": "SAMPLE: Chip orders get bigger",
+      "summary": "SAMPLE: Orders for AI chips grow across the group.",
+      "players": ["nvidia", "g-chips"],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://example.com/sample"
+    },
+    {
+      "id": "2024-03-14-amazon-investment",
+      "date": "2024-03-14",
+      "title": "SAMPLE: Amazon takes a stake",
+      "summary": "SAMPLE: A reported stake links Amazon to OpenAI.",
+      "players": ["amazon", "openai"],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://example.com/sample"
+    },
+    {
+      "id": "2024-06-03-nvidia-value",
+      "date": "2024-06-03",
+      "title": "SAMPLE: Nvidia market value jumps",
+      "summary": "SAMPLE: A listed chip maker's market value passes a round number.",
+      "players": ["nvidia"],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://example.com/sample"
+    }
+  ]
+}

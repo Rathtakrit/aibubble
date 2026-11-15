@@ -1,0 +1,52 @@
+{
+  "status": "sample",
+  "items": [
+    {
+      "id": "nvidia",
+      "name": "Nvidia",
+      "kind": "listed",
+      "ticker": "NVDA",
+      "first_mention": "2017-06-12",
+      "source": "https://example.com/sample"
+    },
+    {
+      "id": "microsoft",
+      "name": "Microsoft",
+      "kind": "listed",
+      "ticker": "MSFT",
+      "first_mention": "2017-06-12",
+      "source": "https://example.com/sample"
+    },
+    {
+      "id": "alphabet",
+      "name": "Alphabet",
+      "kind": "listed",
+      "ticker": "GOOGL",
+      "first_mention": "2017-06-12",
+      "source": "https://example.com/sample"
+    },
+    {
+      "id": "amazon",
+      "name": "Amazon",
+      "kind": "listed",
+      "ticker": "AMZN",
+      "first_mention": "2017-06-12",
+      "source": "https://example.com/sample"
+    },
+    {
+      "id": "openai",
+      "name": "OpenAI",
+      "kind": "private",
+      "first_mention": "2019-07-22",
+      "source": "https://example.com/sample"
+    },
+    {
+      "id": "g-chips",
+      "name": "Other chips",
+      "kind": "group",
+      "members": ["Arm", "Micron", "Broadcom"],
+      "first_mention": "2023-05-25",
+      "source": "https://example.com/sample"
+    }
+  ]
+}

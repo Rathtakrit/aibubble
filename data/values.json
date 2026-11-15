@@ -1,0 +1,173 @@
+{
+  "status": "sample",
+  "items": [
+    {
+      "company": "nvidia",
+      "date": "2017-06-12",
+      "value_usd_bn": 100,
+      "what": "sample point",
+      "source": "https://example.com/sample"
+    },
+    {
+      "company": "nvidia",
+      "date": "2020-01-02",
+      "value_usd_bn": 150,
+      "what": "year end",
+      "source": "https://example.com/sample"
+    },
+    {
+      "company": "nvidia",
+      "date": "2023-01-03",
+      "value_usd_bn": 400,
+      "what": "year end",
+      "source": "https://example.com/sample"
+    },
+    {
+      "company": "nvidia",
+      "date": "2024-06-03",
+      "value_usd_bn": 2500,
+      "what": "sample point",
+      "source": "https://example.com/sample"
+    },
+    {
+      "company": "nvidia",
+      "date": "2025-06-02",
+      "value_usd_bn": 3500,
+      "what": "sample point",
+      "source": "https://example.com/sample"
+    },
+    {
+      "company": "microsoft",
+      "date": "2017-06-12",
+      "value_usd_bn": 500,
+      "what": "sample point",
+      "source": "https://example.com/sample"
+    },
+    {
+      "company": "microsoft",
+      "date": "2020-01-02",
+      "value_usd_bn": 1200,
+      "what": "year end",
+      "source": "https://example.com/sample"
+    },
+    {
+      "company": "microsoft",
+      "date": "2023-01-03",
+      "value_usd_bn": 1800,
+      "what": "year end",
+      "source": "https://example.com/sample"
+    },
+    {
+      "company": "microsoft",
+      "date": "2025-06-02",
+      "value_usd_bn": 3000,
+      "what": "sample point",
+      "source": "https://example.com/sample"
+    },
+    {
+      "company": "alphabet",
+      "date": "2017-06-12",
+      "value_usd_bn": 600,
+      "what": "sample point",
+      "source": "https://example.com/sample"
+    },
+    {
+      "company": "alphabet",
+      "date": "2020-01-02",
+      "value_usd_bn": 900,
+      "what": "year end",
+      "source": "https://example.com/sample"
+    },
+    {
+      "company": "alphabet",
+      "date": "2023-01-03",
+      "value_usd_bn": 1200,
+      "what": "year end",
+      "source": "https://example.com/sample"
+    },
+    {
+      "company": "alphabet",
+      "date": "2025-06-02",
+      "value_usd_bn": 2000,
+      "what": "sample point",
+      "source": "https://example.com/sample"
+    },
+    {
+      "company": "amazon",
+      "date": "2017-06-12",
+      "value_usd_bn": 400,
+      "what": "sample point",
+      "source": "https://example.com/sample"
+    },
+    {
+      "company": "amazon",
+      "date": "2020-01-02",
+      "value_usd_bn": 900,
+      "what": "year end",
+      "source": "https://example.com/sample"
+    },
+    {
+      "company": "amazon",
+      "date": "2023-01-03",
+      "value_usd_bn": 800,
+      "what": "year end",
+      "source": "https://example.com/sample"
+    },
+    {
+      "company": "amazon",
+      "date": "2025-06-02",
+      "value_usd_bn": 2000,
+      "what": "sample point",
+      "source": "https://example.com/sample"
+    },
+    {
+      "company": "openai",
+      "date": "2019-07-22",
+      "value_usd_bn": 1,
+      "what": "funding round",
+      "source": "https://example.com/sample"
+    },
+    {
+      "company": "openai",
+      "date": "2023-01-03",
+      "value_usd_bn": 20,
+      "what": "funding round",
+      "source": "https://example.com/sample"
+    },
+    {
+      "company": "openai",
+      "date": "2024-10-02",
+      "value_usd_bn": 150,
+      "what": "funding round",
+      "source": "https://example.com/sample"
+    },
+    {
+      "company": "openai",
+      "date": "2025-03-31",
+      "value_usd_bn": 300,
+      "what": "funding round",
+      "source": "https://example.com/sample"
+    },
+    {
+      "company": "g-chips",
+      "date": "2017-06-12",
+      "value_usd_bn": 80,
+      "what": "sample point",
+      "source": "https://example.com/sample"
+    },
+    {
+      "company": "g-chips",
+      "date": "2020-01-02",
+      "value_usd_bn": 200,
+      "what": "year end",
+      "source": "https://example.com/sample"
+    },
+    {
+      "company": "g-chips",
+      "date": "2025-06-02",
+      "value_usd_bn": 600,
+      "what": "sample point",
+      "source": "https://example.com/sample"
+    }
+  ]
+}
