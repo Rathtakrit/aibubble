@@ -20,4 +20,5 @@ This repo is public. Anyone can read every file, issue, pull request and commit,
 - Plain words. Explain an investment term the first time it appears.
 - Follow the colours, fonts and layout in the brief and `design/`. Bubble sizes and values in `design/` are
   placeholders, not data.
+- Where a "Review" table in the brief and `design/` differ, the brief wins.
 - Works at phone width (layout C) and desktop (layout B). Touch targets at least 44 px. Respect reduced motion.
