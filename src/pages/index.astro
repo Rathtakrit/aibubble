@@ -13,12 +13,14 @@ import {
   inDateOrder,
   PILL_LABELS,
   pillKind,
-  siteName,
+  placeLabels,
+  publisherName,
 } from "../lib/timeline.ts";
 
 // The page is drawn here in its first state and then follows the visitor with explore.ts.
 const lastDate = defaultDate();
-const ordered = inDateOrder(news);
+// Explore walks money news only, from the ChatGPT launch on; the other news waits for its own tab.
+const ordered = inDateOrder(news.filter((item) => item.kind === "money" && item.date >= FIRST_DAY));
 const current = ordered[ordered.length - 1];
 const count = ordered.length;
 const position = count;
@@ -27,24 +29,40 @@ const nameOf = new Map(companies.map((company) => [company.id, company.name]));
 const players = current.players.map((id) => nameOf.get(id) ?? id).join(", ");
 const keyDates = ordered.filter((item) => item.key_date);
 const place = new Map(ordered.map((item, index) => [item.id, index + 1]));
-const split = dayPercent("2022-11-30", lastDate);
 const lastDay = dayIndex(lastDate);
-// A year label at each January, from the first full year after the start.
-const years: number[] = [];
-for (
-  let year = Number(FIRST_DAY.slice(0, 4)) + 1;
-  year <= Number(lastDate.slice(0, 4));
-  year += 1
-) {
-  years.push(year);
+const publisher = publisherName(current.source);
+
+// A day tick under the line: every 1 January carries its year, the quarter days carry nothing.
+const ticks: { date: string; year: boolean }[] = [];
+for (let year = Number(FIRST_DAY.slice(0, 4)); year <= Number(lastDate.slice(0, 4)); year += 1) {
+  for (const month of ["01", "04", "07", "10"]) {
+    const date = `${year}-${month}-01`;
+    if (date < FIRST_DAY || date > lastDate) continue;
+    ticks.push({ date, year: month === "01" });
+  }
 }
+
+// Above the line: the first 16 characters of a key date's title, then an ellipsis.
+const labelOf = (title: string) =>
+  title.length > 16 ? `${title.slice(0, 16).trimEnd()}…` : title;
+
+// Which of the two label heights each title takes, so neighbours do not overlap. The page draws
+// them from this first estimate; explore.ts re-places them once the real widths are known.
+const labels = placeLabels(
+  keyDates.map((item) => ({
+    id: item.id,
+    percent: dayPercent(item.date, lastDate),
+    width: labelOf(item.title).length * 6.4,
+  })),
+  1280,
+);
+
 const statusLine =
   status === "sample"
     ? "Sample data, for testing only."
     : status === "draft"
       ? "Draft data: researched, not yet checked by the owner."
       : "";
-const lane = (item: (typeof ordered)[number]) => (item.kind === "science" ? "science" : "money");
 const ariaFor = (id: string, title: string, date: string) =>
   `News ${place.get(id)} of ${count}: ${dayLabel(date)}, ${title}`;
 ---
@@ -60,6 +78,12 @@ const ariaFor = (id: string, title: string, date: string) =>
     <div class="layout-desktop">
       <header class="site-header">
         <a class="wordmark" href="/">AI Bubble</a>
+        <nav class="site-nav" aria-label="Sections">
+          <a class="nav-item nav-current" href="/" aria-current="page">Explore</a>
+          <span class="nav-item">Science<span class="nav-tag">soon</span></span>
+          <span class="nav-item">News<span class="nav-tag">soon</span></span>
+          <span class="nav-item">Past bubbles<span class="nav-tag">soon</span></span>
+        </nav>
       </header>
 
       <main class="explore-main">
@@ -74,8 +98,14 @@ const ariaFor = (id: string, title: string, date: string) =>
             >
             <h1 class="headline" data-bind="title">{current.title}</h1>
             <p class="summary" data-bind="summary">{current.summary}</p>
-            <a class="source" data-bind="source" href={current.source} target="_blank" rel="noopener"
-              >Source: {siteName(current.source)}</a
+            <a
+              class="source"
+              data-bind="source"
+              href={current.source}
+              target="_blank"
+              rel="noopener"
+              aria-label={`Source: ${publisher}, opens in a new tab`}
+              >{publisher} · {dayLabel(current.date)} ↗</a
             >
             <p class="players-line" data-players-line>
               The view follows the players:{" "}
@@ -87,6 +117,19 @@ const ariaFor = (id: string, title: string, date: string) =>
             <p class="latest-label">Latest before this day:</p>
             <button type="button" class="latest-button" data-action="latest" data-bind="latest-title"
               >{current.title}</button
+            >
+          </div>
+
+          <div data-block="company" hidden>
+            <button type="button" class="company-back" data-action="company-back">← Back</button>
+            <h1 class="headline" data-bind="company-name"></h1>
+            <p class="company-value" data-bind="company-value"></p>
+            <p class="company-note" data-bind="company-note"></p>
+            <a class="source" data-bind="company-source" target="_blank" rel="noopener"></a>
+            <p class="sheet-kicker company-news-heading">News</p>
+            <ul class="company-news" data-bind="company-news"></ul>
+            <p class="company-news-empty" data-bind="company-news-empty" hidden
+              >No news about this company up to this day.</p
             >
           </div>
 
@@ -126,55 +169,8 @@ const ariaFor = (id: string, title: string, date: string) =>
       </main>
 
       <section class="timeline" aria-label="Timeline">
-        <div class="timeline-inner">
-          <span class="lane lane-science">Science</span>
-          <span class="lane lane-money">Money</span>
-          <div class="band band-before" style={`width: ${split}%`}>Before ChatGPT</div>
-          <div class="band band-after" style={`left: ${split}%`}>After ChatGPT</div>
-          <div class="timeline-axis"></div>
-          <div
-            class="day-marker"
-            data-marker
-            style={`left: ${dayPercent(current.date, lastDate)}%`}
-            aria-hidden="true"
-          >
-          </div>
-          {
-            keyDates.map((item) => (
-              <span
-                class="tick"
-                style={`left: ${dayPercent(item.date, lastDate)}%; top: ${
-                  lane(item) === "science" ? 48 : 90
-                }px; height: 22px;`}
-                aria-hidden="true"
-              />
-            ))
-          }
-          {
-            keyDates.map((item) => (
-              <button
-                type="button"
-                class="timeline-dot"
-                data-news={item.id}
-                style={`left: ${dayPercent(item.date, lastDate)}%; top: ${
-                  lane(item) === "science" ? 12 : 102
-                }px;`}
-                aria-label={ariaFor(item.id, item.title, item.date)}
-              >
-                <span class:list={["dot", `dot-${lane(item)}`]} />
-              </button>
-            ))
-          }
-          {
-            years.map((year) => (
-              <span class="year" style={`left: ${dayPercent(`${year}-01-01`, lastDate)}%`}>
-                {year}
-              </span>
-            ))
-          }
-        </div>
-
-        <div class="slider-block">
+        <div class="timeline-inner" data-timeline>
+          <div class="timeline-axis" aria-hidden="true"></div>
           <input
             class="day-range"
             data-slider
@@ -185,7 +181,55 @@ const ariaFor = (id: string, title: string, date: string) =>
             value={dayIndex(current.date)}
             aria-label="Day"
           />
-          <div class="slider-ends"><span>Jun 2017</span><span>Today</span></div>
+          {
+            keyDates.map((item) => {
+              const left = dayPercent(item.date, lastDate);
+              const label = labels.get(item.id);
+              return (
+                <>
+                  <button
+                    type="button"
+                    class="timeline-dot"
+                    data-news={item.id}
+                    style={`left: ${left}%`}
+                    aria-label={ariaFor(item.id, item.title, item.date)}
+                  >
+                    <span class:list={["dot", `dot-${pillKind(item, deals)}`]} />
+                  </button>
+                  <span
+                    class="timeline-label"
+                    data-timeline-label
+                    data-row={label?.row}
+                    data-align={label?.align ?? "center"}
+                    style={`left: ${left}%`}
+                    hidden={!label}
+                    aria-hidden="true"
+                  >
+                    {labelOf(item.title)}
+                  </span>
+                </>
+              );
+            })
+          }
+          {
+            ticks.map((tick) => (
+              <span
+                class:list={["timeline-tick", `timeline-tick-${tick.year ? "year" : "quarter"}`]}
+                style={`left: ${dayPercent(tick.date, lastDate)}%`}
+                aria-hidden="true"
+              />
+            ))
+          }
+          {
+            ticks
+              .filter((tick) => tick.year)
+              .map((tick) => (
+                <span class="timeline-year" style={`left: ${dayPercent(tick.date, lastDate)}%`} aria-hidden="true">
+                  {tick.date.slice(0, 4)}
+                </span>
+              ))
+          }
+          <div class="timeline-ends" aria-hidden="true"><span>Nov 2022</span><span>Today</span></div>
         </div>
 
         {statusLine && <p class="status">{statusLine}</p>}
@@ -222,8 +266,14 @@ const ariaFor = (id: string, title: string, date: string) =>
         <div data-block="item">
           <h1 class="sheet-title" data-bind="title">{current.title}</h1>
           <p class="summary" data-bind="summary">{current.summary}</p>
-          <a class="source" data-bind="source" href={current.source} target="_blank" rel="noopener"
-            >Source: {siteName(current.source)}</a
+          <a
+            class="source"
+            data-bind="source"
+            href={current.source}
+            target="_blank"
+            rel="noopener"
+            aria-label={`Source: ${publisher}, opens in a new tab`}
+            >{publisher} · {dayLabel(current.date)} ↗</a
           >
           <div class="pill-row">
             <span class:list={["pill", `pill-${pill}`]} data-bind="pill"
@@ -243,13 +293,27 @@ const ariaFor = (id: string, title: string, date: string) =>
           >
         </div>
 
+        <div data-block="company" hidden>
+          <button type="button" class="company-back" data-action="company-back">← Back</button>
+          <h1 class="sheet-title" data-bind="company-name"></h1>
+          <p class="company-value" data-bind="company-value"></p>
+          <p class="company-note" data-bind="company-note"></p>
+          <a class="source" data-bind="company-source" target="_blank" rel="noopener"></a>
+          <p class="sheet-kicker company-news-heading">News</p>
+          <ul class="company-news" data-bind="company-news"></ul>
+          <p class="company-news-empty" data-bind="company-news-empty" hidden
+            >No news about this company up to this day.</p
+          >
+        </div>
+
         <div class="legend">
           <span class="legend-item"><span class="legend-line legend-investment" aria-hidden="true"></span>Investment</span>
           <span class="legend-item"><span class="legend-line legend-cloud" aria-hidden="true"></span>Cloud</span>
           <span class="legend-item"><span class="legend-line legend-chip" aria-hidden="true"></span>Chips</span>
         </div>
 
-        <div class="slider-block">
+        <div class="sheet-timeline">
+          <div class="timeline-axis" aria-hidden="true"></div>
           <input
             class="day-range"
             data-slider
@@ -260,23 +324,21 @@ const ariaFor = (id: string, title: string, date: string) =>
             value={dayIndex(current.date)}
             aria-label="Day"
           />
-          <div class="slider-ends"><span>Jun 2017</span><span>Today</span></div>
-        </div>
-
-        <div class="dots-row">
           {
             keyDates.map((item) => (
               <button
                 type="button"
-                class="dot-cell"
+                class="timeline-dot"
                 data-news={item.id}
+                style={`left: ${dayPercent(item.date, lastDate)}%`}
                 aria-label={ariaFor(item.id, item.title, item.date)}
               >
-                <span class:list={["dot", `dot-${lane(item)}`]} />
+                <span class:list={["dot", `dot-${pillKind(item, deals)}`]} />
               </button>
             ))
           }
         </div>
+        <div class="timeline-ends" aria-hidden="true"><span>Nov 2022</span><span>Today</span></div>
 
         <div class="sheet-buttons">
           <button type="button" class="button" data-action="earlier">← Earlier</button>

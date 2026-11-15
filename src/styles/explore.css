@@ -19,13 +19,10 @@
   aspect-ratio: 1 / 1;
 }
 
-/* Bubbles grow and fade in, and the camera glides, as in the design. */
+/* Bubbles fade in and out and the camera glides, as in the design; their place and size
+   are tweened in JavaScript, so only opacity changes here. */
 .bubble {
   transition: opacity 700ms ease;
-}
-
-.bubble-circle {
-  transition: r 700ms ease;
 }
 
 .bubble-arrow {
@@ -74,10 +71,6 @@
 .pill-line {
   width: 16px;
   border-top: 2px solid currentColor;
-}
-
-.pill-science {
-  color: var(--ink-2);
 }
 
 .pill-investment {
@@ -171,13 +164,18 @@
   gap: 12px;
 }
 
+/* The source line: publisher and date, quiet until hovered or focused. */
 .source {
   display: inline-block;
-  color: var(--accent);
+  font-size: 13px;
+  color: var(--ink-2);
+  text-decoration: none;
 }
 
-.source:hover {
-  color: var(--accent-dark);
+.source:hover,
+.source:focus-visible {
+  color: var(--ink);
+  text-decoration: underline;
 }
 
 .players-line {
@@ -213,76 +211,207 @@
   color: var(--accent);
 }
 
+/* --- the company panel: one bubble's value and its news --- */
+
+.company-back {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--ink-2);
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.company-back:hover {
+  color: var(--ink);
+}
+
+/* The value on the chosen day, in the serif like the date; then the line that explains the kind
+   of value in plain words, and the quiet source line under it. */
+.company-value {
+  margin: 4px 0 0;
+  font-family: var(--font-serif);
+  font-size: 26px;
+  line-height: 1.1;
+}
+
+.company-note {
+  margin: 2px 0 0;
+  font-size: 14px;
+  color: var(--ink-2);
+}
+
+.sheet-kicker.company-news-heading {
+  margin: 16px 0 0;
+}
+
+/* The company's news: one button a row, a rule between rows, the list scrolling where the
+   column or the sheet is short so the timeline never moves off screen. */
+.company-news {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  min-height: 0;
+  max-height: 40vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.company-news li + li {
+  border-top: 1px solid var(--rule);
+}
+
+.company-news-row {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 0;
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.company-news-date {
+  display: block;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+.company-news-title {
+  display: block;
+  font-family: var(--font-serif);
+  font-size: 18px;
+  line-height: 1.15;
+}
+
+.company-news-row:hover .company-news-title {
+  color: var(--accent);
+}
+
+.company-news-empty {
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: var(--ink-2);
+}
+
+/* A key-date dot: filled in the colour of its kind, ringed in paper so it sits on the line. */
 .dot {
   box-sizing: border-box;
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: var(--paper);
-  border: 1.5px solid var(--ink);
+  background: var(--ink-2);
+  border: 1.5px solid var(--paper);
   transition: all 300ms ease;
 }
 
+.dot-investment {
+  background: var(--investment);
+}
+
+.dot-cloud {
+  background: var(--cloud);
+}
+
+.dot-chip {
+  background: var(--chip);
+}
+
+.dot-money {
+  background: var(--ink-2);
+}
+
 .is-current .dot {
+  width: 14px;
+  height: 14px;
+  border-color: var(--ink);
+}
+
+/* A key-date dot is a button: 44px tall so it is easy to tap, as narrow as the dot itself, and
+   above the slider so a tap on it opens that item while the rest of the line still drags. */
+.timeline-dot {
+  position: absolute;
+  top: 0;
   width: 18px;
-  height: 18px;
-  background: var(--accent);
-  border-color: var(--accent);
+  height: 44px;
+  margin-left: -9px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  cursor: pointer;
 }
 
-/* --- the day slider: thin ink line, accent thumb, 44px tall touch area --- */
-
-.slider-block {
-  margin-top: 10px;
+/* The line the days run along; the slider's track is transparent so this line shows through. */
+.timeline-axis {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-top: 1px solid var(--ink);
 }
+
+/* --- the day slider: its track is the timeline line, the handle rides on it --- */
 
 .day-range {
   -webkit-appearance: none;
   appearance: none;
+  position: absolute;
+  left: 0;
+  right: 0;
   width: 100%;
   height: 44px;
   margin: 0;
+  padding: 0;
   background: transparent;
   cursor: pointer;
 }
 
 .day-range::-webkit-slider-runnable-track {
   height: 1px;
-  background: var(--ink);
+  background: transparent;
 }
 
 .day-range::-moz-range-track {
   height: 1px;
-  background: var(--ink);
+  background: transparent;
 }
 
 .day-range::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 16px;
-  height: 16px;
-  margin-top: -7.5px;
+  width: 18px;
+  height: 18px;
+  margin-top: -8.5px;
   box-sizing: border-box;
   border-radius: 50%;
   background: var(--accent);
   border: 2px solid var(--paper);
-  box-shadow: 0 0 0 1px var(--accent);
 }
 
 .day-range::-moz-range-thumb {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   box-sizing: border-box;
   border-radius: 50%;
   background: var(--accent);
   border: 2px solid var(--paper);
-  box-shadow: 0 0 0 1px var(--accent);
 }
 
-.slider-ends {
+/* Both ends of the line: the first day on the left, today on the right. */
+.timeline-ends {
   display: flex;
   justify-content: space-between;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--ink-2);
 }
 
@@ -392,7 +521,6 @@
 
 .sheet .source {
   margin-top: 4px;
-  font-size: 13px;
 }
 
 .pill-row {
@@ -423,23 +551,19 @@
   width: 16px;
 }
 
-.dots-row {
-  display: flex;
-  margin-top: 2px;
-  overflow-x: auto;
+/* The day line in the bottom sheet: the slider with the key-date dots on it, no labels. */
+.sheet-timeline {
+  position: relative;
+  height: 44px;
+  margin-top: 10px;
 }
 
-.dot-cell {
-  flex: 0 0 auto;
-  width: 38px;
-  height: 40px;
-  padding: 0;
-  border: none;
-  background: transparent;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
+.sheet-timeline .timeline-axis {
+  top: 22px;
+}
+
+.sheet-timeline .day-range {
+  top: 0;
 }
 
 .sheet-buttons {
@@ -461,7 +585,32 @@
   color: var(--ink-2);
 }
 
-/* --- desktop: news beside the bubble, two-lane timeline below (layout B) --- */
+/* With a company chosen the sheet is taller and the news list scrolls inside it, so the legend,
+   the day line and Earlier / Later stay in view below the list. */
+.sheet:has([data-block="company"]:not([hidden])) {
+  display: flex;
+  flex-direction: column;
+  max-height: 78vh;
+  max-height: 78dvh;
+}
+
+.sheet:has([data-block="company"]:not([hidden])) > * {
+  flex: 0 0 auto;
+}
+
+.sheet:has([data-block="company"]:not([hidden])) [data-block="company"] {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.sheet:has([data-block="company"]:not([hidden])) .company-news {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* --- desktop: news beside the bubble, one-line timeline below (layout B) --- */
 
 @media (min-width: 900px) {
   .layout-phone {
@@ -489,12 +638,48 @@
   }
 
   .wordmark {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    box-sizing: border-box;
     font-family: var(--font-serif);
     font-size: 30px;
     font-style: italic;
     line-height: 1;
     color: var(--ink);
     text-decoration: none;
+  }
+
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 24px;
+    font-size: 14px;
+  }
+
+  .nav-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 44px;
+    color: var(--ink-2);
+    opacity: 0.6;
+  }
+
+  .nav-current {
+    color: var(--ink);
+    opacity: 1;
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-decoration-color: var(--accent);
+    text-underline-offset: 6px;
+  }
+
+  .nav-tag {
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
   }
 
   .explore-main {
@@ -557,7 +742,6 @@
 
   .story-column .source {
     margin-top: 8px;
-    font-size: 14px;
   }
 
   .story-column .players-line {
@@ -567,6 +751,11 @@
 
   .story-column .button-row {
     margin-top: 22px;
+  }
+
+  /* The company panel keeps its news inside the column, so the timeline keeps its place. */
+  .story-column .company-news {
+    max-height: 32vh;
   }
 
   .latest-label {
@@ -602,115 +791,86 @@
 
   .timeline {
     border-top: 1px solid var(--ink);
-    padding: 14px 40px 20px;
+    padding: 12px 40px 14px;
   }
 
   .timeline-inner {
     position: relative;
-    height: 180px;
+    height: 76px;
     max-width: 1360px;
     margin: 0 auto;
   }
 
-  .lane {
+  /* The one line: labels above it, dots on it, day ticks and years below it. */
+  .timeline-inner .timeline-axis {
+    top: 34px;
+  }
+
+  .timeline-inner .day-range {
+    top: 12px;
+    z-index: 1;
+  }
+
+  .timeline-inner .timeline-dot {
+    top: 12px;
+  }
+
+  .timeline-label {
     position: absolute;
-    left: 14px;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
+    font-size: 12px;
+    line-height: 14px;
     color: var(--ink-2);
+    white-space: nowrap;
+    pointer-events: none;
   }
 
-  .lane-science {
-    top: 52px;
-  }
-
-  .lane-money {
-    top: 98px;
-  }
-
-  .band {
-    position: absolute;
-    top: 70px;
-    height: 20px;
-    box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    font-size: 11px;
-    font-weight: 500;
-  }
-
-  .band-before {
-    left: 0;
-    padding: 0 10px 0 64px;
-    background: var(--muted);
-    color: var(--ink-2);
-  }
-
-  .band-after {
-    right: 0;
-    padding: 0 10px;
-    background: var(--band-after);
-    color: var(--ink);
-  }
-
-  .timeline-axis {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 90px;
-    border-top: 1px solid var(--ink);
-  }
-
-  .day-marker {
-    position: absolute;
+  .timeline-label[data-row="0"] {
     top: 0;
-    height: 160px;
-    border-left: 1px dashed var(--accent);
-    transition: left 700ms ease;
   }
 
-  .tick {
+  .timeline-label[data-row="1"] {
+    top: 16px;
+  }
+
+  .timeline-label[data-align="center"] {
+    transform: translateX(-50%);
+  }
+
+  .timeline-label[data-align="end"] {
+    transform: translateX(-100%);
+  }
+
+  .timeline-tick {
     position: absolute;
     border-left: 1px solid var(--ink);
   }
 
-  .timeline-dot {
+  .timeline-tick-year {
+    top: 34px;
+    height: 9px;
+  }
+
+  .timeline-tick-quarter {
+    top: 34px;
+    height: 5px;
+    border-left-color: var(--ink-2);
+  }
+
+  .timeline-year {
     position: absolute;
-    width: 44px;
-    height: 44px;
-    margin-left: -22px;
-    padding: 0;
-    border: none;
-    background: transparent;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-  }
-
-  .timeline-dot .dot {
-    width: 12px;
-    height: 12px;
-  }
-
-  .timeline-dot.is-current .dot {
-    width: 20px;
-    height: 20px;
-  }
-
-  .year {
-    position: absolute;
-    top: 162px;
+    top: 44px;
     transform: translateX(-50%);
     font-size: 12px;
+    line-height: 14px;
     color: var(--ink-2);
   }
 
-  .timeline .slider-block {
-    max-width: 1360px;
-    margin: 4px auto 0;
+  .timeline-inner .timeline-ends {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 60px;
+    line-height: 14px;
   }
 
   .status {
@@ -722,10 +882,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .day-marker,
   .dot,
   .bubble,
-  .bubble-circle,
   .bubble-arrow {
     transition: none;
   }

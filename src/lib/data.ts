@@ -83,6 +83,21 @@ export function valueOn(points: ValuePoint[], companyId: string, date: string): 
   return last.value_usd_bn;
 }
 
+// The sourced point behind the value shown on that day: the company's latest point on or
+// before the day, or its first point when the day is earlier than all of them. Null with no
+// points.
+export function valuePointOn(points: ValuePoint[], companyId: string, date: string): ValuePoint | null {
+  let first: ValuePoint | null = null;
+  let latest: ValuePoint | null = null;
+  for (const point of points) {
+    if (point.company !== companyId) continue;
+    if (first === null || point.date < first.date) first = point;
+    if (point.date > date) continue;
+    if (latest === null || point.date > latest.date) latest = point;
+  }
+  return latest ?? first;
+}
+
 // A company is shown only from its first_mention on.
 export function isShown(company: Company, date: string): boolean {
   return date >= company.first_mention;
