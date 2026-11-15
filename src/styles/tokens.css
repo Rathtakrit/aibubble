@@ -1,0 +1,28 @@
+:root {
+  --paper: #F5EFE3;
+  --ink: #1B1A17;
+  --ink-2: #57534B;
+  --rule: #CFC5B2;
+  --accent: #1E3A8A;
+
+  --investment: #1E3A8A;
+  --cloud: #C2410C;
+  --chip: #0F766E;
+
+  --font-serif: 'Instrument Serif', Georgia, serif;
+  --font-sans: 'Instrument Sans Variable', system-ui, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-serif);
+  font-weight: 400;
+}
