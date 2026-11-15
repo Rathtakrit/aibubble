@@ -1,7 +1,9 @@
-// Draws one day of the bubble into an SVG. The layout itself is pure and lives in layout.ts.
+// Draws one day of the bubble into an SVG. The layout itself is pure and lives in layout.ts,
+// and the camera that flies to the players lives in camera.ts.
 
 import { arrowsForDate, bubblesForDate, formatDate, formatValue, FRAME } from "./layout.ts";
 import type { Arrow, Bubble } from "./layout.ts";
+import { fitView, sceneTransform } from "./camera.ts";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 const CLIP_ID = "aibubble-clip";
@@ -38,7 +40,9 @@ const bubbleNodes = new WeakMap<SVGSVGElement, Map<string, BubbleNode>>();
 const arrowNodes = new WeakMap<SVGSVGElement, Map<string, ArrowNode>>();
 
 // The clip, the scene group the camera will transform, and the frame ring on top.
-function ensureScene(svg: SVGSVGElement): { bubbleLayer: SVGGElement; arrowLayer: SVGGElement } {
+function ensureScene(
+  svg: SVGSVGElement,
+): { bubbleLayer: SVGGElement; arrowLayer: SVGGElement; scene: SVGGElement } {
   let defs = svg.querySelector("defs");
   if (!defs) {
     defs = el("defs");
@@ -63,12 +67,15 @@ function ensureScene(svg: SVGSVGElement): { bubbleLayer: SVGGElement; arrowLayer
     svg.appendChild(clipGroup);
   }
 
-  let scene = svg.querySelector("g.scene");
+  let scene = svg.querySelector<SVGGElement>("g.scene");
   if (!scene) {
     scene = el("g");
     scene.setAttribute("class", "scene");
     clipGroup.appendChild(scene);
   }
+  // The camera scales the scene about the top left of the frame.
+  scene.style.setProperty("transform-box", "view-box");
+  scene.style.setProperty("transform-origin", "0 0");
 
   let bubbleLayer = scene.querySelector("g.bubble-layer");
   if (!bubbleLayer) {
@@ -102,6 +109,7 @@ function ensureScene(svg: SVGSVGElement): { bubbleLayer: SVGGElement; arrowLayer
   return {
     bubbleLayer: bubbleLayer as SVGGElement,
     arrowLayer: arrowLayer as SVGGElement,
+    scene: scene as SVGGElement,
   };
 }
 
@@ -158,7 +166,13 @@ function createBubbleNode(bubble: Bubble): BubbleNode {
   return { group, circle, logo, logoRect, logoText, name, value };
 }
 
-function updateBubbleNode(node: BubbleNode, bubble: Bubble): void {
+function updateBubbleNode(
+  node: BubbleNode,
+  bubble: Bubble,
+  zoom: number,
+  isPlayer: boolean,
+  dim: boolean,
+): void {
   const { circle, logo, logoRect, logoText, name, value } = node;
   const isGroup = bubble.kind === "group";
 
@@ -168,25 +182,32 @@ function updateBubbleNode(node: BubbleNode, bubble: Bubble): void {
   if (isGroup) {
     circle.style.fill = "none";
     circle.style.stroke = "var(--ink-2)";
+    circle.style.strokeWidth = "1px";
     circle.setAttribute("stroke-dasharray", "2 1.5");
   } else {
     circle.style.fill = "var(--muted)";
     circle.style.stroke = "var(--ink)";
+    // A player of the current item gets a thicker ink outline.
+    circle.style.strokeWidth = isPlayer ? "2px" : "1px";
     circle.removeAttribute("stroke-dasharray");
   }
-  node.group.style.opacity = "1";
+  node.group.style.opacity = dim && !isPlayer ? "0.38" : "1";
 
-  const showLogo = !isGroup && bubble.r >= 6.5;
-  const showName = bubble.r >= 3.4;
-  const showValue = bubble.r >= 7;
+  // Which labels show depends on the size of the circle on screen.
+  const onScreen = bubble.r * zoom;
+  const showLogo = !isGroup && onScreen >= 6.5;
+  const showName = onScreen >= 3.4;
+  const showValue = onScreen >= 7;
   logo.style.display = showLogo ? "" : "none";
   name.style.display = showName ? "" : "none";
   value.style.display = showValue ? "" : "none";
 
-  const nameSize = clamp(1.8, bubble.r * 0.15, 3.8);
-  const valueSize = clamp(1.5, bubble.r * 0.1, 2.6);
-  const logoSize = clamp(2.2, bubble.r * 0.22, 5);
-  const gap = 0.5;
+  // Font sizes are chosen for the screen and then divided by the zoom, so the text stays the same
+  // size on screen however far the camera moves.
+  const nameSize = clamp(1.8, bubble.r * 0.15 * zoom, 3.8) / zoom;
+  const valueSize = clamp(1.5, bubble.r * 0.1 * zoom, 2.6) / zoom;
+  const logoSize = clamp(2.2, bubble.r * 0.22 * zoom, 5) / zoom;
+  const gap = 0.5 / zoom;
 
   const stack =
     (showLogo ? logoSize + gap : 0) + (showName ? nameSize : 0) + (showValue ? gap + valueSize : 0);
@@ -231,7 +252,14 @@ function updateBubbleNode(node: BubbleNode, bubble: Bubble): void {
   }
 }
 
-function updateBubbles(svg: SVGSVGElement, layer: SVGGElement, bubbles: Bubble[]): void {
+function updateBubbles(
+  svg: SVGSVGElement,
+  layer: SVGGElement,
+  bubbles: Bubble[],
+  zoom: number,
+  players: Set<string>,
+  dim: boolean,
+): void {
   let nodes = bubbleNodes.get(svg);
   if (!nodes) {
     nodes = new Map();
@@ -249,7 +277,7 @@ function updateBubbles(svg: SVGSVGElement, layer: SVGGElement, bubbles: Bubble[]
       node.group.style.opacity = "0";
       void node.group.getBoundingClientRect();
     }
-    updateBubbleNode(node, bubble);
+    updateBubbleNode(node, bubble, zoom, players.has(bubble.id), dim);
   }
 
   for (const [id, node] of nodes) {
@@ -277,7 +305,7 @@ function createArrowNode(arrow: Arrow): ArrowNode {
   return { group, shaft, head };
 }
 
-function updateArrowNode(node: ArrowNode, arrow: Arrow): void {
+function updateArrowNode(node: ArrowNode, arrow: Arrow, strong: boolean, dim: boolean): void {
   node.shaft.setAttribute("x1", fixed(arrow.x1));
   node.shaft.setAttribute("y1", fixed(arrow.y1));
   node.shaft.setAttribute("x2", fixed(arrow.x2));
@@ -298,10 +326,20 @@ function updateArrowNode(node: ArrowNode, arrow: Arrow): void {
       `L ${fixed(arrow.x2)} ${fixed(arrow.y2)} ` +
       `L ${fixed(arrow.x2 - ux * length - px * half)} ${fixed(arrow.y2 - uy * length - py * half)}`,
   );
-  node.group.style.opacity = "1";
+  // Money between two players of the current item stands out; the rest fades back.
+  const width = strong ? "2.5px" : "1.75px";
+  node.shaft.style.strokeWidth = width;
+  node.head.style.strokeWidth = width;
+  node.group.style.opacity = dim && !strong ? "0.15" : "1";
 }
 
-function updateArrows(svg: SVGSVGElement, layer: SVGGElement, arrows: Arrow[]): void {
+function updateArrows(
+  svg: SVGSVGElement,
+  layer: SVGGElement,
+  arrows: Arrow[],
+  players: Set<string>,
+  dim: boolean,
+): void {
   let nodes = arrowNodes.get(svg);
   if (!nodes) {
     nodes = new Map();
@@ -320,7 +358,8 @@ function updateArrows(svg: SVGSVGElement, layer: SVGGElement, arrows: Arrow[]): 
       node.group.style.opacity = "0";
       void node.group.getBoundingClientRect();
     }
-    updateArrowNode(node, arrow);
+    const strong = dim && players.has(arrow.from) && players.has(arrow.to);
+    updateArrowNode(node, arrow, strong, dim);
   }
 
   for (const [key, node] of nodes) {
@@ -341,12 +380,40 @@ function ariaLabel(date: string, bubbles: Bubble[]): string {
   return `AI companies on ${formatDate(date)}, sized by value: ${top || "none yet"}`;
 }
 
-export function renderBubble(svg: SVGSVGElement, date: string): void {
+// The camera glides to its new place, unless the visitor asked for reduced motion.
+function cameraTransition(): string {
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  return reduced ? "none" : "transform 900ms cubic-bezier(0.65, 0, 0.35, 1)";
+}
+
+export type BubbleOptions = {
+  // The players of the current item: the companies the camera flies to.
+  players?: string[];
+  // The reader's own zoom on top of the automatic fit.
+  manual?: number;
+};
+
+export function renderBubble(
+  svg: SVGSVGElement,
+  date: string,
+  options: BubbleOptions = {},
+): void {
   svg.setAttribute("viewBox", "0 0 100 100");
   svg.setAttribute("role", "img");
   const bubbles = bubblesForDate(date);
+  const arrows = arrowsForDate(date);
   svg.setAttribute("aria-label", ariaLabel(date, bubbles));
-  const { bubbleLayer, arrowLayer } = ensureScene(svg);
-  updateBubbles(svg, bubbleLayer, bubbles);
-  updateArrows(svg, arrowLayer, arrowsForDate(date));
+
+  const wanted = new Set(options.players ?? []);
+  // Players that are not on screen that day are ignored, as in the design.
+  const players = new Set(bubbles.filter((bubble) => wanted.has(bubble.id)).map((bubble) => bubble.id));
+  const dim = players.size > 0;
+
+  const view = fitView(bubbles, options.players ?? [], options.manual ?? 1);
+  const { bubbleLayer, arrowLayer, scene } = ensureScene(svg);
+  updateBubbles(svg, bubbleLayer, bubbles, view.z, players, dim);
+  updateArrows(svg, arrowLayer, arrows, players, dim);
+
+  scene.style.transition = cameraTransition();
+  scene.style.transform = sceneTransform(view);
 }
