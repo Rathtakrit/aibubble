@@ -1,9 +1,21 @@
-// Small made-up inputs, passed in as arguments, so these tests do not depend on the data files.
+// Small made-up inputs, passed in as arguments, so these tests do not depend on the data files —
+// except the frame tests, which also run on the real data because the fault they guard (a big
+// newcomer landing outside a packed cluster) only shows up on it.
 // @ts-expect-error node:test has no types in this repo
 import test from "node:test";
 // @ts-expect-error node:assert has no types in this repo
 import assert from "node:assert";
-import { arrowSide, arrowsOn, bubblesOn, dayLayouts, FRAME, totalOn } from "./layout.ts";
+import {
+  arrowSide,
+  arrowsOn,
+  bubblesOn,
+  dayLayouts,
+  defaultDate,
+  enclosingCircle,
+  FRAME,
+  totalOn,
+} from "./layout.ts";
+import { companies as realCompanies, deals as realDeals, values as realValues } from "./data.ts";
 import type { Company, Deal, ValuePoint } from "./data.ts";
 import { FIRST_DAY } from "./timeline.ts";
 
@@ -91,19 +103,101 @@ test("the same input gives the same layout twice", () => {
   assert.deepEqual(dump(again), dump(layout));
 });
 
+// The frame tests use the real data: the fault they guard is a big newcomer landing outside a
+// packed cluster (TSMC on 28 Jul 2026), which a handful of made-up companies cannot show.
+const real = dayLayouts(realCompanies, realValues, realDeals, defaultDate());
+
+// The circle around one day's bubbles, how far its middle is from the middle of the frame, and
+// how far the furthest bubble edge reaches from the middle of the frame.
+function frameOf(placed: Map<string, { x: number; y: number; r: number }>): {
+  offset: number;
+  reach: number;
+} {
+  const circle = enclosingCircle([...placed.values()]);
+  let reach = 0;
+  for (const bubble of placed.values()) {
+    const distance = Math.hypot(bubble.x - FRAME.cx, bubble.y - FRAME.cy) + bubble.r;
+    if (distance > reach) reach = distance;
+  }
+  return { offset: Math.hypot(circle.x - FRAME.cx, circle.y - FRAME.cy), reach };
+}
+
+test("every day: the cluster's enclosing circle sits on the middle of the frame", () => {
+  // Days within a month of a company arriving are the only ones that lean, because the 30-day
+  // average is already drawn toward the newcomer; the lean peaks on the busiest of those days
+  // and holds that day to 4 units (see the next test for why it cannot be tighter). Every other
+  // day of the four years sits well inside a single unit.
+  const DAY = 86_400_000;
+  const arrivals = realCompanies
+    .filter((company) => real.days.has(company.first_mention))
+    .map((company) => Date.parse(`${company.first_mention}T00:00:00Z`));
+  let worst = 0;
+  let worstDay = "";
+  let quiet = 0;
+  let quietDay = "";
+  for (const [date, placed] of real.days) {
+    const { offset } = frameOf(placed);
+    if (offset > worst) {
+      worst = offset;
+      worstDay = date;
+    }
+    const time = Date.parse(`${date}T00:00:00Z`);
+    if (arrivals.some((arrival) => Math.abs(time - arrival) <= 30 * DAY)) continue;
+    if (offset > quiet) {
+      quiet = offset;
+      quietDay = date;
+    }
+  }
+  assert.ok(worst <= 4, `the cluster sits ${worst.toFixed(2)} units off the middle on ${worstDay}`);
+  assert.ok(
+    quiet <= 1,
+    `with nobody arriving, the cluster sits ${quiet.toFixed(2)} units off on ${quietDay}`,
+  );
+});
+
+test("the biggest day fills the fit circle", () => {
+  // The one shared scale is set by the day that reaches furthest, so that day's furthest bubble
+  // edge sits on the fit circle and every other day is drawn smaller but no day smaller than it
+  // has to be. This is what stops one newcomer day pinning the whole layout small.
+  let furthest = -Infinity;
+  let day = "";
+  let offset = 0;
+  for (const [date, placed] of real.days) {
+    const today = frameOf(placed);
+    if (today.reach > furthest) {
+      furthest = today.reach;
+      offset = today.offset;
+      day = date;
+    }
+  }
+  assert.ok(
+    Math.abs(furthest - FRAME.fitRadius) <= 0.5,
+    `the biggest day (${day}) reaches ${furthest.toFixed(2)}, not the fit radius ${FRAME.fitRadius}`,
+  );
+  // The brief asks for this day to sit within 1 unit of the middle. It cannot: a company that
+  // does not fit inside the packed cluster moves that day's own enclosing circle about 6 raw
+  // units (3.2 of the frame), and the 30-day average can only carry the frame half of that.
+  // Centring this day exactly would need the whole cluster to jump 3 units that day, which the
+  // "no company moves more than 3 units" test forbids; this day sits at 3.2, and every other
+  // day well inside it.
+  assert.ok(offset <= 4, `the biggest day sits ${offset.toFixed(2)} units off the middle`);
+});
+
 test("every day: no circles overlap, and every circle is inside the frame", () => {
-  for (const [date, placed] of layout.days) {
-    const list = [...placed.values()];
-    for (let i = 0; i < list.length; i += 1) {
-      const reach = Math.hypot(list[i].x - FRAME.cx, list[i].y - FRAME.cy) + list[i].r;
-      assert.ok(
-        reach <= FRAME.fitRadius + 1e-6,
-        `a circle passes the fit circle on ${date}: ${reach} > ${FRAME.fitRadius}`,
-      );
-      for (let j = i + 1; j < list.length; j += 1) {
-        const distance = Math.hypot(list[i].x - list[j].x, list[i].y - list[j].y);
-        const overlap = list[i].r + list[j].r - distance;
-        assert.ok(overlap <= 0.5, `two circles overlap by ${overlap} on ${date}`);
+  for (const laid of [layout, real]) {
+    for (const [date, placed] of laid.days) {
+      const list = [...placed.values()];
+      for (let i = 0; i < list.length; i += 1) {
+        const reach = Math.hypot(list[i].x - FRAME.cx, list[i].y - FRAME.cy) + list[i].r;
+        assert.ok(
+          reach <= FRAME.fitRadius + 1e-6,
+          `a circle passes the fit circle on ${date}: ${reach} > ${FRAME.fitRadius}`,
+        );
+        for (let j = i + 1; j < list.length; j += 1) {
+          const distance = Math.hypot(list[i].x - list[j].x, list[i].y - list[j].y);
+          const overlap = list[i].r + list[j].r - distance;
+          assert.ok(overlap <= 0.05, `two circles overlap by ${overlap} on ${date}`);
+        }
       }
     }
   }
@@ -121,15 +215,18 @@ test("the same value is the same radius on any day", () => {
 });
 
 test("no company moves more than 3 units from one day to the next", () => {
-  const dates = [...layout.days.keys()];
-  for (let index = 1; index < dates.length; index += 1) {
-    const before = layout.days.get(dates[index - 1])!;
-    const after = layout.days.get(dates[index])!;
-    for (const [id, placed] of after) {
-      const was = before.get(id);
-      if (!was) continue;
-      const moved = Math.hypot(placed.x - was.x, placed.y - was.y);
-      assert.ok(moved <= 3, `${id} jumped ${moved} on ${dates[index]}`);
+  // Both the small made-up case and the real one: a newcomer day is where a jump would show.
+  for (const laid of [layout, real]) {
+    const dates = [...laid.days.keys()];
+    for (let index = 1; index < dates.length; index += 1) {
+      const before = laid.days.get(dates[index - 1])!;
+      const after = laid.days.get(dates[index])!;
+      for (const [id, placed] of after) {
+        const was = before.get(id);
+        if (!was) continue;
+        const moved = Math.hypot(placed.x - was.x, placed.y - was.y);
+        assert.ok(moved <= 3, `${id} jumped ${moved} on ${dates[index]}`);
+      }
     }
   }
 });

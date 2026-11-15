@@ -165,3 +165,34 @@ test("labels sit on two heights and the overlapping ones are left out", () => {
   // A label near the right end is pushed in so it stays on the line.
   assert.equal(placed.get("e")?.align, "end");
 });
+
+test("three close dates: the third has nowhere to go and is left out", () => {
+  const placed = placeLabels(
+    [
+      { id: "one", percent: 20, width: 120 },
+      { id: "two", percent: 23, width: 120 },
+      { id: "three", percent: 26, width: 120 },
+    ],
+    800,
+  );
+  // "one" takes the lower height, "two" the higher one, and "three" overlaps both.
+  assert.equal(placed.get("one")?.row, 0);
+  assert.equal(placed.get("two")?.row, 1);
+  assert.equal(placed.has("three"), false);
+});
+
+test("an end-aligned label at the right edge is measured from its own left edge", () => {
+  const placed = placeLabels(
+    [
+      // A short label at 75% sits on 720..780px.
+      { id: "before", percent: 75, width: 60 },
+      // At 97% a 200px label is lined up with the end of the line, so it really starts at 770px.
+      { id: "edge", percent: 97, width: 200 },
+    ],
+    1000,
+  );
+  assert.equal(placed.get("before")?.row, 0);
+  assert.equal(placed.get("edge")?.align, "end");
+  // Its box runs 770..970, which covers the one below it, so it takes the higher height.
+  assert.equal(placed.get("edge")?.row, 1);
+});

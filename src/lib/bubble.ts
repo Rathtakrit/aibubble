@@ -20,8 +20,12 @@ const GLIDE_MS = 500;
 const FADE_MS = 700;
 
 // Opacity of a faint money line, and of a bubble that is not a player of the chosen item.
-const FAINT = "0.28";
+const FAINT = "0.45";
 const DIM = "0.38";
+
+// A small bubble still gets at least this much radius on screen, so it is easy to tap:
+// about 44px across at the usual size of the bubble.
+const HIT_RADIUS = 3.4;
 
 // The small arrowhead at the end of a strong line.
 const HEAD_LENGTH = 1.4;
@@ -46,6 +50,7 @@ function ease(t: number): number {
 
 type BubbleNode = {
   group: SVGGElement;
+  hit: SVGCircleElement;
   circle: SVGCircleElement;
   logo: SVGGElement;
   logoRect: SVGRectElement;
@@ -92,6 +97,8 @@ type Drawing = {
   arrows: Map<string, LiveArrow>;
   zoom: number;
   players: Set<string>;
+  // The company whose panel is open, if any: its own ring and money lines.
+  focus: string | null;
   dim: boolean;
   startedAt: number;
   raf: number | null;
@@ -178,6 +185,20 @@ function createBubbleNode(bubble: Bubble): BubbleNode {
   const group = el<SVGGElement>("g");
   group.setAttribute("class", "bubble");
   group.setAttribute("data-id", bubble.id);
+  // A bubble is a button: clicking or tapping it, or Tab then Enter, opens its panel. The
+  // click itself is wired up in explore.ts, not here.
+  group.setAttribute("data-company", bubble.id);
+  group.setAttribute("role", "button");
+  group.setAttribute("tabindex", "0");
+  group.style.cursor = "pointer";
+
+  // A transparent circle under the bubble, at least HIT_RADIUS / zoom wide on screen, so a
+  // small company is still easy to hit.
+  const hit = el<SVGCircleElement>("circle");
+  hit.setAttribute("class", "bubble-hit");
+  hit.style.fill = "transparent";
+  hit.style.stroke = "none";
+  group.appendChild(hit);
 
   const circle = el<SVGCircleElement>("circle");
   circle.setAttribute("class", "bubble-circle");
@@ -224,30 +245,39 @@ function createBubbleNode(bubble: Bubble): BubbleNode {
   value.setAttribute("dominant-baseline", "central");
   group.appendChild(value);
 
-  return { group, circle, logo, logoRect, logoText, name, value };
+  return { group, hit, circle, logo, logoRect, logoText, name, value };
 }
 
 // Paints one bubble where it is right now: circle, dashed group edge, logo slot, labels.
 function paintBubble(live: LiveBubble, drawing: Drawing): void {
   const { node, bubble, x, y, r } = live;
-  const { circle, logo, logoRect, logoText, name, value } = node;
+  const { hit, circle, logo, logoRect, logoText, name, value } = node;
   const isGroup = bubble.kind === "group";
   const isPlayer = drawing.players.has(bubble.id);
+  // With a company panel open, only that company's bubble is ringed; with an item open, every
+  // one of its players is.
+  const ringed = drawing.focus === null ? isPlayer : drawing.focus === bubble.id;
   const zoom = drawing.zoom;
+
+  hit.setAttribute("cx", fixed(x));
+  hit.setAttribute("cy", fixed(y));
+  hit.setAttribute("r", fixed(Math.max(r, HIT_RADIUS / zoom)));
+  node.group.setAttribute("aria-label", `${bubble.name}, ${formatValue(bubble.value)}: show its news`);
 
   circle.setAttribute("cx", fixed(x));
   circle.setAttribute("cy", fixed(y));
   circle.setAttribute("r", fixed(r));
   if (isGroup) {
     circle.style.fill = "none";
-    circle.style.stroke = "var(--ink-2)";
-    circle.style.strokeWidth = "1px";
+    circle.style.stroke = ringed ? "var(--ink)" : "var(--ink-2)";
+    circle.style.strokeWidth = ringed ? "2px" : "1px";
     circle.setAttribute("stroke-dasharray", "2 1.5");
   } else {
     circle.style.fill = "var(--muted)";
     circle.style.stroke = "var(--ink)";
-    // A player of the current item gets a thicker ink outline.
-    circle.style.strokeWidth = isPlayer ? "2px" : "1px";
+    // The company whose panel is open, or a player of the current item, gets a thicker ink
+    // outline.
+    circle.style.strokeWidth = ringed ? "2px" : "1px";
     circle.removeAttribute("stroke-dasharray");
   }
 
@@ -312,6 +342,8 @@ function paintBubble(live: LiveBubble, drawing: Drawing): void {
 function createArrowNode(): ArrowNode {
   const group = el<SVGGElement>("g");
   group.setAttribute("class", "bubble-arrow");
+  // The lines are decoration under the bubbles' controls; a click passes through to them.
+  group.style.pointerEvents = "none";
   const shaft = el<SVGPathElement>("path");
   shaft.setAttribute("class", "bubble-arrow-line");
   shaft.setAttribute("fill", "none");
@@ -328,7 +360,8 @@ function createArrowNode(): ArrowNode {
 }
 
 // The look of one arrow: a pale thin line for the everyday view, or its kind colour and
-// small arrowhead when both ends are players of the chosen item.
+// small arrowhead when both ends are players of the chosen item. With a company panel open,
+// every line that touches that company is drawn that way instead.
 function styleArrow(live: LiveArrow): void {
   const strong = live.strong;
   live.node.shaft.style.stroke = strong ? `var(--${live.arrow.kind})` : "var(--ink-2)";
@@ -505,7 +538,10 @@ function updateArrows(drawing: Drawing, layer: SVGGElement, arrows: Arrow[]): vo
   for (const arrow of arrows) {
     const key = `${arrow.from}|${arrow.to}|${arrow.kind}`;
     seen.add(key);
-    const strong = drawing.dim && drawing.players.has(arrow.from) && drawing.players.has(arrow.to);
+    const strong =
+      drawing.focus !== null
+        ? arrow.from === drawing.focus || arrow.to === drawing.focus
+        : drawing.dim && drawing.players.has(arrow.from) && drawing.players.has(arrow.to);
     // The everyday view draws one pale line per pair; a chosen item draws every line of
     // its own pairs in full.
     const visible = strong || arrow.pairFirst;
@@ -557,6 +593,9 @@ function cameraTransition(): string {
 export type BubbleOptions = {
   // The players of the current item: the companies the camera flies to.
   players?: string[];
+  // The company whose panel is open: it keeps a ring, its own money lines stay strong and the
+  // companies it has no deal with fade back.
+  focus?: string;
   // The reader's own zoom on top of the automatic fit.
   manual?: number;
 };
@@ -575,6 +614,11 @@ export function renderBubble(
   const wanted = new Set(options.players ?? []);
   // Players that are not on screen that day are ignored, as in the design.
   const players = new Set(bubbles.filter((bubble) => wanted.has(bubble.id)).map((bubble) => bubble.id));
+  // A company asked for but not on screen that day has no panel to show.
+  const focus =
+    options.focus !== undefined && bubbles.some((bubble) => bubble.id === options.focus)
+      ? options.focus
+      : null;
   const view = fitView(bubbles, options.players ?? [], options.manual ?? 1);
 
   const { bubbleLayer, arrowLayer, scene } = ensureScene(svg);
@@ -585,6 +629,7 @@ export function renderBubble(
       arrows: new Map(),
       zoom: view.z,
       players,
+      focus,
       dim: players.size > 0,
       startedAt: 0,
       raf: null,
@@ -594,6 +639,7 @@ export function renderBubble(
   }
   drawing.zoom = view.z;
   drawing.players = players;
+  drawing.focus = focus;
   drawing.dim = players.size > 0;
   drawing.reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 

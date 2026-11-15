@@ -4,7 +4,7 @@
 import test from "node:test";
 // @ts-expect-error node:assert has no types in this repo
 import assert from "node:assert";
-import { isShown, valueOn } from "./data.ts";
+import { isShown, valueOn, valuePointOn } from "./data.ts";
 import type { Company, ValuePoint } from "./data.ts";
 
 const source = "https://example.com/sample";
@@ -38,6 +38,22 @@ test("valueOn gives the last value after the last point", () => {
 test("valueOn is null for a company with no points", () => {
   assert.equal(valueOn(points, "zzz", "2020-01-06"), null);
   assert.equal(valueOn([], "a", "2020-01-06"), null);
+});
+
+test("valuePointOn gives the sourced point behind the value shown that day", () => {
+  // Between two points, the value is an estimate drawn from the earlier one.
+  assert.equal(valuePointOn(points, "a", "2020-01-06")?.date, "2020-01-01");
+  assert.equal(valuePointOn(points, "a", "2020-01-06")?.value_usd_bn, 100);
+  // On a point's own day, that point.
+  assert.equal(valuePointOn(points, "a", "2020-01-11")?.value_usd_bn, 200);
+  // Before the first point, the first point is the one behind the value.
+  assert.equal(valuePointOn(points, "a", "1999-01-01")?.date, "2020-01-01");
+  // After the last point, the last.
+  assert.equal(valuePointOn(points, "a", "2030-01-01")?.date, "2020-01-11");
+  // Only the company's own points are looked at.
+  assert.equal(valuePointOn(points, "b", "2020-01-06")?.date, "2020-01-05");
+  assert.equal(valuePointOn(points, "zzz", "2020-01-06"), null);
+  assert.equal(valuePointOn([], "a", "2020-01-06"), null);
 });
 
 test("isShown is true from first_mention on", () => {

@@ -1,9 +1,9 @@
 // The Explore page's behaviour. There is one state — the selected day and, optionally, the
-// selected news item — and everything on the page follows it.
+// selected news item or company — and everything on the page follows it.
 
-import { companies, deals, news } from "../lib/data.ts";
-import type { NewsItem } from "../lib/data.ts";
-import { defaultDate, formatValue, totalForDate } from "../lib/layout.ts";
+import { companies, deals, news, valueOn, values, valuePointOn } from "../lib/data.ts";
+import type { Company, NewsItem } from "../lib/data.ts";
+import { arrowsForDate, bubblesForDate, defaultDate, formatValue, totalForDate } from "../lib/layout.ts";
 import { renderBubble } from "../lib/bubble.ts";
 import { ZOOMS } from "../lib/camera.ts";
 import {
@@ -25,13 +25,22 @@ const ordered = inDateOrder(news.filter((item) => item.kind === "money" && item.
 const byId = new Map(ordered.map((item) => [item.id, item]));
 const place = new Map(ordered.map((item, index) => [item.id, index + 1]));
 const nameOf = new Map(companies.map((company) => [company.id, company.name]));
+const companyById = new Map(companies.map((company) => [company.id, company]));
 const lastDate = defaultDate();
 const lastDay = dayIndex(lastDate);
 const newest: NewsItem | undefined = ordered[ordered.length - 1];
 
-// The two things the page remembers: the day, and the news item when one is chosen.
+// What the site says about each kind of value, in plain words, the first time it is shown.
+const VALUE_NOTES: Record<Company["kind"], string> = {
+  listed: "Market value: what all of the company's shares are worth.",
+  private: "Value at its last funding round.",
+  group: "Several smaller companies, added together.",
+};
+
+// The two things the page remembers: the day, and the news item or company chosen for it.
 let day = newest ? newest.date : lastDate;
 let itemId: string | null = newest ? newest.id : null;
+let companyId: string | null = null;
 // The reader's own zoom on top of the camera; index 1 = follow the players exactly.
 let zoomIndex = 1;
 
@@ -45,16 +54,83 @@ function namesOf(item: NewsItem): string {
   return item.players.map((id) => nameOf.get(id) ?? id).join(", ");
 }
 
+// The companies on the company's money lines that day: the ones the camera frames with it.
+function partnersOf(id: string, date: string): string[] {
+  const out: string[] = [];
+  for (const arrow of arrowsForDate(date)) {
+    const other = arrow.from === id ? arrow.to : arrow.to === id ? arrow.from : null;
+    if (other === null || out.includes(other)) continue;
+    out.push(other);
+  }
+  return out;
+}
+
+function isCompanyShown(id: string, date: string): boolean {
+  return bubblesForDate(date).some((bubble) => bubble.id === id);
+}
+
+// The company's news rows, newest first, are rebuilt only when the company or the day changes,
+// so dragging the slider keeps the list where the reader left it.
+let rowsKey = "";
+
+function renderCompany(company: Company): void {
+  setText("company-name", company.name);
+  const value = valueOn(values, company.id, day);
+  setText("company-value", value === null ? "" : `${formatValue(value)} on ${dayLabel(day)}`);
+  setText("company-note", VALUE_NOTES[company.kind]);
+
+  // The sourced point the value shown is drawn from.
+  const point = valuePointOn(values, company.id, day);
+  for (const link of document.querySelectorAll<HTMLAnchorElement>('[data-bind="company-source"]')) {
+    link.hidden = point === null;
+    if (point === null) continue;
+    const publisher = publisherName(point.source);
+    link.href = point.source;
+    link.textContent = `Last sourced value: ${formatValue(point.value_usd_bn)} · ${publisher} · ${dayLabel(point.date)} ↗`;
+    link.setAttribute("aria-label", `Source: ${publisher}, opens in a new tab`);
+  }
+
+  const key = `${company.id}|${day}`;
+  if (key === rowsKey) return;
+  rowsKey = key;
+  const own = ordered.filter((one) => one.date <= day && one.players.includes(company.id)).reverse();
+  for (const list of document.querySelectorAll<HTMLUListElement>('[data-bind="company-news"]')) {
+    list.textContent = "";
+    for (const one of own) {
+      const row = document.createElement("li");
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "company-news-row";
+      button.dataset.news = one.id;
+      const date = document.createElement("span");
+      date.className = "company-news-date";
+      date.textContent = dayLabel(one.date);
+      const title = document.createElement("span");
+      title.className = "company-news-title";
+      title.textContent = one.title;
+      button.append(date, title);
+      row.appendChild(button);
+      list.appendChild(row);
+    }
+  }
+  for (const empty of document.querySelectorAll<HTMLElement>('[data-bind="company-news-empty"]')) {
+    empty.hidden = own.length > 0;
+  }
+}
+
 function render(soon = false): void {
+  // A company the chosen day does not show goes back to the quiet day.
+  if (companyId !== null && !isCompanyShown(companyId, day)) companyId = null;
   const item = itemId === null ? null : (byId.get(itemId) ?? null);
+  const company = companyId === null ? null : (companyById.get(companyId) ?? null);
   // In the quieter state the column follows the latest item on or before the chosen day.
   const anchor = item ?? latestOnOrBefore(ordered, day);
   const count = ordered.length;
 
-  // Which of the two states the card is in. A day before every item has no latest item to offer.
+  // Which of the states the card is in. A day before every item has no latest item to offer.
+  const state = company !== null ? "company" : item !== null ? "item" : anchor !== null ? "quiet" : "none";
   for (const block of document.querySelectorAll<HTMLElement>("[data-block]")) {
-    block.hidden =
-      block.dataset.block === "item" ? item === null : item !== null || anchor === null;
+    block.hidden = block.dataset.block !== state;
   }
 
   if (item) {
@@ -78,6 +154,10 @@ function render(soon = false): void {
       link.textContent = `${publisher} · ${dayLabel(item.date)} ↗`;
       link.setAttribute("aria-label", `Source: ${publisher}, opens in a new tab`);
     }
+  } else if (company) {
+    setText("kicker-desktop", `Explore · ${dayLabel(day)}`);
+    setText("kicker-phone", `Explore · ${dayLabel(day)}`);
+    renderCompany(company);
   } else {
     setText("kicker-desktop", `Explore · ${dayLabel(day)}`);
     setText("kicker-phone", `Explore · ${dayLabel(day)}`);
@@ -114,18 +194,20 @@ function render(soon = false): void {
     button.disabled = zoomIndex <= 0;
   }
 
-  // The bubble follows the day; a chosen item frames its players, a plain day shows the whole frame.
-  const players = item ? item.players : [];
+  // The bubble follows the day; a chosen item frames its players, a chosen company frames itself
+  // and the companies it has money lines with, and a plain day shows the whole frame.
+  const players = item ? item.players : company ? [company.id, ...partnersOf(company.id, day)] : [];
   for (const svg of document.querySelectorAll<SVGSVGElement>("[data-bubble]")) {
-    renderBubble(svg, day, { players, manual: ZOOMS[zoomIndex] });
+    renderBubble(svg, day, { players, focus: company?.id, manual: ZOOMS[zoomIndex] });
   }
 
   if (soon) writeAddressSoon();
   else writeAddress();
 }
 
-// The address keeps working for ?date=YYYY-MM-DD and ?news=<news id>, so a view can be linked.
-// While the slider is dragged it is written once the reader pauses, which keeps phone browsers happy.
+// The address keeps working for ?date=YYYY-MM-DD, ?news=<news id> and ?company=<company id>, so a
+// view can be linked. While the slider is dragged it is written once the reader pauses, which keeps
+// phone browsers happy.
 let addressTimer: ReturnType<typeof setTimeout> | null = null;
 
 function writeAddress(): void {
@@ -135,6 +217,7 @@ function writeAddress(): void {
   }
   const params = new URLSearchParams({ date: day });
   if (itemId !== null) params.set("news", itemId);
+  else if (companyId !== null) params.set("company", companyId);
   history.replaceState(null, "", `${window.location.pathname}?${params.toString()}`);
 }
 
@@ -147,8 +230,24 @@ function selectItem(id: string): void {
   const item = byId.get(id);
   if (!item) return;
   itemId = item.id;
+  companyId = null;
   day = item.date;
   zoomIndex = 1;
+  render();
+}
+
+// A bubble opens its company; the same company again, or Back, goes to the quiet day.
+function chooseCompany(id: string): void {
+  if (!companyById.has(id)) return;
+  companyId = companyId === id ? null : id;
+  itemId = null;
+  zoomIndex = 1;
+  render();
+}
+
+function clearCompany(): void {
+  companyId = null;
+  itemId = null;
   render();
 }
 
@@ -185,6 +284,8 @@ document.addEventListener("click", (event) => {
   } else if (action === "latest") {
     const anchor = latestOnOrBefore(ordered, day);
     if (anchor) selectItem(anchor.id);
+  } else if (action === "company-back") {
+    clearCompany();
   }
 
   const zoom = control.dataset.zoom;
@@ -206,7 +307,27 @@ for (const slider of document.querySelectorAll<HTMLInputElement>("[data-slider]"
   });
 }
 
-// Read the address once, then draw. Without a day or an item the newest item shows.
+// A bubble is a button: a click or a tap on it, or Tab to it and Enter or Space, opens that
+// company's panel in the text column.
+for (const svg of document.querySelectorAll<SVGSVGElement>("[data-bubble]")) {
+  const companyAt = (event: Event): string | null => {
+    const target = event.target instanceof Element ? event.target : null;
+    return target?.closest<SVGElement>("[data-company]")?.getAttribute("data-company") ?? null;
+  };
+  svg.addEventListener("click", (event) => {
+    const id = companyAt(event);
+    if (id) chooseCompany(id);
+  });
+  svg.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    const id = companyAt(event);
+    if (!id) return;
+    event.preventDefault();
+    chooseCompany(id);
+  });
+}
+
+// Read the address once, then draw. Without a day, a company or an item the newest item shows.
 function readAddress(): void {
   const params = new URLSearchParams(window.location.search);
   const wantedId = params.get("news");
@@ -217,14 +338,27 @@ function readAddress(): void {
     return;
   }
   const wantedDate = params.get("date");
-  if (wantedDate && /^\d{4}-\d{2}-\d{2}$/.test(wantedDate) && !Number.isNaN(Date.parse(wantedDate))) {
-    // Kept inside the range of the slider, and written back as a real calendar day.
+  // Kept inside the range of the slider, and written back as a real calendar day.
+  const calendarDate =
+    wantedDate && /^\d{4}-\d{2}-\d{2}$/.test(wantedDate) && !Number.isNaN(Date.parse(wantedDate))
+      ? dateAt(Math.min(lastDay, Math.max(0, dayIndex(wantedDate))))
+      : null;
+  const wantedCompany = params.get("company");
+  const company = wantedCompany ? companyById.get(wantedCompany) : undefined;
+  if (company) {
+    companyId = company.id;
     itemId = null;
-    day = dateAt(Math.min(lastDay, Math.max(0, dayIndex(wantedDate))));
+    day = calendarDate ?? lastDate;
     return;
   }
-  if (params.has("news") || params.has("date")) {
-    // A day or an item was asked for but is not in the data: show the whole frame for today.
+  if (calendarDate) {
+    itemId = null;
+    day = calendarDate;
+    return;
+  }
+  if (params.has("news") || params.has("company") || params.has("date")) {
+    // A day, an item or a company was asked for but is not in the data: show the whole frame
+    // for today.
     itemId = null;
     day = lastDate;
     return;

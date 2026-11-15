@@ -120,6 +120,19 @@ const ariaFor = (id: string, title: string, date: string) =>
             >
           </div>
 
+          <div data-block="company" hidden>
+            <button type="button" class="company-back" data-action="company-back">← Back</button>
+            <h1 class="headline" data-bind="company-name"></h1>
+            <p class="company-value" data-bind="company-value"></p>
+            <p class="company-note" data-bind="company-note"></p>
+            <a class="source" data-bind="company-source" target="_blank" rel="noopener"></a>
+            <p class="sheet-kicker company-news-heading">News</p>
+            <ul class="company-news" data-bind="company-news"></ul>
+            <p class="company-news-empty" data-bind="company-news-empty" hidden
+              >No news about this company up to this day.</p
+            >
+          </div>
+
           <div class="button-row">
             <button type="button" class="button" data-action="earlier">← Earlier</button>
             <button type="button" class="button button-primary" data-action="later">Later →</button>
@@ -277,6 +290,19 @@ const ariaFor = (id: string, title: string, date: string) =>
           <p class="latest-label">Latest before this day:</p>
           <button type="button" class="latest-button" data-action="latest" data-bind="latest-title"
             >{current.title}</button
+          >
+        </div>
+
+        <div data-block="company" hidden>
+          <button type="button" class="company-back" data-action="company-back">← Back</button>
+          <h1 class="sheet-title" data-bind="company-name"></h1>
+          <p class="company-value" data-bind="company-value"></p>
+          <p class="company-note" data-bind="company-note"></p>
+          <a class="source" data-bind="company-source" target="_blank" rel="noopener"></a>
+          <p class="sheet-kicker company-news-heading">News</p>
+          <ul class="company-news" data-bind="company-news"></ul>
+          <p class="company-news-empty" data-bind="company-news-empty" hidden
+            >No news about this company up to this day.</p
           >
         </div>
 

@@ -168,8 +168,9 @@ export type LabelPlacement = {
 };
 
 // Places each label beside the ones already placed. A label goes on the first height where its
-// box clears the last one there; one that fits on neither is left out rather than drawn on top
-// of another.
+// real box - aligned to the start, the middle or the end of its text against the date - clears
+// the box already on that height, plus a little room; one that fits on neither is left out
+// rather than drawn on top of another.
 export function placeLabels(
   boxes: readonly LabelBox[],
   containerWidth: number,
@@ -177,22 +178,27 @@ export function placeLabels(
 ): Map<string, LabelPlacement> {
   const out = new Map<string, LabelPlacement>();
   if (containerWidth <= 0) return out;
-  const rightEdge = [-Infinity, -Infinity];
+  // The box already taken on each of the two heights: [left, right] in pixels.
+  const taken: [number, number][] = [
+    [-Infinity, -Infinity],
+    [-Infinity, -Infinity],
+  ];
 
   for (const box of [...boxes].sort((a, b) => a.percent - b.percent)) {
     const width = Math.min(box.width, containerWidth);
     const middle = (box.percent / 100) * containerWidth;
-    const left = clamp(0, middle - width / 2, containerWidth - width);
+    // A label that would run off an end of the line is lined up with that end instead.
     const align: LabelPlacement["align"] =
-      left === 0 && middle - width / 2 < 0
-        ? "start"
-        : left === containerWidth - width && middle + width / 2 > containerWidth
-          ? "end"
-          : "center";
+      middle - width / 2 < 0 ? "start" : middle + width / 2 > containerWidth ? "end" : "center";
+    const alignedLeft = align === "start" ? middle : align === "end" ? middle - width : middle - width / 2;
+    const left = clamp(0, alignedLeft, containerWidth - width);
+    const right = left + width;
 
     for (const row of [0, 1] as const) {
-      if (left < rightEdge[row] + gap) continue;
-      rightEdge[row] = left + width;
+      const [takenLeft, takenRight] = taken[row];
+      // Two boxes clash when each reaches into the other, with the extra room between them.
+      if (left < takenRight + gap && right > takenLeft - gap) continue;
+      taken[row] = [left, right];
       out.set(box.id, { row, align });
       break;
     }

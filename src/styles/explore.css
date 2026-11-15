@@ -211,6 +211,96 @@
   color: var(--accent);
 }
 
+/* --- the company panel: one bubble's value and its news --- */
+
+.company-back {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--ink-2);
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.company-back:hover {
+  color: var(--ink);
+}
+
+/* The value on the chosen day, in the serif like the date; then the line that explains the kind
+   of value in plain words, and the quiet source line under it. */
+.company-value {
+  margin: 4px 0 0;
+  font-family: var(--font-serif);
+  font-size: 26px;
+  line-height: 1.1;
+}
+
+.company-note {
+  margin: 2px 0 0;
+  font-size: 14px;
+  color: var(--ink-2);
+}
+
+.sheet-kicker.company-news-heading {
+  margin: 16px 0 0;
+}
+
+/* The company's news: one button a row, a rule between rows, the list scrolling where the
+   column or the sheet is short so the timeline never moves off screen. */
+.company-news {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  min-height: 0;
+  max-height: 40vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.company-news li + li {
+  border-top: 1px solid var(--rule);
+}
+
+.company-news-row {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 0;
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.company-news-date {
+  display: block;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+.company-news-title {
+  display: block;
+  font-family: var(--font-serif);
+  font-size: 18px;
+  line-height: 1.15;
+}
+
+.company-news-row:hover .company-news-title {
+  color: var(--accent);
+}
+
+.company-news-empty {
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: var(--ink-2);
+}
+
 /* A key-date dot: filled in the colour of its kind, ringed in paper so it sits on the line. */
 .dot {
   box-sizing: border-box;
@@ -495,6 +585,31 @@
   color: var(--ink-2);
 }
 
+/* With a company chosen the sheet is taller and the news list scrolls inside it, so the legend,
+   the day line and Earlier / Later stay in view below the list. */
+.sheet:has([data-block="company"]:not([hidden])) {
+  display: flex;
+  flex-direction: column;
+  max-height: 78vh;
+  max-height: 78dvh;
+}
+
+.sheet:has([data-block="company"]:not([hidden])) > * {
+  flex: 0 0 auto;
+}
+
+.sheet:has([data-block="company"]:not([hidden])) [data-block="company"] {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.sheet:has([data-block="company"]:not([hidden])) .company-news {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
 /* --- desktop: news beside the bubble, one-line timeline below (layout B) --- */
 
 @media (min-width: 900px) {
@@ -636,6 +751,11 @@
 
   .story-column .button-row {
     margin-top: 22px;
+  }
+
+  /* The company panel keeps its news inside the column, so the timeline keeps its place. */
+  .story-column .company-news {
+    max-height: 32vh;
   }
 
   .latest-label {
