@@ -2,6 +2,11 @@
 import "@fontsource/instrument-serif/400.css";
 import "@fontsource-variable/instrument-sans/index.css";
 import "../styles/tokens.css";
+import { status } from "../lib/data.ts";
+import { defaultDate, formatDate, formatValue, totalForDate } from "../lib/layout.ts";
+
+const date = defaultDate();
+const total = totalForDate(date);
 ---
 
 <!doctype html>
@@ -12,30 +17,54 @@ import "../styles/tokens.css";
     <title>AI Bubble</title>
   </head>
   <body>
-    <div style="padding: 16px;">
+    <main style="padding: 16px;">
       <h1>AI Bubble</h1>
-      <p>The site is being built.</p>
-      <ul>
-        <li><span class="swatch" style="background: var(--paper);"></span> --paper</li>
-        <li><span class="swatch" style="background: var(--ink);"></span> --ink</li>
-        <li><span class="swatch" style="background: var(--ink-2);"></span> --ink-2</li>
-        <li><span class="swatch" style="background: var(--rule);"></span> --rule</li>
-        <li><span class="swatch" style="background: var(--accent);"></span> --accent</li>
-        <li><span class="swatch" style="background: var(--investment);"></span> --investment</li>
-        <li><span class="swatch" style="background: var(--cloud);"></span> --cloud</li>
-        <li><span class="swatch" style="background: var(--chip);"></span> --chip</li>
-      </ul>
-    </div>
+      <p id="bubble-line">All AI companies on {formatDate(date)} · total {formatValue(total)}</p>
+      <svg
+        id="bubble"
+        viewBox="0 0 100 100"
+        role="img"
+        style="display: block; width: 100%; max-width: 680px; height: auto; aspect-ratio: 1 / 1;"
+      ></svg>
+      {
+        status !== "approved" && (
+          <p>{status === "sample" ? "Sample data, for testing only." : "Draft data: researched, not yet checked by the owner."}</p>
+        )
+      }
+    </main>
+    <script>
+      import { renderBubble } from "../lib/bubble.ts";
+      import { defaultDate, formatDate, formatValue, totalForDate } from "../lib/layout.ts";
+
+      const requested = new URLSearchParams(window.location.search).get("date");
+      const date = requested && /^\d{4}-\d{2}-\d{2}$/.test(requested) ? requested : defaultDate();
+
+      const svg = document.querySelector<SVGSVGElement>("#bubble");
+      if (svg) renderBubble(svg, date);
+
+      const line = document.querySelector("#bubble-line");
+      if (line) {
+        line.textContent = `All AI companies on ${formatDate(date)} · total ${formatValue(totalForDate(date))}`;
+      }
+    </script>
   </body>
 </html>
 
-<style>
-  .swatch {
-    display: inline-block;
-    width: 16px;
-    height: 16px;
-    border: 1px solid var(--ink);
-    vertical-align: middle;
-    margin-right: 8px;
+<style is:global>
+  .bubble {
+    transition: opacity 700ms ease;
+  }
+  .bubble-circle {
+    transition: r 700ms ease;
+  }
+  .bubble-arrow {
+    transition: opacity 700ms ease;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .bubble,
+    .bubble-circle,
+    .bubble-arrow {
+      transition: none;
+    }
   }
 </style>
