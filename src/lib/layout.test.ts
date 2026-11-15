@@ -6,7 +6,8 @@ import test from "node:test";
 // @ts-expect-error node:assert has no types in this repo
 import assert from "node:assert";
 import {
-  arrowSide,
+  arrowCurve,
+  arrowPath,
   arrowsOn,
   bubblesOn,
   dayLayouts,
@@ -266,6 +267,7 @@ test("two kinds between one pair give two arrows, and only one is pairFirst", ()
     pair[0].cx !== pair[1].cx || pair[0].cy !== pair[1].cy,
     "the two arrows share a control point, so they sit on top of each other",
   );
+  assert.equal(pair[0].side, pair[1].side, "the two arrows of a pair bend to different sides");
   assert.equal(pair.filter((arrow) => arrow.pairFirst).length, 1);
 });
 
@@ -278,25 +280,90 @@ test("both directions and three kinds still bend to one side with one pairFirst"
   assert.equal(pair.length, 3);
   assert.equal(pair.filter((arrow) => arrow.pairFirst).length, 1);
   // The arrow going the other way uses the other side of its own line, so every arrow of the
-  // pair leaves its from-bubble on the same physical side of the pair.
+  // pair leaves its from-bubble on the same physical side of the pair; the second and third bend
+  // a step wider than the first, so they nest outside it.
   assert.deepEqual(
     pair.map((arrow) => arrow.bend).sort((left, right) => left - right),
     [0.18, 0.3, 0.42],
   );
 });
 
-test("the curve takes the free side when a bubble sits on the other one", () => {
+// The points a candidate curve is judged on: 24 along its length, as arrowsOn counts them.
+function pointsAlong(
+  from: { x: number; y: number; r: number },
+  to: { x: number; y: number; r: number },
+  bend: number,
+  side: 1 | -1,
+): { x: number; y: number }[] {
+  const curve = arrowCurve(from, to, bend, side);
+  const points: { x: number; y: number }[] = [];
+  for (let sample = 1; sample <= 24; sample += 1) {
+    const t = sample / 25;
+    const u = 1 - t;
+    points.push({
+      x: u * u * curve.x1 + 2 * u * t * curve.cx + t * t * curve.x2,
+      y: u * u * curve.y1 + 2 * u * t * curve.cy + t * t * curve.y2,
+    });
+  }
+  return points;
+}
+
+// How many of those points sit inside one of these bubbles, and how many sit outside the frame.
+function outsideFrame(points: { x: number; y: number }[]): number {
+  return points.filter((point) => Math.hypot(point.x - FRAME.cx, point.y - FRAME.cy) > FRAME.radius)
+    .length;
+}
+
+function insideAny(
+  points: { x: number; y: number }[],
+  bubbles: { x: number; y: number; r: number }[],
+): number {
+  return points.filter((point) =>
+    bubbles.some((bubble) => Math.hypot(point.x - bubble.x, point.y - bubble.y) < bubble.r),
+  ).length;
+}
+
+test("with nothing in the way the first arrow bends by 0.18, away from the frame centre", () => {
+  // This pair sits above and left of the centre, so bowing upwards (side -1) faces away from it.
+  const path = arrowPath({ x: 20, y: 20, r: 5 }, { x: 60, y: 20, r: 5 }, []);
+  assert.deepEqual(path, { side: -1, bend: 0.18 });
+});
+
+test("a bubble on the path between two partners makes the line bend round it", () => {
   const from = { x: 20, y: 50, r: 5 };
   const to = { x: 80, y: 50, r: 5 };
-  const distance = 60;
-  // Side 1 of a left-to-right arrow bends below the line; this bubble sits where that
-  // curve would run, so the line has to go over it.
-  const below = { x: 50, y: 50 + 0.5 * 0.18 * distance, r: 6 };
-  assert.equal(arrowSide(from, to, [below]), -1);
+  // A wide bubble sitting on the straight path: bend 0.18 either side still runs through it.
+  const blocker = { x: 50, y: 50, r: 8 };
+  assert.ok(insideAny(pointsAlong(from, to, 0.18, 1), [blocker]) > 0, "0.18 below is clear already");
+  assert.ok(insideAny(pointsAlong(from, to, 0.18, -1), [blocker]) > 0, "0.18 above is clear already");
 
-  // With nothing in the way, an even choice bends away from the middle of the frame: this
-  // pair sits above and left of the centre, so the line bows upwards for them.
-  assert.equal(arrowSide({ x: 20, y: 20, r: 5 }, { x: 60, y: 20, r: 5 }, []), -1);
+  const path = arrowPath(from, to, [blocker]);
+  assert.ok(path.bend > 0.18, `the line stays at bend ${path.bend} and runs through the bubble`);
+  const points = pointsAlong(from, to, path.bend, path.side);
+  assert.equal(insideAny(points, [blocker]), 0, "the chosen curve still runs through the bubble");
+});
+
+test("a curve that leaves the frame loses to one that stays inside", () => {
+  // A pair close to the bottom edge, with a bubble sitting on each of the two closest curves, so
+  // both sides have to widen. The side facing away from the frame centre (down) then runs outside
+  // the frame; the side facing it stays inside and wins.
+  const from = { x: 42, y: 95.5, r: 1 };
+  const to = { x: 58, y: 95.5, r: 1 };
+  const blockers = [
+    { x: 50, y: 97.2, r: 1.5 },
+    { x: 50, y: 94, r: 1.2 },
+  ];
+  const path = arrowPath(from, to, blockers);
+  assert.equal(path.side, -1);
+  const points = pointsAlong(from, to, path.bend, path.side);
+  assert.equal(insideAny(points, blockers), 0, "the chosen curve runs through a bubble");
+  assert.equal(outsideFrame(points), 0, "the chosen curve leaves the frame");
+  // The same bend on the other side is wider still and runs outside the frame, which is why the
+  // side facing away from the centre lost.
+  assert.ok(
+    outsideFrame(pointsAlong(from, to, path.bend, 1)) > 0,
+    "the other side stays inside the frame too, so this case does not show the frame rule",
+  );
 });
 
 test("deals of one kind merge, and a null amount counts as zero", () => {

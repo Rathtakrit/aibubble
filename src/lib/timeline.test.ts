@@ -7,7 +7,6 @@ import {
   dayIndex,
   dateAt,
   dayLabel,
-  dayPercent,
   inDateOrder,
   latestOnOrBefore,
   neighbour,
@@ -15,6 +14,7 @@ import {
   placeLabels,
   publisherName,
   siteName,
+  timelineScale,
 } from "./timeline.ts";
 
 const source = "https://example.com/sample";
@@ -27,6 +27,14 @@ const items: Item[] = [
   { id: "a", date: "2023-01-01" },
   { id: "d", date: "2024-01-01" },
   { id: "b", date: "2023-06-01" },
+];
+
+// Four dots in March 2025 and none in April, so the two months can be measured against each other.
+const busyDots: Item[] = [
+  { id: "m1", date: "2025-03-03" },
+  { id: "m2", date: "2025-03-10" },
+  { id: "m3", date: "2025-03-17" },
+  { id: "m4", date: "2025-03-24" },
 ];
 
 test("dayIndex counts days from 30 November 2022", () => {
@@ -45,16 +53,49 @@ test("dateAt turns a day count back into a date", () => {
   }
 });
 
-test("the first day sits at 0% and the last day at 100%", () => {
-  assert.equal(dayPercent("2022-11-30", last), 0);
-  assert.equal(dayPercent(last, last), 100);
-  const half = dayPercent(dateAt(Math.round(dayIndex(last) / 2)), last);
-  assert.ok(half > 48 && half < 52, `the middle of the span is ${half}%`);
+test("the first day of the scale sits at 0% and the last at 100%", () => {
+  const scale = timelineScale(last, busyDots);
+  assert.equal(scale.percentOf("2022-11-30"), 0);
+  assert.equal(scale.percentOf(last), 100);
 });
 
 test("a day before the start or after the end stays inside 0..100", () => {
-  assert.equal(dayPercent("2016-01-01", last), 0);
-  assert.equal(dayPercent("2030-01-01", last), 100);
+  const scale = timelineScale(last, busyDots);
+  assert.equal(scale.percentOf("2016-01-01"), 0);
+  assert.equal(scale.percentOf("2030-01-01"), 100);
+});
+
+test("the days of the scale always move forward", () => {
+  const scale = timelineScale(last, busyDots);
+  let before = -1;
+  for (let index = 0; index <= dayIndex(last); index += 1) {
+    const percent = scale.percentOf(dateAt(index));
+    assert.ok(percent > before, `${dateAt(index)} sits at ${percent}%, after ${before}%`);
+    before = percent;
+  }
+});
+
+test("a month with four dots is seven times as wide as a month with none", () => {
+  const scale = timelineScale(last, busyDots);
+  // A month's width on the line: the place of the next month's first day less this month's.
+  const widthOf = (first: string, next: string) => scale.percentOf(next) - scale.percentOf(first);
+  const busy = widthOf("2025-03-01", "2025-04-01");
+  const empty = widthOf("2025-04-01", "2025-05-01");
+  assert.ok(busy > 0 && empty > 0);
+  assert.ok(Math.abs(busy / empty - 7) < 0.01, `busy is ${busy / empty} times the empty month`);
+});
+
+test("percent to date and back gives the same day for every day in the range", () => {
+  const scale = timelineScale(last, busyDots);
+  for (let index = 0; index <= dayIndex(last); index += 1) {
+    const date = dateAt(index);
+    assert.equal(scale.dateOf(scale.percentOf(date)), date);
+  }
+  // The ends too, and anything outside them.
+  assert.equal(scale.dateOf(0), "2022-11-30");
+  assert.equal(scale.dateOf(100), last);
+  assert.equal(scale.dateOf(-5), "2022-11-30");
+  assert.equal(scale.dateOf(120), last);
 });
 
 test("dates in words use the day, short month and year", () => {
@@ -144,41 +185,45 @@ test("science news shows Science, money news the kind of its deal", () => {
   assert.equal(pillKind(otherDay, deals), "money");
 });
 
-test("labels sit on two heights and the overlapping ones are left out", () => {
+test("labels sit on three heights and the overlapping ones are left out", () => {
   const placed = placeLabels(
     [
       { id: "a", percent: 10, width: 80 },
       { id: "b", percent: 12, width: 80 },
       { id: "c", percent: 14, width: 80 },
-      { id: "d", percent: 40, width: 80 },
-      { id: "e", percent: 97, width: 80 },
+      { id: "d", percent: 16, width: 80 },
+      { id: "e", percent: 40, width: 80 },
+      { id: "f", percent: 97, width: 80 },
     ],
     1000,
   );
-  // "a" takes the lower height, "b" the higher one, and "c" has no room on either.
+  // "a" takes the height nearest the line, "b" the one above it, "c" the one above that,
+  // and "d" has no room on any of the three.
   assert.equal(placed.get("a")?.row, 0);
   assert.equal(placed.get("b")?.row, 1);
-  assert.equal(placed.has("c"), false);
-  // Far enough apart: the lower height again, centred on its date.
-  assert.equal(placed.get("d")?.row, 0);
-  assert.equal(placed.get("d")?.align, "center");
+  assert.equal(placed.get("c")?.row, 2);
+  assert.equal(placed.has("d"), false);
+  // Far enough apart: the height nearest the line again, centred on its date.
+  assert.equal(placed.get("e")?.row, 0);
+  assert.equal(placed.get("e")?.align, "center");
   // A label near the right end is pushed in so it stays on the line.
-  assert.equal(placed.get("e")?.align, "end");
+  assert.equal(placed.get("f")?.align, "end");
 });
 
-test("three close dates: the third has nowhere to go and is left out", () => {
+test("four close dates: the fourth has nowhere to go and is left out", () => {
   const placed = placeLabels(
     [
       { id: "one", percent: 20, width: 120 },
       { id: "two", percent: 23, width: 120 },
       { id: "three", percent: 26, width: 120 },
+      { id: "four", percent: 29, width: 120 },
     ],
     800,
   );
-  // "one" takes the lower height, "two" the higher one, and "three" overlaps both.
   assert.equal(placed.get("one")?.row, 0);
   assert.equal(placed.get("two")?.row, 1);
-  assert.equal(placed.has("three"), false);
+  assert.equal(placed.get("three")?.row, 2);
+  assert.equal(placed.has("four"), false);
 });
 
 test("an end-aligned label at the right edge is measured from its own left edge", () => {

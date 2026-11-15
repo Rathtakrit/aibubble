@@ -6,16 +6,16 @@ import "../styles/explore.css";
 import { companies, deals, news, status } from "../lib/data.ts";
 import { defaultDate, formatValue, totalForDate } from "../lib/layout.ts";
 import {
-  dayIndex,
   dayLabel,
-  dayPercent,
   FIRST_DAY,
   inDateOrder,
   PILL_LABELS,
   pillKind,
   placeLabels,
   publisherName,
+  timelineScale,
 } from "../lib/timeline.ts";
+import { chapterProblems, chapterSources, orderChapterFiles } from "../lib/story.ts";
 
 // The page is drawn here in its first state and then follows the visitor with explore.ts.
 const lastDate = defaultDate();
@@ -29,8 +29,10 @@ const nameOf = new Map(companies.map((company) => [company.id, company.name]));
 const players = current.players.map((id) => nameOf.get(id) ?? id).join(", ");
 const keyDates = ordered.filter((item) => item.key_date);
 const place = new Map(ordered.map((item, index) => [item.id, index + 1]));
-const lastDay = dayIndex(lastDate);
 const publisher = publisherName(current.source);
+// One day scale for the dots, the ticks, the years and the slider, so busy months are wider.
+const scale = timelineScale(lastDate, keyDates);
+const sliderValue = Math.round(scale.percentOf(current.date) * 100);
 
 // A day tick under the line: every 1 January carries its year, the quarter days carry nothing.
 const ticks: { date: string; year: boolean }[] = [];
@@ -42,20 +44,34 @@ for (let year = Number(FIRST_DAY.slice(0, 4)); year <= Number(lastDate.slice(0, 
   }
 }
 
-// Above the line: the first 16 characters of a key date's title, then an ellipsis.
-const labelOf = (title: string) =>
-  title.length > 16 ? `${title.slice(0, 16).trimEnd()}…` : title;
-
-// Which of the two label heights each title takes, so neighbours do not overlap. The page draws
-// them from this first estimate; explore.ts re-places them once the real widths are known.
+// Which of the three label heights each title takes, so neighbours do not overlap. A title is at
+// most 150px wide and wraps onto at most two lines. The page draws them from this first estimate;
+// explore.ts re-places them once the real widths are known.
 const labels = placeLabels(
   keyDates.map((item) => ({
     id: item.id,
-    percent: dayPercent(item.date, lastDate),
-    width: labelOf(item.title).length * 6.4,
+    percent: scale.percentOf(item.date),
+    width: Math.min(150, item.title.length * 6.4),
   })),
   1280,
 );
+
+// Story mode's chapters, read from docs/story while the site is built, in file-name order. A day
+// before the site starts, or a company the data does not have, stops the build with the file name.
+const chapters = orderChapterFiles(chapterSources());
+const chapterProblemsFound = chapterProblems(
+  chapters,
+  companies.map((company) => company.id),
+);
+if (chapters.length === 0) throw new Error("Story mode has no chapters: docs/story has no .md files.");
+if (chapterProblemsFound.length > 0) {
+  throw new Error(`Story chapters are not ready:\n${chapterProblemsFound.join("\n")}`);
+}
+const firstChapter = chapters[0];
+const firstChapterNames = firstChapter.players.map((id) => nameOf.get(id) ?? id).join(", ");
+// The browser needs the chapter text too, so the page carries it as data rather than asking for
+// the files again.
+const chaptersJson = JSON.stringify(chapters).replace(/</g, "\\u003c");
 
 const statusLine =
   status === "sample"
@@ -74,12 +90,13 @@ const ariaFor = (id: string, title: string, date: string) =>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>AI Bubble</title>
   </head>
-  <body>
+  <body data-mode="explore">
     <div class="layout-desktop">
       <header class="site-header">
         <a class="wordmark" href="/">AI Bubble</a>
         <nav class="site-nav" aria-label="Sections">
-          <a class="nav-item nav-current" href="/" aria-current="page">Explore</a>
+          <a class="nav-item" data-mode="story" href="/?chapter=1">Story</a>
+          <a class="nav-item nav-current" data-mode="explore" href="/" aria-current="page">Explore</a>
           <span class="nav-item">Science<span class="nav-tag">soon</span></span>
           <span class="nav-item">News<span class="nav-tag">soon</span></span>
           <span class="nav-item">Past bubbles<span class="nav-tag">soon</span></span>
@@ -88,7 +105,8 @@ const ariaFor = (id: string, title: string, date: string) =>
 
       <main class="explore-main">
         <div class="story-column">
-          <p class="kicker" data-bind="kicker-desktop">Explore · news {position} of {count}</p>
+          <p class="kicker explore-only" data-bind="kicker-desktop">Explore · news {position} of {count}</p>
+          <p class="kicker story-only" data-bind="story-kicker">Chapter 1 of {chapters.length}</p>
           <p class="big-date" data-bind="date">{dayLabel(current.date)}</p>
 
           <div data-block="item">
@@ -133,7 +151,54 @@ const ariaFor = (id: string, title: string, date: string) =>
             >
           </div>
 
-          <div class="button-row">
+          <div data-block="story" hidden>
+            <h1 class="headline" data-bind="story-title" tabindex="-1">{firstChapter.title}</h1>
+            <div class="chapter-text" data-bind="story-text">
+              {firstChapter.paragraphs.map((paragraph) => <p>{paragraph}</p>)}
+            </div>
+            <p class="status">Sample chapters, written by AI, not yet rewritten by the owner.</p>
+            <p class="players-line" data-players-line="story">
+              The view follows the players:{" "}
+              <strong data-bind="story-names">{firstChapterNames}</strong>
+            </p>
+            <div class="button-row">
+              <button type="button" class="button" data-action="chapter-earlier">← Earlier</button>
+              <button type="button" class="button button-primary" data-action="chapter-next"
+                >Next chapter →</button
+              >
+            </div>
+            <button type="button" class="read-story" data-action="story-open" aria-expanded="false"
+              >Read the story</button
+            >
+          </div>
+
+          <div data-block="story-list" hidden>
+            <div class="chapter-list">
+              <div class="chapter-list-head">
+                <h2 class="chapter-list-title">The story</h2>
+                <button
+                  type="button"
+                  class="chapter-list-close"
+                  data-action="story-close"
+                  aria-label="Close the story">×</button
+                >
+              </div>
+              <ol class="chapter-list-items">
+                {chapters.map((chapter) => (
+                  <li>
+                    <button type="button" class="chapter-row" data-chapter={chapter.number}>
+                      <span class="chapter-row-kicker"
+                        >Chapter {chapter.number} · {dayLabel(chapter.date)}</span
+                      >
+                      <span class="chapter-row-title">{chapter.title}</span>
+                    </button>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </div>
+
+          <div class="button-row explore-only">
             <button type="button" class="button" data-action="earlier">← Earlier</button>
             <button type="button" class="button button-primary" data-action="later">Later →</button>
           </div>
@@ -176,14 +241,15 @@ const ariaFor = (id: string, title: string, date: string) =>
             data-slider
             type="range"
             min="0"
-            max={lastDay}
+            max="10000"
             step="1"
-            value={dayIndex(current.date)}
+            value={sliderValue}
             aria-label="Day"
+            aria-valuetext={dayLabel(current.date)}
           />
           {
             keyDates.map((item) => {
-              const left = dayPercent(item.date, lastDate);
+              const left = scale.percentOf(item.date);
               const label = labels.get(item.id);
               return (
                 <>
@@ -192,9 +258,10 @@ const ariaFor = (id: string, title: string, date: string) =>
                     class="timeline-dot"
                     data-news={item.id}
                     style={`left: ${left}%`}
+                    title={item.title}
                     aria-label={ariaFor(item.id, item.title, item.date)}
                   >
-                    <span class:list={["dot", `dot-${pillKind(item, deals)}`]} />
+                    <span class="dot" />
                   </button>
                   <span
                     class="timeline-label"
@@ -205,7 +272,35 @@ const ariaFor = (id: string, title: string, date: string) =>
                     hidden={!label}
                     aria-hidden="true"
                   >
-                    {labelOf(item.title)}
+                    {item.title}
+                  </span>
+                </>
+              );
+            })
+          }
+          {
+            chapters.map((chapter) => {
+              const left = scale.percentOf(chapter.date);
+              return (
+                <>
+                  <button
+                    type="button"
+                    class="timeline-dot story-dot"
+                    data-chapter={chapter.number}
+                    style={`left: ${left}%`}
+                    title={chapter.title}
+                    aria-label={`Chapter ${chapter.number} of ${chapters.length}: ${dayLabel(chapter.date)}, ${chapter.title}`}
+                  >
+                    <span class="dot" />
+                  </button>
+                  <span
+                    class="timeline-label"
+                    data-story-label
+                    style={`left: ${left}%`}
+                    hidden
+                    aria-hidden="true"
+                  >
+                    {chapter.title}
                   </span>
                 </>
               );
@@ -215,7 +310,7 @@ const ariaFor = (id: string, title: string, date: string) =>
             ticks.map((tick) => (
               <span
                 class:list={["timeline-tick", `timeline-tick-${tick.year ? "year" : "quarter"}`]}
-                style={`left: ${dayPercent(tick.date, lastDate)}%`}
+                style={`left: ${scale.percentOf(tick.date)}%`}
                 aria-hidden="true"
               />
             ))
@@ -224,7 +319,7 @@ const ariaFor = (id: string, title: string, date: string) =>
             ticks
               .filter((tick) => tick.year)
               .map((tick) => (
-                <span class="timeline-year" style={`left: ${dayPercent(tick.date, lastDate)}%`} aria-hidden="true">
+                <span class="timeline-year" style={`left: ${scale.percentOf(tick.date)}%`} aria-hidden="true">
                   {tick.date.slice(0, 4)}
                 </span>
               ))
@@ -257,9 +352,13 @@ const ariaFor = (id: string, title: string, date: string) =>
         </button>
       </div>
 
-      <section class="sheet" aria-label="News item">
+      <section class="sheet" aria-label="News item" data-sheet>
         <div class="grabber" aria-hidden="true"></div>
-        <p class="sheet-kicker" data-bind="kicker-phone">
+        <div class="mode-switch" role="group" aria-label="Mode">
+          <a class="mode-button" data-mode="story" href="/?chapter=1">Story</a>
+          <a class="mode-button" data-mode="explore" href="/" aria-current="page">Explore</a>
+        </div>
+        <p class="sheet-kicker explore-only" data-bind="kicker-phone">
           News {position} of {count} · {dayLabel(current.date)}
         </p>
 
@@ -306,6 +405,53 @@ const ariaFor = (id: string, title: string, date: string) =>
           >
         </div>
 
+        <div data-block="story" hidden>
+          <p class="sheet-kicker" data-bind="story-kicker">Chapter 1 of {chapters.length}</p>
+          <h1 class="sheet-title" data-bind="story-title" tabindex="-1">{firstChapter.title}</h1>
+          <div class="chapter-text" data-bind="story-text" tabindex="0">
+            {firstChapter.paragraphs.map((paragraph) => <p>{paragraph}</p>)}
+          </div>
+          <p class="status">Sample chapters, written by AI, not yet rewritten by the owner.</p>
+          <p class="players-line" data-players-line="story">
+            The view follows the players: <strong data-bind="story-names">{firstChapterNames}</strong>
+          </p>
+          <div class="sheet-buttons">
+            <button type="button" class="button" data-action="chapter-earlier">← Earlier</button>
+            <button type="button" class="button button-primary" data-action="chapter-next"
+              >Next chapter →</button
+            >
+          </div>
+          <button type="button" class="read-story" data-action="story-open" aria-expanded="false"
+            >Read the story</button
+          >
+        </div>
+
+        <div data-block="story-list" hidden>
+          <div class="chapter-list chapter-list-sheet">
+            <div class="chapter-list-head">
+              <h2 class="chapter-list-title">The story</h2>
+              <button
+                type="button"
+                class="chapter-list-close"
+                data-action="story-close"
+                aria-label="Close the story">×</button
+              >
+            </div>
+            <ol class="chapter-list-items">
+              {chapters.map((chapter) => (
+                <li>
+                  <button type="button" class="chapter-row" data-chapter={chapter.number}>
+                    <span class="chapter-row-kicker"
+                      >Chapter {chapter.number} · {dayLabel(chapter.date)}</span
+                    >
+                    <span class="chapter-row-title">{chapter.title}</span>
+                  </button>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </div>
+
         <div class="legend">
           <span class="legend-item"><span class="legend-line legend-investment" aria-hidden="true"></span>Investment</span>
           <span class="legend-item"><span class="legend-line legend-cloud" aria-hidden="true"></span>Cloud</span>
@@ -319,10 +465,11 @@ const ariaFor = (id: string, title: string, date: string) =>
             data-slider
             type="range"
             min="0"
-            max={lastDay}
+            max="10000"
             step="1"
-            value={dayIndex(current.date)}
+            value={sliderValue}
             aria-label="Day"
+            aria-valuetext={dayLabel(current.date)}
           />
           {
             keyDates.map((item) => (
@@ -330,17 +477,32 @@ const ariaFor = (id: string, title: string, date: string) =>
                 type="button"
                 class="timeline-dot"
                 data-news={item.id}
-                style={`left: ${dayPercent(item.date, lastDate)}%`}
+                style={`left: ${scale.percentOf(item.date)}%`}
+                title={item.title}
                 aria-label={ariaFor(item.id, item.title, item.date)}
               >
-                <span class:list={["dot", `dot-${pillKind(item, deals)}`]} />
+                <span class="dot" />
+              </button>
+            ))
+          }
+          {
+            chapters.map((chapter) => (
+              <button
+                type="button"
+                class="timeline-dot story-dot"
+                data-chapter={chapter.number}
+                style={`left: ${scale.percentOf(chapter.date)}%`}
+                title={chapter.title}
+                aria-label={`Chapter ${chapter.number} of ${chapters.length}: ${dayLabel(chapter.date)}, ${chapter.title}`}
+              >
+                <span class="dot" />
               </button>
             ))
           }
         </div>
         <div class="timeline-ends" aria-hidden="true"><span>Nov 2022</span><span>Today</span></div>
 
-        <div class="sheet-buttons">
+        <div class="sheet-buttons explore-only">
           <button type="button" class="button" data-action="earlier">← Earlier</button>
           <button type="button" class="button button-primary" data-action="later">Later →</button>
         </div>
@@ -349,6 +511,7 @@ const ariaFor = (id: string, title: string, date: string) =>
       </section>
     </div>
 
+    <script type="application/json" data-story-chapters set:html={chaptersJson}></script>
     <script>
       import "../scripts/explore.ts";
     </script>

@@ -50,6 +50,7 @@ function ease(t: number): number {
 
 type BubbleNode = {
   group: SVGGElement;
+  title: SVGTitleElement;
   hit: SVGCircleElement;
   circle: SVGCircleElement;
   logo: SVGGElement;
@@ -192,6 +193,11 @@ function createBubbleNode(bubble: Bubble): BubbleNode {
   group.setAttribute("tabindex", "0");
   group.style.cursor = "pointer";
 
+  // The browser's own tooltip: a small bubble shows no name until the camera zooms in, so a mouse
+  // resting on it needs this to say which company it is. It is not drawn on the page.
+  const title = el<SVGTitleElement>("title");
+  group.appendChild(title);
+
   // A transparent circle under the bubble, at least HIT_RADIUS / zoom wide on screen, so a
   // small company is still easy to hit.
   const hit = el<SVGCircleElement>("circle");
@@ -245,13 +251,13 @@ function createBubbleNode(bubble: Bubble): BubbleNode {
   value.setAttribute("dominant-baseline", "central");
   group.appendChild(value);
 
-  return { group, hit, circle, logo, logoRect, logoText, name, value };
+  return { group, title, hit, circle, logo, logoRect, logoText, name, value };
 }
 
 // Paints one bubble where it is right now: circle, dashed group edge, logo slot, labels.
 function paintBubble(live: LiveBubble, drawing: Drawing): void {
   const { node, bubble, x, y, r } = live;
-  const { hit, circle, logo, logoRect, logoText, name, value } = node;
+  const { title, hit, circle, logo, logoRect, logoText, name, value } = node;
   const isGroup = bubble.kind === "group";
   const isPlayer = drawing.players.has(bubble.id);
   // With a company panel open, only that company's bubble is ringed; with an item open, every
@@ -263,6 +269,7 @@ function paintBubble(live: LiveBubble, drawing: Drawing): void {
   hit.setAttribute("cy", fixed(y));
   hit.setAttribute("r", fixed(Math.max(r, HIT_RADIUS / zoom)));
   node.group.setAttribute("aria-label", `${bubble.name}, ${formatValue(bubble.value)}: show its news`);
+  title.textContent = `${bubble.name}, ${formatValue(bubble.value)}`;
 
   circle.setAttribute("cx", fixed(x));
   circle.setAttribute("cy", fixed(y));
