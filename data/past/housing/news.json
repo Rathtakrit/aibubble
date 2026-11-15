@@ -1,0 +1,565 @@
+{
+  "status": "draft",
+  "items": [
+    {
+      "id": "2003-06-25-fed-cuts-to-1-percent",
+      "date": "2003-06-25",
+      "title": "Fed cuts its rate to 1 percent",
+      "summary": "The Federal Open Market Committee lowered its target for the federal funds rate by 25 basis points to 1 percent.",
+      "players": [],
+      "kind": "money",
+      "key_date": true,
+      "source": "https://www.federalreserve.gov/boarddocs/press/monetary/2003/20030625/default.htm"
+    },
+    {
+      "id": "2004-04-28-sec-leverage-exemption",
+      "date": "2004-04-28",
+      "title": "SEC exempts five brokerages from debt limits",
+      "summary": "A meeting at the Federal Reserve with the five largest investment banks and the SEC led to an exemption from US leverage limits.",
+      "players": [],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://en.wikipedia.org/wiki/2008_financial_crisis"
+    },
+    {
+      "id": "2004-06-30-fed-begins-raising-rates",
+      "date": "2004-06-30",
+      "title": "Fed raises its rate to 1.25 percent",
+      "summary": "The Federal Open Market Committee raised its target for the federal funds rate by 25 basis points, to 1-1/4 percent.",
+      "players": [],
+      "kind": "money",
+      "key_date": true,
+      "source": "https://www.federalreserve.gov/boarddocs/press/monetary/2004/20040630/default.htm"
+    },
+    {
+      "id": "2005-06-30-fed-at-3-25",
+      "date": "2005-06-30",
+      "title": "Fed raises its rate to 3.25 percent",
+      "summary": "The Federal Open Market Committee raised its target for the federal funds rate by a quarter point, to 3-1/4 percent.",
+      "players": [],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://www.federalreserve.gov/boarddocs/press/monetary/2005/20050630/default.htm"
+    },
+    {
+      "id": "2006-06-29-fed-at-5-25",
+      "date": "2006-06-29",
+      "title": "Fed lifts its rate to 5.25 percent",
+      "summary": "The Federal Open Market Committee raised its target for the federal funds rate by a quarter point, to 5-1/4 percent.",
+      "players": [],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://www.federalreserve.gov/newsevents/press/monetary/20060629a.htm"
+    },
+    {
+      "id": "2006-07-31-house-prices-peak",
+      "date": "2006-07-31",
+      "title": "US house prices peak, Case-Shiller at 206.52",
+      "summary": "The S&P Case-Shiller national home price index reached its all-time high of 206.52 in July 2006.",
+      "players": [],
+      "kind": "money",
+      "key_date": true,
+      "source": "https://en.wikipedia.org/wiki/Case-Shiller_index"
+    },
+    {
+      "id": "2007-02-08-hsbc-bad-debt-warning",
+      "date": "2007-02-08",
+      "title": "HSBC warns of $10.5bn of bad debts",
+      "summary": "HSBC said its charge for bad debts would be $10.5 billion, 20 percent more than expected, as US subprime loans soured.",
+      "players": [
+        "hsbc"
+      ],
+      "kind": "money",
+      "key_date": true,
+      "source": "https://en.wikipedia.org/wiki/Subprime_mortgage_crisis"
+    },
+    {
+      "id": "2007-04-02-new-century-bankruptcy",
+      "date": "2007-04-02",
+      "title": "Subprime lender New Century files for bankruptcy",
+      "summary": "New Century, the largest independent subprime lender in the US, filed for Chapter 11 on 2 April 2007.",
+      "players": [],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://en.wikipedia.org/wiki/New_Century_Financial"
+    },
+    {
+      "id": "2007-06-20-bear-funds-bailed-out",
+      "date": "2007-06-20",
+      "title": "Bear Stearns props up two mortgage funds",
+      "summary": "After margin calls, Bear Stearns bailed out two hedge funds with $20 billion of subprime-linked collateralised debt.",
+      "players": [
+        "bear-stearns"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://en.wikipedia.org/wiki/2008_financial_crisis"
+    },
+    {
+      "id": "2007-07-19-dow-above-14-000",
+      "date": "2007-07-19",
+      "title": "Dow closes above 14,000 for the first time",
+      "summary": "The Dow Jones Industrial Average closed at 14,000.41, its first close above 14,000.",
+      "players": [],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://en.wikipedia.org/wiki/2008_financial_crisis"
+    },
+    {
+      "id": "2007-07-31-bear-funds-liquidated",
+      "date": "2007-07-31",
+      "title": "Bear Stearns liquidates the two funds",
+      "summary": "Bear Stearns wound up the two hedge funds it had supported after their mortgage bets lost value.",
+      "players": [
+        "bear-stearns"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://en.wikipedia.org/wiki/2008_financial_crisis"
+    },
+    {
+      "id": "2007-08-06-american-home-mortgage",
+      "date": "2007-08-06",
+      "title": "American Home Mortgage files for bankruptcy",
+      "summary": "American Home Mortgage, a large US mortgage lender, filed for bankruptcy on 6 August 2007.",
+      "players": [],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://en.wikipedia.org/wiki/2008_financial_crisis"
+    },
+    {
+      "id": "2007-08-09-bnp-paribas-halts-funds",
+      "date": "2007-08-09",
+      "title": "BNP Paribas freezes three investment funds",
+      "summary": "The French bank stopped withdrawals from three funds because it could not value their subprime-linked holdings.",
+      "players": [],
+      "kind": "money",
+      "key_date": true,
+      "source": "https://en.wikipedia.org/wiki/Subprime_mortgage_crisis"
+    },
+    {
+      "id": "2007-09-14-northern-rock-run",
+      "date": "2007-09-14",
+      "title": "Northern Rock takes a Bank of England loan",
+      "summary": "Northern Rock sought emergency support from the Bank of England, and savers queued outside branches to take out money.",
+      "players": [],
+      "kind": "money",
+      "key_date": true,
+      "source": "https://en.wikipedia.org/wiki/Northern_Rock"
+    },
+    {
+      "id": "2007-09-18-fed-first-cut",
+      "date": "2007-09-18",
+      "title": "Fed cuts rates to 4.75 percent",
+      "summary": "The Federal Open Market Committee lowered its target for the federal funds rate by 50 basis points, to 4-3/4 percent.",
+      "players": [],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://www.federalreserve.gov/newsevents/press/monetary/20070918a.htm"
+    },
+    {
+      "id": "2007-10-09-dow-peak",
+      "date": "2007-10-09",
+      "title": "Dow peaks at 14,164.53",
+      "summary": "The Dow Jones Industrial Average closed at its peak of 14,164.53 on 9 October 2007.",
+      "players": [],
+      "kind": "money",
+      "key_date": true,
+      "source": "https://en.wikipedia.org/wiki/2008_financial_crisis"
+    },
+    {
+      "id": "2007-10-15-80bn-conduit",
+      "date": "2007-10-15",
+      "title": "Big banks plan an $80bn fund for shaky debt",
+      "summary": "Citigroup, Bank of America and JPMorgan Chase announced plans for an $80 billion fund to buy debt from off-balance-sheet vehicles.",
+      "players": [
+        "citigroup",
+        "bank-of-america",
+        "jpmorgan-chase"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://en.wikipedia.org/wiki/2008_financial_crisis"
+    },
+    {
+      "id": "2007-10-30-merrill-ceo-resigns",
+      "date": "2007-10-30",
+      "title": "Merrill Lynch chief executive O'Neal resigns",
+      "summary": "Stan O'Neal resigned as chief executive on 30 October 2007, after losses on mortgage securities at Merrill Lynch.",
+      "players": [
+        "merrill-lynch"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://en.wikipedia.org/wiki/Stan_O%27Neal"
+    },
+    {
+      "id": "2007-11-04-citigroup-ceo-resigns",
+      "date": "2007-11-04",
+      "title": "Citigroup chief executive Prince resigns",
+      "summary": "Charles Prince left as Citigroup's chairman and chief executive on 4 November 2007 after losses on mortgage holdings.",
+      "players": [
+        "citigroup"
+      ],
+      "kind": "money",
+      "key_date": true,
+      "source": "https://en.wikipedia.org/wiki/Charles_Prince"
+    },
+    {
+      "id": "2007-12-07-rbs-loses-19bn",
+      "date": "2007-12-07",
+      "title": "RBS has lost GBP 19bn of market value in 2007",
+      "summary": "The Guardian reported GBP 19bn wiped off RBS's market value that year, with GBP 950m written off US subprime holdings.",
+      "players": [
+        "royal-bank-of-scotland"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://www.theguardian.com/business/2007/dec/07/rbs"
+    },
+    {
+      "id": "2007-12-12-term-auction-facility",
+      "date": "2007-12-12",
+      "title": "Fed opens a credit auction for banks",
+      "summary": "The Federal Reserve created the Term Auction Facility to lend short-term money to banks holding subprime mortgages.",
+      "players": [],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://en.wikipedia.org/wiki/2008_financial_crisis"
+    },
+    {
+      "id": "2008-01-11-bank-of-america-buys-countrywide",
+      "date": "2008-01-11",
+      "title": "Bank of America to buy Countrywide for $4.1bn",
+      "summary": "Bank of America agreed to buy Countrywide Financial in an all-stock deal valued at $4.1 billion.",
+      "players": [
+        "bank-of-america",
+        "countrywide"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://en.wikipedia.org/wiki/Countrywide_Financial"
+    },
+    {
+      "id": "2008-01-22-fed-emergency-cut",
+      "date": "2008-01-22",
+      "title": "Fed cuts 75 basis points between meetings",
+      "summary": "The Federal Open Market Committee cut its target for the federal funds rate by 75 basis points to 3-1/2 percent.",
+      "players": [],
+      "kind": "money",
+      "key_date": true,
+      "source": "https://www.federalreserve.gov/newsevents/press/monetary/20080122b.htm"
+    },
+    {
+      "id": "2008-02-22-northern-rock-nationalised",
+      "date": "2008-02-22",
+      "title": "Northern Rock is taken into public ownership",
+      "summary": "The nationalisation of Northern Rock was completed on 22 February 2008.",
+      "players": [],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://en.wikipedia.org/wiki/2008_financial_crisis"
+    },
+    {
+      "id": "2008-03-14-bear-shares-collapse",
+      "date": "2008-03-14",
+      "title": "Bear Stearns loses 47% of its market value",
+      "summary": "Rumours that clients were pulling money out cost Bear Stearns 47 percent of its equity market value in one day.",
+      "players": [
+        "bear-stearns"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://en.wikipedia.org/wiki/JPMorgan_Chase"
+    },
+    {
+      "id": "2008-03-16-jpmorgan-buys-bear-stearns",
+      "date": "2008-03-16",
+      "title": "JPMorgan to buy Bear Stearns for $2 a share",
+      "summary": "The Fed brokered a rescue in which JPMorgan agreed to buy Bear Stearns for $2 a share, about $240 million.",
+      "players": [
+        "jpmorgan-chase",
+        "bear-stearns"
+      ],
+      "kind": "money",
+      "key_date": true,
+      "source": "https://en.wikipedia.org/wiki/JPMorgan_Chase"
+    },
+    {
+      "id": "2008-07-01-countrywide-deal-completes",
+      "date": "2008-07-01",
+      "title": "Bank of America completes the Countrywide purchase",
+      "summary": "Bank of America finished buying Countrywide Financial on 1 July 2008 after shareholders approved the deal.",
+      "players": [
+        "bank-of-america",
+        "countrywide"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://en.wikipedia.org/wiki/Countrywide_Financial"
+    },
+    {
+      "id": "2008-07-11-indymac-seized",
+      "date": "2008-07-11",
+      "title": "Regulators seize IndyMac Bank",
+      "summary": "IndyMac Bank failed on 11 July 2008, the fourth-largest bank failure in US history at the time.",
+      "players": [],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://en.wikipedia.org/wiki/IndyMac"
+    },
+    {
+      "id": "2008-09-07-fannie-freddie-takeover",
+      "date": "2008-09-07",
+      "title": "US takes control of Fannie Mae and Freddie Mac",
+      "summary": "The FHFA put both mortgage companies into conservatorship, with Treasury promising up to $200 billion of support.",
+      "players": [
+        "fannie-mae",
+        "freddie-mac"
+      ],
+      "kind": "money",
+      "key_date": true,
+      "source": "https://en.wikipedia.org/wiki/Federal_takeover_of_Fannie_Mae_and_Freddie_Mac"
+    },
+    {
+      "id": "2008-09-15-lehman-bankruptcy",
+      "date": "2008-09-15",
+      "title": "Lehman Brothers files for bankruptcy",
+      "summary": "Lehman filed for Chapter 11 on 15 September 2008, citing $613 billion of bank debt and $639 billion of assets.",
+      "players": [
+        "lehman-brothers"
+      ],
+      "kind": "money",
+      "key_date": true,
+      "source": "https://en.wikipedia.org/wiki/Lehman_Brothers"
+    },
+    {
+      "id": "2008-09-16-aig-loan",
+      "date": "2008-09-16",
+      "title": "Fed lends AIG up to $85 billion",
+      "summary": "The Federal Reserve Board authorised the New York Fed to lend AIG up to $85 billion, with the Treasury's full support.",
+      "players": [
+        "aig"
+      ],
+      "kind": "money",
+      "key_date": true,
+      "source": "https://www.federalreserve.gov/newsevents/press/other/20080916a.htm"
+    },
+    {
+      "id": "2008-09-17-money-fund-withdrawals",
+      "date": "2008-09-17",
+      "title": "Investors pull $144bn from money market funds",
+      "summary": "Investors withdrew $144 billion from US money market funds after Lehman's failure.",
+      "players": [],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://en.wikipedia.org/wiki/2008_financial_crisis"
+    },
+    {
+      "id": "2008-09-21-bank-holding-status",
+      "date": "2008-09-21",
+      "title": "Goldman and Morgan Stanley become bank holding firms",
+      "summary": "The last two big US investment banks converted to bank holding companies to reach Federal Reserve lending.",
+      "players": [
+        "goldman-sachs",
+        "morgan-stanley"
+      ],
+      "kind": "money",
+      "key_date": true,
+      "source": "https://en.wikipedia.org/wiki/2008_financial_crisis"
+    },
+    {
+      "id": "2008-09-23-berkshire-backs-goldman",
+      "date": "2008-09-23",
+      "title": "Berkshire puts $5bn into Goldman Sachs",
+      "summary": "Berkshire Hathaway bought $5 billion of Goldman Sachs preferred stock and warrants on $5 billion more.",
+      "players": [
+        "berkshire-hathaway",
+        "goldman-sachs"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://en.wikipedia.org/wiki/2008_financial_crisis"
+    },
+    {
+      "id": "2008-09-25-wamu-seized",
+      "date": "2008-09-25",
+      "title": "Washington Mutual is seized and sold to JPMorgan",
+      "summary": "The FDIC sold WaMu's banks to JPMorgan Chase for $1.9 billion after the largest bank failure in US history.",
+      "players": [
+        "washington-mutual",
+        "jpmorgan-chase"
+      ],
+      "kind": "money",
+      "key_date": true,
+      "source": "https://en.wikipedia.org/wiki/Washington_Mutual"
+    },
+    {
+      "id": "2008-09-29-house-rejects-rescue",
+      "date": "2008-09-29",
+      "title": "House rejects the $700bn bank rescue",
+      "summary": "The House of Representatives voted 225 to 208 against the bill carrying the $700 billion bank rescue programme.",
+      "players": [],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://en.wikipedia.org/wiki/2008_financial_crisis"
+    },
+    {
+      "id": "2008-09-29-mufg-buys-morgan-stanley-stake",
+      "date": "2008-09-29",
+      "title": "Mitsubishi UFJ buys a 21% stake in Morgan Stanley",
+      "summary": "MUFG paid $9 billion for 21 percent of Morgan Stanley in a direct share purchase.",
+      "players": [
+        "mitsubishi-ufj",
+        "morgan-stanley"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://en.wikipedia.org/wiki/Morgan_Stanley"
+    },
+    {
+      "id": "2008-10-03-tarp-signed",
+      "date": "2008-10-03",
+      "title": "TARP becomes law with $700bn for banks",
+      "summary": "President Bush signed the Emergency Economic Stabilization Act, creating the $700 billion bank rescue fund.",
+      "players": [],
+      "kind": "money",
+      "key_date": true,
+      "source": "https://en.wikipedia.org/wiki/Troubled_Asset_Relief_Program"
+    },
+    {
+      "id": "2008-10-03-wells-buys-wachovia",
+      "date": "2008-10-03",
+      "title": "Wells Fargo agrees to buy Wachovia",
+      "summary": "Wachovia accepted Wells Fargo's all-stock offer of about $14.8 billion, turning down Citigroup's lower bid.",
+      "players": [
+        "wells-fargo",
+        "wachovia"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://en.wikipedia.org/wiki/Wells_Fargo"
+    },
+    {
+      "id": "2008-10-08-fed-joint-cut",
+      "date": "2008-10-08",
+      "title": "Fed cuts its rate to 1.5 percent",
+      "summary": "The Federal Open Market Committee cut its target for the federal funds rate by 50 basis points, to 1-1/2 percent.",
+      "players": [],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://www.federalreserve.gov/newsevents/press/monetary/20081008a.htm"
+    },
+    {
+      "id": "2008-10-14-mufg-stake-completed",
+      "date": "2008-10-14",
+      "title": "Mitsubishi UFJ completes its Morgan Stanley stake",
+      "summary": "Morgan Stanley's shares recovered once MUFG's 21 percent stake was completed on 14 October 2008.",
+      "players": [
+        "mitsubishi-ufj",
+        "morgan-stanley"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://en.wikipedia.org/wiki/Morgan_Stanley"
+    },
+    {
+      "id": "2008-10-16-swiss-bank-rescue",
+      "date": "2008-10-16",
+      "title": "Switzerland rescues UBS and Credit Suisse",
+      "summary": "A rescue plan was unveiled for Switzerland's two largest banks, UBS and Credit Suisse, on 16 October 2008.",
+      "players": [
+        "ubs"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://en.wikipedia.org/wiki/2008_financial_crisis"
+    },
+    {
+      "id": "2008-11-17-citigroup-value-falls",
+      "date": "2008-11-17",
+      "title": "Citigroup's market value falls to $6bn",
+      "summary": "Citigroup shares fell and its market capitalisation dropped to $6 billion, from $300 billion two years before.",
+      "players": [
+        "citigroup"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://en.wikipedia.org/wiki/Citigroup"
+    },
+    {
+      "id": "2008-11-23-citigroup-rescue",
+      "date": "2008-11-23",
+      "title": "US agrees to back $306bn of Citigroup assets",
+      "summary": "Treasury and the FDIC agreed to cover losses on about $306 billion of Citigroup assets and put in $20 billion more.",
+      "players": [
+        "citigroup"
+      ],
+      "kind": "money",
+      "key_date": true,
+      "source": "https://www.federalreserve.gov/newsevents/press/bcreg/20081123a.htm"
+    },
+    {
+      "id": "2008-11-25-talf",
+      "date": "2008-11-25",
+      "title": "Fed opens a lending scheme for consumer debt",
+      "summary": "The Federal Reserve announced the Term Asset-Backed Securities Loan Facility to lend against new asset-backed securities.",
+      "players": [],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://en.wikipedia.org/wiki/2008_financial_crisis"
+    },
+    {
+      "id": "2008-12-16-zero-rates",
+      "date": "2008-12-16",
+      "title": "Fed cuts its rate to between zero and 0.25%",
+      "summary": "The Federal Open Market Committee set a target range for the federal funds rate of 0 to 1/4 percent.",
+      "players": [],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://www.federalreserve.gov/newsevents/press/monetary/20081216b.htm"
+    },
+    {
+      "id": "2009-02-13-stimulus-signed",
+      "date": "2009-02-13",
+      "title": "Congress passes a $787bn stimulus package",
+      "summary": "Congress approved the American Recovery and Reinvestment Act, a $787 billion package of spending and tax cuts.",
+      "players": [],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://en.wikipedia.org/wiki/2008_financial_crisis"
+    },
+    {
+      "id": "2009-03-06-market-low",
+      "date": "2009-03-06",
+      "title": "Dow falls 54% from its 2007 peak",
+      "summary": "The Dow hit 6,469.95, 54 percent below its October 2007 peak, before it began to recover.",
+      "players": [],
+      "kind": "money",
+      "key_date": true,
+      "source": "https://en.wikipedia.org/wiki/2008_financial_crisis"
+    },
+    {
+      "id": "2009-03-10-citigroup-shares-jump",
+      "date": "2009-03-10",
+      "title": "Citigroup shares jump 38% on profit news",
+      "summary": "Citigroup shares rose 38 percent after its chief executive said the bank was profitable in January and February.",
+      "players": [
+        "citigroup"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "source": "https://en.wikipedia.org/wiki/2008_financial_crisis"
+    },
+    {
+      "id": "2009-05-07-stress-tests",
+      "date": "2009-05-07",
+      "title": "Fed publishes its bank stress test results",
+      "summary": "The Federal Reserve released the results of its capital tests of the 19 largest US banks on 7 May 2009.",
+      "players": [],
+      "kind": "money",
+      "key_date": true,
+      "source": "https://en.wikipedia.org/wiki/Supervisory_Capital_Assessment_Program"
+    }
+  ]
+}

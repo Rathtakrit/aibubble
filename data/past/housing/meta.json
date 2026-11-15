@@ -1,0 +1,9 @@
+{
+  "title": "The housing and credit boom",
+  "first_day": "2003-01-01",
+  "last_day": "2009-12-31",
+  "kinds": [
+    { "id": "investment", "label": "Investment deal" },
+    { "id": "takeover", "label": "Takeover deal" }
+  ]
+}

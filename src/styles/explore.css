@@ -783,6 +783,17 @@ body[data-mode="story"] .story-dot {
   text-decoration: none;
 }
 
+/* A past page's switch between the two past bubbles, above the date: the phone's switch with a
+   little less padding, and labels that wrap onto a second line on a narrow phone rather than
+   running past the pill. Each button keeps its 44px tap height. */
+.past-switch .mode-button {
+  padding: 2px 10px;
+  font-size: 13px;
+  line-height: 1.15;
+  text-align: center;
+  white-space: normal;
+}
+
 /* On the phone the chapter lives in the sheet: kicker, title, note, players and buttons stay
    put and the text scrolls inside them, so the sheet never grows past its 55dvh and nothing is
    drawn over the buttons or the day line. The legend has no room left in Story and is left out;
@@ -1042,30 +1053,38 @@ body[data-mode="story"] .sheet .sheet-timeline {
      380px of the window's height, so the bubble gives back whatever the window has above that.
      The room comes from the space above the date and around the bubble, not from the text. */
   .bubble-column {
+    /* The zoom buttons stand in a strip of their own beside the square, 10px clear of it, so the
+       frame's circle is never under them however small the window makes the bubble. The column is
+       the square plus that strip; the square keeps the size the window's height allows. */
+    --zoom-strip: 56px;
     flex: 1 1 560px;
     min-width: 0;
-    max-width: min(680px, calc(100vh - 380px));
-    max-width: min(680px, calc(100dvh - 380px));
+    max-width: min(calc(680px + var(--zoom-strip)), calc(100vh - 380px + var(--zoom-strip)));
+    max-width: min(calc(680px + var(--zoom-strip)), calc(100dvh - 380px + var(--zoom-strip)));
     margin: 0 auto;
   }
 
   .bubble-wrap {
     position: relative;
+    width: calc(100% - var(--zoom-strip));
   }
 
   .bubble-column .zoom-buttons {
     position: absolute;
-    right: 0;
+    right: calc(-1 * var(--zoom-strip));
     bottom: 6%;
   }
 
+  /* The lines under the bubble follow the square, not the strip beside it. */
   .bubble-meta {
+    width: calc(100% - var(--zoom-strip));
     margin-top: 6px;
     font-size: 13px;
     color: var(--ink-2);
   }
 
   .bubble-column .legend {
+    width: calc(100% - var(--zoom-strip));
     margin-top: 10px;
   }
 
@@ -1166,6 +1185,56 @@ body[data-mode="story"] .sheet .sheet-timeline {
     margin: 4px auto 0;
     font-size: 12px;
     color: var(--ink-2);
+  }
+}
+
+/* --- Story on desktop: the page keeps the window's height and the chapter text scrolls --- */
+
+/* Story keeps the page the height of the window, as Explore does, so the timeline never falls
+   below it. The text column fills the room between the header and the timeline, and the chapter
+   text is the one part that shrinks and scrolls inside it: the kicker, date, title, sample note, the
+   players line, the buttons and "Read the story" keep their places around it.
+   The 1048px is where the two columns stop sitting side by side: their sizes (360px and 560px), the
+   gap and the page's side padding add up to that, and below it the columns stack and the page
+   scrolls in Explore too, so Story behaves the same there. */
+@media (min-width: 1048px) {
+  body[data-mode="story"] .layout-desktop {
+    height: 100vh;
+    height: 100dvh;
+  }
+
+  body[data-mode="story"] .explore-main,
+  body[data-mode="story"] .story-column {
+    min-height: 0;
+  }
+
+  body[data-mode="story"] .story-column [data-block="story"]:not([hidden]) {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  body[data-mode="story"] .story-column .chapter-text {
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  /* The chapter list is a panel in the same column; it gives the column's leftover room to its
+     scrolling rows, so opening it never pushes the timeline off screen either. */
+  body[data-mode="story"] .story-column [data-block="story-list"]:not([hidden]) {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  body[data-mode="story"] .story-column .chapter-list {
+    min-height: 0;
+  }
+
+  body[data-mode="story"] .story-column .chapter-list-items {
+    flex: 1 1 auto;
+    min-height: 0;
   }
 }
 

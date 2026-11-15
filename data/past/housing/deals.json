@@ -1,0 +1,82 @@
+{
+  "status": "draft",
+  "items": [
+    {
+      "id": "2008-01-11-bank-of-america-countrywide",
+      "date": "2008-01-11",
+      "from": "bank-of-america",
+      "to": "countrywide",
+      "kind": "takeover",
+      "amount_usd_bn": 4.1,
+      "amount_type": "reported",
+      "title": "Bank of America to buy Countrywide for $4.1bn in stock",
+      "source": "https://en.wikipedia.org/wiki/Countrywide_Financial"
+    },
+    {
+      "id": "2008-03-16-jpmorgan-bear-stearns",
+      "date": "2008-03-16",
+      "from": "jpmorgan-chase",
+      "to": "bear-stearns",
+      "kind": "takeover",
+      "amount_usd_bn": 0.24,
+      "amount_type": "reported",
+      "title": "JPMorgan to buy Bear Stearns for $2 a share",
+      "source": "https://en.wikipedia.org/wiki/JPMorgan_Chase"
+    },
+    {
+      "id": "2008-09-15-bank-of-america-merrill",
+      "date": "2008-09-15",
+      "from": "bank-of-america",
+      "to": "merrill-lynch",
+      "kind": "takeover",
+      "amount_usd_bn": 50,
+      "amount_type": "reported",
+      "title": "Bank of America to buy Merrill Lynch for about $50bn",
+      "source": "https://en.wikipedia.org/wiki/Merrill_(company)"
+    },
+    {
+      "id": "2008-09-23-berkshire-goldman",
+      "date": "2008-09-23",
+      "from": "berkshire-hathaway",
+      "to": "goldman-sachs",
+      "kind": "investment",
+      "amount_usd_bn": 5,
+      "amount_type": "paid",
+      "title": "Berkshire buys $5bn of Goldman Sachs preferred stock",
+      "source": "https://en.wikipedia.org/wiki/Goldman_Sachs"
+    },
+    {
+      "id": "2008-09-25-jpmorgan-washington-mutual",
+      "date": "2008-09-25",
+      "from": "jpmorgan-chase",
+      "to": "washington-mutual",
+      "kind": "takeover",
+      "amount_usd_bn": 1.9,
+      "amount_type": "paid",
+      "title": "FDIC sells Washington Mutual's banks to JPMorgan",
+      "source": "https://en.wikipedia.org/wiki/Washington_Mutual"
+    },
+    {
+      "id": "2008-09-29-mitsubishi-morgan-stanley",
+      "date": "2008-09-29",
+      "from": "mitsubishi-ufj",
+      "to": "morgan-stanley",
+      "kind": "investment",
+      "amount_usd_bn": 9,
+      "amount_type": "paid",
+      "title": "Mitsubishi UFJ buys a 21% stake in Morgan Stanley",
+      "source": "https://en.wikipedia.org/wiki/Morgan_Stanley"
+    },
+    {
+      "id": "2008-10-03-wells-fargo-wachovia",
+      "date": "2008-10-03",
+      "from": "wells-fargo",
+      "to": "wachovia",
+      "kind": "takeover",
+      "amount_usd_bn": 14.8,
+      "amount_type": "reported",
+      "title": "Wells Fargo to buy Wachovia for about $14.8bn in stock",
+      "source": "https://en.wikipedia.org/wiki/Wells_Fargo"
+    }
+  ]
+}

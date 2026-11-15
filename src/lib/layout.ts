@@ -3,8 +3,8 @@
 
 import { forceSimulation } from "d3-force";
 import type { Force, Simulation, SimulationNodeDatum } from "d3-force";
-import { companies, deals, isShown, news, valueOn, values } from "./data.ts";
-import type { Company, Deal, ValuePoint } from "./data.ts";
+import { companies, datasetId, deals, isShown, LAST_DAY, valueOn, values } from "./data.ts";
+import type { Company, DatasetId, Deal, ValuePoint } from "./data.ts";
 import { FIRST_DAY } from "./timeline.ts";
 
 // The bubble lives in a 100 x 100 square. The frame is the circle with this centre and radius.
@@ -1000,34 +1000,33 @@ export function formatDate(date: string): string {
   return dateFormatter.format(new Date(`${date}T00:00:00Z`));
 }
 
-// The latest date in the data files, not the clock.
+// The last day of the active data set: the latest date in the AI bubble's files, and the
+// last_day in a past set's meta.json. Never the clock.
 export function defaultDate(): string {
-  const dates = [
-    ...values.map((point) => point.date),
-    ...deals.map((deal) => deal.date),
-    ...news.map((item) => item.date),
-    ...companies.map((company) => company.first_mention),
-  ];
-  return dates.reduce((latest, date) => (date > latest ? date : latest), "2022-11-30");
+  return LAST_DAY;
 }
 
 // Thin wrappers over the real data, for the page and the renderer. The layout is computed
-// once, on first use, and kept per date.
-let realLayout: DayLayouts | null = null;
+// once per data set, on first use, and kept per data set.
+const realLayouts = new Map<DatasetId, DayLayouts>();
 
-function realLayouts(): DayLayouts {
-  if (realLayout === null) realLayout = dayLayouts(companies, values, deals, defaultDate());
-  return realLayout;
+function realLayoutsFor(): DayLayouts {
+  let layout = realLayouts.get(datasetId);
+  if (layout === undefined) {
+    layout = dayLayouts(companies, values, deals, defaultDate());
+    realLayouts.set(datasetId, layout);
+  }
+  return layout;
 }
 
 export function bubblesForDate(date: string): Bubble[] {
-  return bubblesOn(date, companies, values, deals, realLayouts());
+  return bubblesOn(date, companies, values, deals, realLayoutsFor());
 }
 
 export function arrowsForDate(date: string): Arrow[] {
-  return arrowsOn(date, companies, values, deals, realLayouts());
+  return arrowsOn(date, companies, values, deals, realLayoutsFor());
 }
 
 export function totalForDate(date: string): number {
-  return totalOn(date, companies, values, deals, realLayouts());
+  return totalOn(date, companies, values, deals, realLayoutsFor());
 }

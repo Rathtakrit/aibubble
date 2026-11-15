@@ -8,6 +8,7 @@
 
 import { arrowCurve, arrowsForDate, bubblesForDate, formatDate, formatValue, FRAME } from "./layout.ts";
 import type { Arrow, Bubble, Placed } from "./layout.ts";
+import { kindColour } from "./data.ts";
 import { fitView, sceneTransform } from "./camera.ts";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
@@ -371,9 +372,10 @@ function createArrowNode(): ArrowNode {
 // every line that touches that company is drawn that way instead.
 function styleArrow(live: LiveArrow): void {
   const strong = live.strong;
-  live.node.shaft.style.stroke = strong ? `var(--${live.arrow.kind})` : "var(--ink-2)";
+  const colour = `var(--${kindColour(live.arrow.kind)})`;
+  live.node.shaft.style.stroke = strong ? colour : "var(--ink-2)";
   live.node.shaft.style.strokeWidth = strong ? "1.75px" : "1px";
-  live.node.head.style.stroke = strong ? `var(--${live.arrow.kind})` : "var(--ink-2)";
+  live.node.head.style.stroke = strong ? colour : "var(--ink-2)";
   live.node.head.style.display = strong ? "" : "none";
   live.node.group.style.opacity = live.visible ? (strong ? "1" : FAINT) : "0";
 }

@@ -5,9 +5,9 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "check:data": "node scripts/check-data.mjs",
+    "check:data": "node scripts/check-data.mjs data && node scripts/check-data.mjs data/past/dotcom && node scripts/check-data.mjs data/past/housing",
     "test": "node --test",
-    "check": "node scripts/check-data.mjs && npm test && astro check && astro build"
+    "check": "npm run check:data && npm test && astro check && astro build"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.12",

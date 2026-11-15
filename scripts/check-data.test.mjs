@@ -227,3 +227,78 @@ test("rejects example.com sources when the status is not sample", () => {
   }
   expectFail(dir, "companies.json");
 });
+
+// A past folder holds a meta.json: its first day, its last day and its deal kinds replace the
+// AI set's own. The fixture's data starts in 2020, so a company first mentioned in 2016 and a
+// takeover deal in 2016 only pass when the meta.json allows them.
+function olderFixture() {
+  const dir = copyData();
+  const companies = read(dir, "companies.json");
+  for (const company of companies.items) company.first_mention = "2016-01-01";
+  write(dir, "companies.json", companies);
+  const deals = read(dir, "deals.json");
+  deals.items[0].date = "2016-01-05";
+  deals.items[0].kind = "takeover";
+  write(dir, "deals.json", deals);
+  return dir;
+}
+
+const meta = (overrides = {}) => ({
+  title: "A made-up past boom",
+  first_day: "2016-01-01",
+  last_day: "2021-12-31",
+  kinds: [
+    { id: "takeover", label: "Takeover deal" },
+    { id: "cloud", label: "Cloud deal" },
+    { id: "chip", label: "Chip deal" },
+  ],
+  ...overrides,
+});
+
+test("a folder with a meta.json takes its first day, last day and deal kinds from it", () => {
+  const dir = olderFixture();
+  write(dir, "meta.json", meta());
+  expectOk(dir);
+});
+
+test("without a meta.json the AI first day and deal kinds still apply", () => {
+  // The same folder the test above passes: 2016 is before the AI set's first day, and
+  // "takeover" is not one of the AI set's three deal kinds.
+  const dir = olderFixture();
+  expectFail(dir, "deals.json");
+});
+
+test("rejects a deal dated after the meta.json last day", () => {
+  const dir = copyData();
+  write(
+    dir,
+    "meta.json",
+    meta({
+      kinds: [
+        { id: "investment", label: "Investment deal" },
+        { id: "cloud", label: "Cloud deal" },
+        { id: "chip", label: "Chip deal" },
+      ],
+    }),
+  );
+  const deals = read(dir, "deals.json");
+  deals.items[3].date = "2022-01-01";
+  write(dir, "deals.json", deals);
+  expectFail(dir, "deals.json");
+});
+
+test("rejects a meta.json with a duplicate deal kind", () => {
+  const dir = copyData();
+  write(
+    dir,
+    "meta.json",
+    meta({
+      kinds: [
+        { id: "investment", label: "Investment deal" },
+        { id: "cloud", label: "Cloud deal" },
+        { id: "cloud", label: "Cloud deal again" },
+      ],
+    }),
+  );
+  expectFail(dir, "meta.json");
+});

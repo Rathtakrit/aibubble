@@ -16,7 +16,7 @@ import {
   FRAME,
   totalOn,
 } from "./layout.ts";
-import { companies as realCompanies, deals as realDeals, values as realValues } from "./data.ts";
+import { companies as realCompanies, deals as realDeals, useDataset, values as realValues } from "./data.ts";
 import type { Company, Deal, ValuePoint } from "./data.ts";
 import { FIRST_DAY } from "./timeline.ts";
 
@@ -421,4 +421,33 @@ test("four years and twenty companies lay out well under half a second", () => {
   assert.equal(big.days.size, 1461);
   console.log(`    four years, 20 companies: ${elapsed.toFixed(0)}ms`);
   assert.ok(elapsed < 500, `the layout took ${elapsed.toFixed(0)}ms, not well under 500ms`);
+});
+
+// The imports above are live: after useDataset they are the active set's files. This runs last,
+// and puts "ai" back at the end, so every other test in this file sees the AI data. Microsoft,
+// Amazon, Intel and Oracle are in both the AI and the dot-com data (they traded through both
+// booms), so the test checks set membership and the ids that belong to one set only.
+test("a past set's day layouts hold no AI company, and the AI layout none of the past one", () => {
+  useDataset("dotcom");
+  const dotcomIds = new Set(realCompanies.map((company) => company.id));
+  const aiOnly = ["openai", "anthropic", "nvidia", "xai"];
+  const dotcomLayout = dayLayouts(realCompanies, realValues, realDeals, defaultDate());
+  assert.ok(dotcomLayout.days.size > 0, "the dot-com layout has no days");
+  for (const [date, placed] of dotcomLayout.days) {
+    for (const id of placed.keys()) {
+      assert.ok(dotcomIds.has(id), `${id} is placed on ${date} but is not in the dot-com companies`);
+      assert.ok(!aiOnly.includes(id), `${id} is an AI company placed on ${date} in the dot-com layout`);
+    }
+  }
+
+  useDataset("ai");
+  const aiIds = new Set(realCompanies.map((company) => company.id));
+  const dotcomOnly = ["aol", "yahoo", "worldcom", "enron"];
+  const aiLayout = dayLayouts(realCompanies, realValues, realDeals, defaultDate());
+  for (const [date, placed] of aiLayout.days) {
+    for (const id of placed.keys()) {
+      assert.ok(aiIds.has(id), `${id} is placed on ${date} but is not in the AI companies`);
+      assert.ok(!dotcomOnly.includes(id), `${id} is a dot-com company placed on ${date} in the AI layout`);
+    }
+  }
 });

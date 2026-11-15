@@ -1,7 +1,7 @@
 # Housing and credit boom data, 1 January 2003 to 31 December 2009 — notes
 
 Working notes for `data/past/housing/` (companies, values, deals, news). Plain words. No advice and no
-predictions. Pages opened in this run: **81**.
+predictions. Pages opened in this run: **82**.
 
 ## What is in the data
 
@@ -215,6 +215,10 @@ are the expected ones named in the brief. Nothing else is printed.
 | 2008 | FDIC press-release index for 2008 (no usable list of links) | https://www.fdic.gov/news/press-releases/2008/ | FDIC | opened |
 | 2008 | FDIC release page opened; no matching sentence | https://www.fdic.gov/news/news/press/2008/pr08094.html | FDIC | opened |
 | 2007 | ranking table rejected as unreliable (see doubts) | https://marketcapranked.com/rankings/2007/ | MarketCapRanked | opened |
+
+| 2008-09-07 | Freddie Mac's own page: FHFA put it into conservatorship that day | https://en.wikipedia.org/wiki/Freddie_Mac | Wikipedia | opened |
+| 2003–2006 | subprime lending background; no dated figure used | https://en.wikipedia.org/wiki/Subprime_lending | Wikipedia | opened |
+| 2006–2008 | subprime mortgage-backed securities, tranches (context) | https://en.wikipedia.org/wiki/Mortgage-backed_security | Wikipedia | opened |
 
 Three pages were also read with the `webfetch` tool at the start of the run (the Citigroup, Lehman and Fannie
 Mae market-cap pages) and are counted once each in the table above.

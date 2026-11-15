@@ -4,8 +4,20 @@
 import test from "node:test";
 // @ts-expect-error node:assert has no types in this repo
 import assert from "node:assert";
-import { isShown, valueOn, valuePointOn } from "./data.ts";
+import {
+  companies,
+  isShown,
+  kindColour,
+  kinds,
+  LAST_DAY,
+  pillLabel,
+  status,
+  useDataset,
+  valueOn,
+  valuePointOn,
+} from "./data.ts";
 import type { Company, ValuePoint } from "./data.ts";
+import { FIRST_DAY } from "./timeline.ts";
 
 const source = "https://example.com/sample";
 
@@ -60,4 +72,56 @@ test("isShown is true from first_mention on", () => {
   assert.equal(isShown(company, "2019-07-21"), false);
   assert.equal(isShown(company, "2019-07-22"), true);
   assert.equal(isShown(company, "2024-01-01"), true);
+});
+
+test("useDataset switches companies, first day, last day and kinds, and switching back restores ai", () => {
+  const aiCompanies = companies.map((one) => one.id);
+  const aiFirst = FIRST_DAY;
+  const aiLast = LAST_DAY;
+  const aiKinds = kinds.map((one) => one.id);
+  const aiStatus = status;
+
+  useDataset("dotcom");
+  assert.ok(companies.some((one) => one.id === "aol"), "the dot-com set has no AOL");
+  assert.ok(!companies.some((one) => one.id === "openai"), "an AI company is in the dot-com set");
+  assert.equal(FIRST_DAY, "1995-01-01");
+  assert.equal(LAST_DAY, "2002-12-31");
+  assert.deepEqual(kinds.map((one) => one.id), ["investment"]);
+
+  useDataset("housing");
+  assert.ok(companies.some((one) => one.id === "lehman-brothers"));
+  assert.equal(FIRST_DAY, "2003-01-01");
+  assert.equal(LAST_DAY, "2009-12-31");
+  assert.deepEqual(kinds.map((one) => one.id), ["investment", "takeover"]);
+  assert.equal(status, "draft");
+
+  useDataset("ai");
+  assert.deepEqual(companies.map((one) => one.id), aiCompanies);
+  assert.equal(FIRST_DAY, aiFirst);
+  assert.equal(LAST_DAY, aiLast);
+  assert.deepEqual(kinds.map((one) => one.id), aiKinds);
+  assert.equal(status, aiStatus);
+});
+
+test("a set's first, second and third deal kind take the three money-line colours", () => {
+  useDataset("ai");
+  assert.equal(kindColour("investment"), "investment");
+  assert.equal(kindColour("cloud"), "cloud");
+  assert.equal(kindColour("chip"), "chip");
+  assert.equal(pillLabel("cloud"), "Cloud deal");
+  assert.equal(pillLabel("science"), "Science");
+  assert.equal(pillLabel("money"), "Money");
+
+  useDataset("dotcom");
+  assert.equal(kindColour("investment"), "investment");
+  assert.equal(pillLabel("investment"), "Investment deal");
+
+  useDataset("housing");
+  assert.equal(kindColour("investment"), "investment");
+  assert.equal(kindColour("takeover"), "cloud");
+  assert.equal(pillLabel("takeover"), "Takeover deal");
+  // A kind the set does not list is drawn in the quiet ink colour.
+  assert.equal(kindColour("chip"), "ink-2");
+
+  useDataset("ai");
 });

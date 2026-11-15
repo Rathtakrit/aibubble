@@ -1,7 +1,18 @@
-import companiesJson from "../../data/companies.json" with { type: "json" };
-import valuesJson from "../../data/values.json" with { type: "json" };
-import dealsJson from "../../data/deals.json" with { type: "json" };
-import newsJson from "../../data/news.json" with { type: "json" };
+import aiCompaniesJson from "../../data/companies.json" with { type: "json" };
+import aiValuesJson from "../../data/values.json" with { type: "json" };
+import aiDealsJson from "../../data/deals.json" with { type: "json" };
+import aiNewsJson from "../../data/news.json" with { type: "json" };
+import dotcomCompaniesJson from "../../data/past/dotcom/companies.json" with { type: "json" };
+import dotcomValuesJson from "../../data/past/dotcom/values.json" with { type: "json" };
+import dotcomDealsJson from "../../data/past/dotcom/deals.json" with { type: "json" };
+import dotcomNewsJson from "../../data/past/dotcom/news.json" with { type: "json" };
+import dotcomMetaJson from "../../data/past/dotcom/meta.json" with { type: "json" };
+import housingCompaniesJson from "../../data/past/housing/companies.json" with { type: "json" };
+import housingValuesJson from "../../data/past/housing/values.json" with { type: "json" };
+import housingDealsJson from "../../data/past/housing/deals.json" with { type: "json" };
+import housingNewsJson from "../../data/past/housing/news.json" with { type: "json" };
+import housingMetaJson from "../../data/past/housing/meta.json" with { type: "json" };
+import { setFirstDay } from "./timeline.ts";
 
 export type DataStatus = "sample" | "draft" | "approved";
 
@@ -28,7 +39,9 @@ export type Deal = {
   date: string;
   from: string;
   to: string;
-  kind: "investment" | "cloud" | "chip";
+  // The id the data set lists in its meta.json kinds, or one of the AI set's investment, cloud
+  // and chip.
+  kind: string;
   amount_usd_bn: number | null;
   amount_type: "paid" | "committed" | "up to" | "reported";
   title: string;
@@ -46,13 +59,148 @@ export type NewsItem = {
   source: string;
 };
 
-export const status = companiesJson.status as DataStatus;
-export const companies = companiesJson.items as unknown as Company[];
-export const values = valuesJson.items as unknown as ValuePoint[];
-export const deals = dealsJson.items as unknown as Deal[];
-export const news = newsJson.items as unknown as NewsItem[];
+// One kind of money line: the id the data uses and the plain name the page shows.
+export type DealKind = { id: string; label: string };
+
+export type DatasetId = "ai" | "dotcom" | "housing";
+
+// The shape of a past folder's meta.json: what the folder holds and the days it covers.
+type MetaFile = { title: string; first_day: string; last_day: string; kinds: DealKind[] };
+
+// One data set: the four files, the words the page needs, and the days it covers.
+type Dataset = {
+  id: DatasetId;
+  // What the page calls the set in its kicker: "Explore" for the AI bubble, which has always
+  // said so, and the set's own title for a past one.
+  title: string;
+  status: DataStatus;
+  companies: Company[];
+  values: ValuePoint[];
+  deals: Deal[];
+  news: NewsItem[];
+  kinds: DealKind[];
+  firstDay: string;
+  // Null when the set ends on the latest day in its files, as the AI bubble's always has.
+  lastDay: string | null;
+};
 
 const DAY_MS = 86_400_000;
+
+// The latest day any of the set's files mentions.
+function latestDateOf(set: Pick<Dataset, "companies" | "values" | "deals" | "news" | "firstDay">): string {
+  const dates = [
+    ...set.values.map((point) => point.date),
+    ...set.deals.map((deal) => deal.date),
+    ...set.news.map((item) => item.date),
+    ...set.companies.map((company) => company.first_mention),
+  ];
+  return dates.reduce((latest, date) => (date > latest ? date : latest), set.firstDay);
+}
+
+function companiesOf(file: { items: unknown[] }): Company[] {
+  return file.items as unknown as Company[];
+}
+
+const DOTCOM_META = dotcomMetaJson as MetaFile;
+const HOUSING_META = housingMetaJson as MetaFile;
+
+const DATASETS: Record<DatasetId, Dataset> = {
+  ai: {
+    id: "ai",
+    title: "Explore",
+    status: aiCompaniesJson.status as DataStatus,
+    companies: companiesOf(aiCompaniesJson),
+    values: aiValuesJson.items as unknown as ValuePoint[],
+    deals: aiDealsJson.items as unknown as Deal[],
+    news: aiNewsJson.items as unknown as NewsItem[],
+    // The three kinds the AI page has always drawn its money lines in.
+    kinds: [
+      { id: "investment", label: "Investment" },
+      { id: "cloud", label: "Cloud deal" },
+      { id: "chip", label: "Chip deal" },
+    ],
+    firstDay: "2022-11-30",
+    lastDay: null,
+  },
+  dotcom: {
+    id: "dotcom",
+    title: DOTCOM_META.title,
+    status: dotcomCompaniesJson.status as DataStatus,
+    companies: companiesOf(dotcomCompaniesJson),
+    values: dotcomValuesJson.items as unknown as ValuePoint[],
+    deals: dotcomDealsJson.items as unknown as Deal[],
+    news: dotcomNewsJson.items as unknown as NewsItem[],
+    kinds: DOTCOM_META.kinds,
+    firstDay: DOTCOM_META.first_day,
+    lastDay: DOTCOM_META.last_day,
+  },
+  housing: {
+    id: "housing",
+    title: HOUSING_META.title,
+    status: housingCompaniesJson.status as DataStatus,
+    companies: companiesOf(housingCompaniesJson),
+    values: housingValuesJson.items as unknown as ValuePoint[],
+    deals: housingDealsJson.items as unknown as Deal[],
+    news: housingNewsJson.items as unknown as NewsItem[],
+    kinds: HOUSING_META.kinds,
+    firstDay: HOUSING_META.first_day,
+    lastDay: HOUSING_META.last_day,
+  },
+};
+
+// The active data set's files. "ai" is active when the module loads.
+export let datasetId: DatasetId = "ai";
+export let datasetTitle: string = DATASETS.ai.title;
+export let status: DataStatus = DATASETS.ai.status;
+export let companies: Company[] = DATASETS.ai.companies;
+export let values: ValuePoint[] = DATASETS.ai.values;
+export let deals: Deal[] = DATASETS.ai.deals;
+export let news: NewsItem[] = DATASETS.ai.news;
+export let kinds: DealKind[] = DATASETS.ai.kinds;
+// The last day of the set: its meta.json last_day for a past one, the latest date in the files
+// for the AI bubble.
+export let LAST_DAY: string = DATASETS.ai.lastDay ?? latestDateOf(DATASETS.ai);
+
+// Makes one data set active for everything that follows. The day scale starts on its first day
+// too (see FIRST_DAY in timeline.ts).
+// shortcut: one data set is active at a time; pass the data set through when two must show on one page
+export function useDataset(id: DatasetId): void {
+  const set = DATASETS[id];
+  datasetId = set.id;
+  datasetTitle = set.title;
+  status = set.status;
+  companies = set.companies;
+  values = set.values;
+  deals = set.deals;
+  news = set.news;
+  kinds = set.kinds;
+  LAST_DAY = set.lastDay ?? latestDateOf(set);
+  setFirstDay(set.firstDay);
+}
+
+// The three money-line colours, in order: a set's first, second and third kind use them.
+const KIND_COLOURS = ["investment", "cloud", "chip"] as const;
+
+// The colour a deal kind is drawn in: its place in the active set's kind list picks one of the
+// three. A kind the set does not list is drawn in the quiet ink colour.
+export function kindColour(kind: string): string {
+  const at = kinds.findIndex((one) => one.id === kind);
+  return at >= 0 ? (KIND_COLOURS[at] ?? "ink-2") : "ink-2";
+}
+
+// The pill's colour class: Science and Money have their own, and a deal kind takes the colour
+// of its money line.
+export function pillClass(kind: string): string {
+  if (kind === "science" || kind === "money") return kind;
+  return kindColour(kind);
+}
+
+// What the pill says: "Science", "Money", or the active set's own name for its deal kind.
+export function pillLabel(kind: string): string {
+  if (kind === "science") return "Science";
+  if (kind === "money") return "Money";
+  return kinds.find((one) => one.id === kind)?.label ?? kind;
+}
 
 function daysBetween(from: string, to: string): number {
   return (Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / DAY_MS;

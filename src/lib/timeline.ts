@@ -1,10 +1,17 @@
 // Pure helpers for the Explore page's day slider and one-line timeline.
-// No DOM here; explore.ts and index.astro use the results.
+// No DOM here; ExplorePage.astro and explore.ts use the results.
 
 import type { Deal, NewsItem } from "./data.ts";
 
-// The day the site starts: ChatGPT opened to the public on 30 November 2022.
-export const FIRST_DAY = "2022-11-30";
+// The day the active data set starts: ChatGPT opened to the public on 30 November 2022, and the
+// past sets start on the first day in their meta.json. `useDataset` in data.ts sets it.
+export let FIRST_DAY = "2022-11-30";
+
+// Sets the first day of the active data set. Called by useDataset, not by the page.
+export function setFirstDay(date: string): void {
+  FIRST_DAY = date;
+}
+
 const DAY_MS = 86_400_000;
 
 function midnight(date: string): number {
@@ -15,12 +22,12 @@ function clamp(min: number, value: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
 
-// Days since 30 November 2022: dayIndex("2022-11-30") is 0.
+// Days since the set's first day: dayIndex(FIRST_DAY) is 0.
 export function dayIndex(date: string): number {
   return Math.round((midnight(date) - midnight(FIRST_DAY)) / DAY_MS);
 }
 
-// The day that many days after 30 November 2022, as YYYY-MM-DD.
+// The day that many days after the set's first day, as YYYY-MM-DD.
 export function dateAt(index: number): string {
   return new Date(midnight(FIRST_DAY) + index * DAY_MS).toISOString().slice(0, 10);
 }
@@ -70,7 +77,7 @@ function monthSpans(lastDate: string, dots: readonly Dated[]): MonthSpan[] {
 }
 
 export type TimelineScale = {
-  // 0% on 30 November 2022, 100% on the last day of the data, with busy months given more room.
+  // 0% on the set's first day, 100% on the last day of the data, with busy months given more room.
   percentOf(date: string): number;
   // The day nearest that place on the line, as YYYY-MM-DD.
   dateOf(percent: number): string;
@@ -204,16 +211,11 @@ export function neighbour<T extends Dated>(items: readonly T[], id: string, step
   return ordered[at + step] ?? null;
 }
 
-// Which pill a news item shows.
-export type PillKind = "science" | "money" | "investment" | "cloud" | "chip";
+// Which pill a news item shows: "science", "money", or the id of the deal kind it belongs to.
+export type PillKind = "science" | "money" | Deal["kind"];
 
-export const PILL_LABELS: Record<PillKind, string> = {
-  science: "Science",
-  investment: "Investment",
-  cloud: "Cloud deal",
-  chip: "Chip deal",
-  money: "Money",
-};
+// The names a pill can carry live in data.ts: Science and Money are fixed, and a deal kind takes
+// the active set's own name (see pillLabel there).
 
 // Science news is "Science". Money news shows the kind of its deal when the item's players are
 // the two ends of a deal announced that day; otherwise it is plain "Money".

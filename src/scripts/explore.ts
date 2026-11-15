@@ -1,8 +1,20 @@
-// The page's behaviour, Explore and Story: there is one state — the selected day with, optionally,
-// the selected news item or company, or the chapter being read — and everything on the page
-// follows it.
+// The page's behaviour, Explore and Story (the AI bubble only; a past bubble has no Story):
+// there is one state — the selected day with, optionally, the selected news item or company, or
+// the chapter being read — and everything on the page follows it.
 
-import { companies, deals, news, valueOn, values, valuePointOn } from "../lib/data.ts";
+import {
+  companies,
+  datasetId,
+  datasetTitle,
+  deals,
+  news,
+  pillClass,
+  pillLabel,
+  useDataset,
+  valueOn,
+  values,
+  valuePointOn,
+} from "../lib/data.ts";
 import type { Company, NewsItem } from "../lib/data.ts";
 import { arrowsForDate, bubblesForDate, defaultDate, formatValue, totalForDate } from "../lib/layout.ts";
 import { renderBubble } from "../lib/bubble.ts";
@@ -16,14 +28,19 @@ import {
   FIRST_DAY,
   latestOnOrBefore,
   neighbour,
-  PILL_LABELS,
   pillKind,
   placeLabels,
   publisherName,
   timelineScale,
 } from "../lib/timeline.ts";
 
-// Explore walks money news only, from the ChatGPT launch on; the other news waits for its own tab.
+// The page says which data set it shows; it is chosen before anything is read from the data.
+const requested = document.body.dataset.dataset;
+useDataset(requested === "dotcom" || requested === "housing" ? requested : "ai");
+// A past page has no Story mode: no chapters, and ?chapter= is ignored.
+const isPast = datasetId !== "ai";
+
+// Explore walks money news only, from the set's first day on; the other news waits for its own tab.
 const ordered = inDateOrder(news.filter((item) => item.kind === "money" && item.date >= FIRST_DAY));
 const byId = new Map(ordered.map((item) => [item.id, item]));
 const place = new Map(ordered.map((item, index) => [item.id, index + 1]));
@@ -221,7 +238,7 @@ function render(soon = false): void {
       }
     }
   } else if (item) {
-    setText("kicker-desktop", `Explore · news ${place.get(item.id)} of ${count}`);
+    setText("kicker-desktop", `${datasetTitle} · news ${place.get(item.id)} of ${count}`);
     setText("kicker-phone", `News ${place.get(item.id)} of ${count} · ${dayLabel(item.date)}`);
     setText("title", item.title);
     setText("summary", item.summary);
@@ -232,9 +249,9 @@ function render(soon = false): void {
     }
     const kind = pillKind(item, deals);
     for (const pill of document.querySelectorAll<HTMLElement>('[data-bind="pill"]')) {
-      pill.className = `pill pill-${kind}`;
+      pill.className = `pill pill-${pillClass(kind)}`;
     }
-    setText("pill-label", PILL_LABELS[kind]);
+    setText("pill-label", pillLabel(kind));
     for (const link of document.querySelectorAll<HTMLAnchorElement>('[data-bind="source"]')) {
       const publisher = publisherName(item.source);
       link.href = item.source;
@@ -242,19 +259,21 @@ function render(soon = false): void {
       link.setAttribute("aria-label", `Source: ${publisher}, opens in a new tab`);
     }
   } else if (company) {
-    setText("kicker-desktop", `Explore · ${dayLabel(day)}`);
-    setText("kicker-phone", `Explore · ${dayLabel(day)}`);
+    setText("kicker-desktop", `${datasetTitle} · ${dayLabel(day)}`);
+    setText("kicker-phone", `${datasetTitle} · ${dayLabel(day)}`);
     renderCompany(company);
   } else {
-    setText("kicker-desktop", `Explore · ${dayLabel(day)}`);
-    setText("kicker-phone", `Explore · ${dayLabel(day)}`);
+    setText("kicker-desktop", `${datasetTitle} · ${dayLabel(day)}`);
+    setText("kicker-phone", `${datasetTitle} · ${dayLabel(day)}`);
     setText("latest-title", anchor ? anchor.title : "");
   }
 
   setText("date", dayLabel(day));
   setText(
     "companies",
-    `All AI companies on ${dayLabel(day)} · total ${formatValue(totalForDate(day))}`,
+    `${isPast ? "All companies shown" : "All AI companies"} on ${dayLabel(day)} · total ${formatValue(
+      totalForDate(day),
+    )}`,
   );
 
   for (const marker of document.querySelectorAll<HTMLElement>("[data-news]")) {
@@ -530,11 +549,12 @@ for (const svg of document.querySelectorAll<SVGSVGElement>("[data-bubble]")) {
 }
 
 // Read the address once, then draw. A chapter opens Story on its day; without one, ?news=,
-// ?company= or ?date= picks the view, and a plain / shows the newest item.
+// ?company= or ?date= picks the view, and a plain page shows the newest item. A past page has
+// no Story mode, so it ignores ?chapter=.
 function readAddress(): void {
   const params = new URLSearchParams(window.location.search);
   // ?chapter=3 opens chapter 3; a number that is not a chapter opens the first.
-  if (params.has("chapter") && chapters.length > 0) {
+  if (!isPast && params.has("chapter") && chapters.length > 0) {
     const wanted = Number(params.get("chapter"));
     const at = Number.isInteger(wanted) && wanted >= 1 && wanted <= chapters.length ? wanted - 1 : 0;
     chapterIndex = at;

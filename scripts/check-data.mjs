@@ -7,6 +7,7 @@ import { join } from "node:path";
 
 const FILES = ["companies", "values", "deals", "news"];
 const STATUSES = ["sample", "draft", "approved"];
+const META_FIELDS = ["title", "first_day", "last_day", "kinds"];
 const FIRST_DAY = "2017-06-12";
 const TODAY = new Date().toISOString().slice(0, 10);
 
@@ -85,12 +86,12 @@ function checkDate(file, where, value, notBefore) {
     problem(file, where, `date "${value}" is not a real calendar date in YYYY-MM-DD`);
     return false;
   }
-  if (notBefore && value < FIRST_DAY) {
-    problem(file, where, `date ${value} is before ${FIRST_DAY}`);
+  if (notBefore && value < firstDay) {
+    problem(file, where, `date ${value} is before ${firstDay}`);
     return false;
   }
-  if (value > TODAY) {
-    problem(file, where, `date ${value} is after today (${TODAY})`);
+  if (value > lastDay) {
+    problem(file, where, `date ${value} is after ${lastDay === TODAY ? `today (${TODAY})` : lastDay}`);
     return false;
   }
   return true;
@@ -143,6 +144,87 @@ function checkIds(file, items) {
     first.set(item.id, index);
   }
 }
+
+// What a meta.json must hold: a title, two real days, and one to three deal kinds, each an id
+// with a plain name.
+function checkMeta(value) {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    problem("meta.json", "file", "is not one JSON object");
+    return false;
+  }
+  let ok = true;
+  for (const key of Object.keys(value)) {
+    if (!META_FIELDS.includes(key)) problem("meta.json", "file", `unknown field "${key}"`);
+  }
+  if (typeof value.title !== "string" || value.title.trim() === "") {
+    problem("meta.json", "title", "is not a name");
+    ok = false;
+  }
+  for (const key of ["first_day", "last_day"]) {
+    if (!isRealDate(value[key])) {
+      problem("meta.json", key, `"${value[key]}" is not a real calendar date in YYYY-MM-DD`);
+      ok = false;
+    }
+  }
+  if (isRealDate(value.first_day) && isRealDate(value.last_day) && value.first_day > value.last_day) {
+    problem("meta.json", "last_day", `${value.last_day} is before first_day ${value.first_day}`);
+    ok = false;
+  }
+  if (!Array.isArray(value.kinds) || value.kinds.length === 0 || value.kinds.length > 3) {
+    problem("meta.json", "kinds", "is not a list of one to three deal kinds");
+    ok = false;
+  } else {
+    const seen = new Set();
+    for (const [index, kind] of value.kinds.entries()) {
+      const where = `kinds[${index}]`;
+      if (typeof kind !== "object" || kind === null || Array.isArray(kind)) {
+        problem("meta.json", where, "is not one object");
+        ok = false;
+        continue;
+      }
+      for (const key of Object.keys(kind)) {
+        if (key !== "id" && key !== "label") problem("meta.json", where, `unknown field "${key}"`);
+      }
+      if (typeof kind.id !== "string" || kind.id === "") {
+        problem("meta.json", where, 'missing field "id"');
+        ok = false;
+      } else if (seen.has(kind.id)) {
+        problem("meta.json", where, `duplicate kind "${kind.id}"`);
+        ok = false;
+      } else {
+        seen.add(kind.id);
+      }
+      if (typeof kind.label !== "string" || kind.label.trim() === "") {
+        problem("meta.json", where, 'missing field "label"');
+        ok = false;
+      }
+    }
+  }
+  return ok;
+}
+
+// 0. A past set's meta.json: the first day it covers, the last allowed day, and the deal kinds
+// it uses. The AI data has no meta.json, so its own first day, its three deal kinds and today as
+// the last allowed day apply, exactly as before.
+let meta = null;
+try {
+  meta = JSON.parse(readFileSync(join(dir, "meta.json"), "utf8"));
+} catch (error) {
+  if (error.code !== "ENOENT") problem("meta.json", "file", `cannot be read (${error.message})`);
+}
+
+// A meta.json that is there but wrong is reported, and whatever it does say is used where it
+// can be, so the other problems it would cause are read against the set's own days.
+if (meta !== null) checkMeta(meta);
+
+const firstDay = meta !== null && isRealDate(meta.first_day) ? meta.first_day : FIRST_DAY;
+const lastDay = meta !== null && isRealDate(meta.last_day) ? meta.last_day : TODAY;
+const dealKinds =
+  meta !== null && Array.isArray(meta.kinds)
+    ? meta.kinds
+        .filter((kind) => kind !== null && typeof kind === "object" && typeof kind.id === "string")
+        .map((kind) => kind.id)
+    : KIND.deals;
 
 // 1. Read the four files.
 const data = {};
@@ -219,7 +301,7 @@ for (const name of FILES) {
     if (name === "companies" && typeof item.kind === "string" && !KIND.companies.includes(item.kind)) {
       problem(file, where, `unknown kind "${item.kind}"`);
     }
-    if (name === "deals" && typeof item.kind === "string" && !KIND.deals.includes(item.kind)) {
+    if (name === "deals" && typeof item.kind === "string" && !dealKinds.includes(item.kind)) {
       problem(file, where, `unknown kind "${item.kind}"`);
     }
     if (name === "news" && typeof item.kind === "string" && !KIND.news.includes(item.kind)) {
