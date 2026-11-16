@@ -9,7 +9,6 @@ This repo is public. Anyone can read every file, issue, pull request and commit,
 ## Never
 - Commit secrets: keys, tokens, passwords or `.env` files. They live in repo secrets only.
 - Publish anything AI-written without the owner's approval in a pull request.
-- Write story chapters. The owner writes them; copy them in word for word.
 - Say buy or sell, or predict prices.
 - Add a paid service, or a cost of any kind, without the owner's OK.
 - Touch anything outside this repo.
