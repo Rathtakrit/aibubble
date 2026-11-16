@@ -35,6 +35,8 @@
       ],
       "kind": "science",
       "key_date": false,
+      "small_date": true,
+      "label": "Chips ship faster",
       "source": "https://example.com/sample"
     },
     {

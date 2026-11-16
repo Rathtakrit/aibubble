@@ -161,6 +161,10 @@ function ensureScene(
     scene.appendChild(arrowLayer);
   }
 
+  // Money lines sit under the bubbles: a line that has to pass a bubble is covered by its fill,
+  // so no line is ever seen crossing a bubble's face.
+  if (arrowLayer.nextSibling !== bubbleLayer) scene.insertBefore(arrowLayer, bubbleLayer);
+
   let ring = svg.querySelector<SVGCircleElement>("circle.bubble-frame");
   if (!ring) {
     ring = el("circle");

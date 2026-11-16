@@ -56,6 +56,10 @@ export type NewsItem = {
   players: string[];
   kind: "science" | "money";
   key_date: boolean;
+  // A smaller event: a blue dot on the timeline rather than a red one, never both.
+  small_date?: boolean;
+  // The short text the timeline shows for the item, in place of its title.
+  label?: string;
   source: string;
 };
 

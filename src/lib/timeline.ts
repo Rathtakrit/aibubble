@@ -34,21 +34,34 @@ export function dateAt(index: number): string {
 
 // --- the day scale: busy months get more room, empty ones less ---
 
+// Every dot on the line, split by the colour it is drawn in: a red key date earns its month more
+// room than a blue smaller event.
+type ScaleDots = { red: readonly Dated[]; blue: readonly Dated[] };
+
 // A month of the line in days since FIRST_DAY, and the share of the line it has earned. `start` is
 // the weight of every month before it, so a weight can be turned into a place on the line.
 type MonthSpan = { first: number; days: number; start: number; weight: number };
 
-// A month with four key-date dots is seven times as wide as a month with none.
+// A month with no dots still takes a little room (0.3), a red dot adds 1.5 and a blue one 0.75,
+// and no month passes 7. An empty year is then only a little wider than a month with two red dots.
+const EMPTY_MONTH_WEIGHT = 0.3;
+const RED_DOT_WEIGHT = 1.5;
+const BLUE_DOT_WEIGHT = 0.75;
 const MAX_MONTH_WEIGHT = 7;
 
-// One span per calendar month from the first day to the last: a weight of 1, plus 1.5 for each
-// key-date dot in that month, up to 7. Every day of the month gets an equal share of the weight.
-function monthSpans(lastDate: string, dots: readonly Dated[]): MonthSpan[] {
-  const dotsInMonth = new Map<string, number>();
-  for (const dot of dots) {
-    const month = dot.date.slice(0, 7);
-    dotsInMonth.set(month, (dotsInMonth.get(month) ?? 0) + 1);
+// One span per calendar month from the first day to the last: the weights above, capped at 7.
+// Every day of the month gets an equal share of its month's weight.
+function monthSpans(lastDate: string, dots: ScaleDots): MonthSpan[] {
+  function monthCounts(list: readonly Dated[]): Map<string, number> {
+    const counts = new Map<string, number>();
+    for (const dot of list) {
+      const month = dot.date.slice(0, 7);
+      counts.set(month, (counts.get(month) ?? 0) + 1);
+    }
+    return counts;
   }
+  const redInMonth = monthCounts(dots.red);
+  const blueInMonth = monthCounts(dots.blue);
 
   const lastDay = dayIndex(lastDate);
   const spans: MonthSpan[] = [];
@@ -64,7 +77,12 @@ function monthSpans(lastDate: string, dots: readonly Dated[]): MonthSpan[] {
     const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
     const first = Math.max(0, dayIndex(`${key}-01`));
     const last = Math.min(lastDay, dayIndex(`${key}-${String(daysInMonth).padStart(2, "0")}`));
-    const weight = Math.min(MAX_MONTH_WEIGHT, 1 + 1.5 * (dotsInMonth.get(key) ?? 0));
+    const weight = Math.min(
+      MAX_MONTH_WEIGHT,
+      EMPTY_MONTH_WEIGHT +
+        RED_DOT_WEIGHT * (redInMonth.get(key) ?? 0) +
+        BLUE_DOT_WEIGHT * (blueInMonth.get(key) ?? 0),
+    );
     spans.push({ first, days: last - first + 1, start, weight });
     start += weight;
     month += 1;
@@ -85,7 +103,7 @@ export type TimelineScale = {
 
 // The timeline's day scale, built once from the days that carry a dot. Days move evenly inside
 // their month, the order of days never changes, and the first day is at 0 and the last at 100.
-export function timelineScale(lastDate: string, dots: readonly Dated[]): TimelineScale {
+export function timelineScale(lastDate: string, dots: ScaleDots): TimelineScale {
   const spans = monthSpans(lastDate, dots);
   const lastDay = dayIndex(lastDate);
   const lastSpan = spans[spans.length - 1];
@@ -229,20 +247,20 @@ export function pillKind(item: Pick<NewsItem, "date" | "players" | "kind">, deal
   return "money";
 }
 
-// --- timeline labels: three heights over the line, and never two on top of each other ---
+// --- timeline labels: two heights over the line, and never two on top of each other ---
 
 export type LabelBox = { id: string; percent: number; width: number };
 
 export type LabelPlacement = {
-  // 0 is the height nearest the line, 2 the one furthest above it.
-  row: 0 | 1 | 2;
+  // 0 is the height nearest the line, 1 the one above it.
+  row: 0 | 1;
   // Where the text sits against its date: centred on it, or pushed in at an end of the line.
   align: "start" | "center" | "end";
 };
 
 // Places each label beside the ones already placed. A label goes on the first height where its
 // real box - aligned to the start, the middle or the end of its text against the date - clears
-// the box already on that height, plus a little room; one that fits on none of the three is left
+// the box already on that height, plus a little room; one that fits on neither height is left
 // out rather than drawn on top of another.
 export function placeLabels(
   boxes: readonly LabelBox[],
@@ -251,9 +269,8 @@ export function placeLabels(
 ): Map<string, LabelPlacement> {
   const out = new Map<string, LabelPlacement>();
   if (containerWidth <= 0) return out;
-  // The box already taken on each of the three heights: [left, right] in pixels.
+  // The box already taken on each of the two heights: [left, right] in pixels.
   const taken: [number, number][] = [
-    [-Infinity, -Infinity],
     [-Infinity, -Infinity],
     [-Infinity, -Infinity],
   ];
@@ -268,7 +285,7 @@ export function placeLabels(
     const left = clamp(0, alignedLeft, containerWidth - width);
     const right = left + width;
 
-    for (const row of [0, 1, 2] as const) {
+    for (const row of [0, 1] as const) {
       const [takenLeft, takenRight] = taken[row];
       // Two boxes clash when each reaches into the other, with the extra room between them.
       if (left < takenRight + gap && right > takenLeft - gap) continue;

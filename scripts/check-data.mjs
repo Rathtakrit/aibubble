@@ -54,6 +54,8 @@ const FIELDS = {
     { name: "players", type: "strings" },
     { name: "kind", type: "string" },
     { name: "key_date", type: "boolean" },
+    { name: "small_date", type: "boolean", optional: true },
+    { name: "label", type: "string", optional: true },
     { name: "source", type: "string" },
   ],
 };
@@ -130,6 +132,19 @@ function checkFields(file, where, item, fields) {
   }
   for (const key of Object.keys(item)) {
     if (!known.has(key)) problem(file, where, `unknown field "${key}"`);
+  }
+}
+
+// A news item's place on the timeline: a red key date or a blue smaller one, never both, and a
+// short label of 1 to 28 characters when it has one.
+function checkTimelineFields(file, where, item) {
+  if (item.key_date === true && item.small_date === true) {
+    problem(file, where, "key_date and small_date are both true");
+  }
+  if (typeof item.label !== "string") return;
+  const length = [...item.label].length;
+  if (length < 1 || length > 28) {
+    problem(file, where, `label is ${length} characters long, not 1 to 28`);
   }
 }
 
@@ -307,6 +322,7 @@ for (const name of FILES) {
     if (name === "news" && typeof item.kind === "string" && !KIND.news.includes(item.kind)) {
       problem(file, where, `unknown kind "${item.kind}"`);
     }
+    if (name === "news") checkTimelineFields(file, where, item);
     if (name === "deals" && typeof item.amount_type === "string" && !AMOUNT_TYPES.includes(item.amount_type)) {
       problem(file, where, `unknown amount_type "${item.amount_type}"`);
     }

@@ -105,6 +105,44 @@ test("rejects an unknown extra field", () => {
   expectFail(dir, "deals.json");
 });
 
+test("a small date with a short label passes, and items without either still do", () => {
+  // The fixture has one item with both new fields and the rest with neither.
+  const dir = copyData();
+  expectOk(dir);
+});
+
+test("rejects a small_date of the wrong type", () => {
+  const dir = copyData();
+  const news = read(dir, "news.json");
+  news.items[2].small_date = "yes";
+  write(dir, "news.json", news);
+  expectFail(dir, "news.json");
+});
+
+test("rejects a label longer than 28 characters", () => {
+  const dir = copyData();
+  const news = read(dir, "news.json");
+  news.items[2].label = "x".repeat(29);
+  write(dir, "news.json", news);
+  expectFail(dir, "news.json");
+});
+
+test("rejects an empty label", () => {
+  const dir = copyData();
+  const news = read(dir, "news.json");
+  news.items[2].label = "";
+  write(dir, "news.json", news);
+  expectFail(dir, "news.json");
+});
+
+test("rejects an item that is both a key date and a small date", () => {
+  const dir = copyData();
+  const news = read(dir, "news.json");
+  news.items[2].key_date = true;
+  write(dir, "news.json", news);
+  expectFail(dir, "news.json");
+});
+
 test("rejects a date that is not a real calendar date", () => {
   const dir = copyData();
   const values = read(dir, "values.json");

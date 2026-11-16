@@ -86,7 +86,7 @@ test("useDataset switches companies, first day, last day and kinds, and switchin
   assert.ok(!companies.some((one) => one.id === "openai"), "an AI company is in the dot-com set");
   assert.equal(FIRST_DAY, "1995-01-01");
   assert.equal(LAST_DAY, "2002-12-31");
-  assert.deepEqual(kinds.map((one) => one.id), ["investment"]);
+  assert.deepEqual(kinds.map((one) => one.id), ["investment", "takeover", "supplier"]);
 
   useDataset("housing");
   assert.ok(companies.some((one) => one.id === "lehman-brothers"));
