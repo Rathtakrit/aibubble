@@ -256,16 +256,16 @@
     {
       "company": "countrywide",
       "date": "2007-01-11",
-      "value_usd_bn": 24,
-      "what": "peak, market value about a year before the sale",
-      "source": "https://en.wikipedia.org/wiki/Countrywide_Financial"
+      "value_usd_bn": 26,
+      "what": "market value about a year before the sale",
+      "source": "https://www.theguardian.com/business/2008/jan/11/useconomy.banking"
     },
     {
       "company": "countrywide",
       "date": "2008-01-11",
-      "value_usd_bn": 4.1,
+      "value_usd_bn": 4.0,
       "what": "last day, agreed sale price to Bank of America",
-      "source": "https://en.wikipedia.org/wiki/Countrywide_Financial"
+      "source": "https://www.theguardian.com/business/2008/jan/11/useconomy.banking"
     },
     {
       "company": "fannie-mae",
@@ -566,7 +566,7 @@
       "date": "2008-09-15",
       "value_usd_bn": 50,
       "what": "last day, agreed sale price to Bank of America",
-      "source": "https://en.wikipedia.org/wiki/Merrill_(company)"
+      "source": "https://news.bbc.co.uk/1/hi/business/7616068.stm"
     },
     {
       "company": "mitsubishi-ufj",

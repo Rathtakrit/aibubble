@@ -39,6 +39,7 @@
       "kind": "listed",
       "ticker": "WB",
       "first_mention": "2003-01-02",
+      "ended": "2008-10-03",
       "source": "https://companiesmarketcap.com/wachovia/marketcap/"
     },
     {
@@ -47,6 +48,7 @@
       "kind": "listed",
       "ticker": "WM",
       "first_mention": "2003-01-02",
+      "ended": "2008-12-31",
       "source": "https://companiesmarketcap.com/washington-mutual/marketcap/"
     },
     {
@@ -70,8 +72,9 @@
       "name": "Merrill Lynch",
       "kind": "listed",
       "ticker": "MER",
-      "first_mention": "2007-10-30",
-      "source": "https://en.wikipedia.org/wiki/Stan_O%27Neal"
+      "first_mention": "2007-06-20",
+      "ended": "2008-09-15",
+      "source": "https://www.theguardian.com/business/2007/oct/31/4"
     },
     {
       "id": "lehman-brothers",
@@ -79,6 +82,7 @@
       "kind": "listed",
       "ticker": "LEH",
       "first_mention": "2003-01-02",
+      "ended": "2008-12-31",
       "source": "https://companiesmarketcap.com/lehman-brothers/marketcap/"
     },
     {
@@ -87,6 +91,7 @@
       "kind": "listed",
       "ticker": "BSC",
       "first_mention": "2003-01-02",
+      "ended": "2008-03-24",
       "source": "https://companiesmarketcap.com/bear-stearns/marketcap/"
     },
     {
@@ -119,6 +124,7 @@
       "kind": "listed",
       "ticker": "CFC",
       "first_mention": "2007-01-11",
+      "ended": "2008-01-11",
       "source": "https://en.wikipedia.org/wiki/Countrywide_Financial"
     },
     {

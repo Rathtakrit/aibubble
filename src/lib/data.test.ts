@@ -74,6 +74,15 @@ test("isShown is true from first_mention on", () => {
   assert.equal(isShown(company, "2024-01-01"), true);
 });
 
+test("isShown stops after a company's ended day", () => {
+  const ended = { ...company, ended: "2020-06-30" };
+  assert.equal(isShown(ended, "2019-07-21"), false);
+  assert.equal(isShown(ended, "2019-07-22"), true);
+  // The ended day itself still shows the company; the next day does not.
+  assert.equal(isShown(ended, "2020-06-30"), true);
+  assert.equal(isShown(ended, "2020-07-01"), false);
+});
+
 test("useDataset switches companies, first day, last day and kinds, and switching back restores ai", () => {
   const aiCompanies = companies.map((one) => one.id);
   const aiFirst = FIRST_DAY;
@@ -86,7 +95,7 @@ test("useDataset switches companies, first day, last day and kinds, and switchin
   assert.ok(!companies.some((one) => one.id === "openai"), "an AI company is in the dot-com set");
   assert.equal(FIRST_DAY, "1995-01-01");
   assert.equal(LAST_DAY, "2002-12-31");
-  assert.deepEqual(kinds.map((one) => one.id), ["investment"]);
+  assert.deepEqual(kinds.map((one) => one.id), ["investment", "takeover", "supplier"]);
 
   useDataset("housing");
   assert.ok(companies.some((one) => one.id === "lehman-brothers"));
@@ -101,6 +110,34 @@ test("useDataset switches companies, first day, last day and kinds, and switchin
   assert.equal(LAST_DAY, aiLast);
   assert.deepEqual(kinds.map((one) => one.id), aiKinds);
   assert.equal(status, aiStatus);
+});
+
+test("a set's ended companies are the ones that were bought or failed", () => {
+  useDataset("dotcom");
+  const ended = new Map(
+    companies.filter((one) => one.ended !== undefined).map((one) => [one.id, one.ended]),
+  );
+  assert.deepEqual(
+    [...ended.entries()].sort(),
+    [
+      ["enron", "2001-12-31"],
+      ["time-warner", "2001-01-11"],
+      ["us-west", "2000-06-30"],
+    ],
+  );
+  // AOL Time Warner merely has no 2002 year-end point in the sources: it did not end.
+  assert.equal(companies.find((one) => one.id === "aol")?.ended, undefined);
+
+  useDataset("housing");
+  assert.deepEqual(
+    companies
+      .filter((one) => one.ended !== undefined)
+      .map((one) => one.id)
+      .sort(),
+    ["bear-stearns", "countrywide", "lehman-brothers", "merrill-lynch", "wachovia", "washington-mutual"],
+  );
+
+  useDataset("ai");
 });
 
 test("a set's first, second and third deal kind take the three money-line colours", () => {

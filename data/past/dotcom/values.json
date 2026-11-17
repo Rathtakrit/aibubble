@@ -17,6 +17,13 @@
     },
     {
       "company": "amazon",
+      "date": "1999-11-30",
+      "value_usd_bn": 28.86,
+      "what": "peak",
+      "source": "https://companiesmarketcap.com/amazon/marketcap/"
+    },
+    {
+      "company": "amazon",
       "date": "1999-12-31",
       "value_usd_bn": 26.27,
       "what": "year end",
@@ -46,9 +53,135 @@
     {
       "company": "aol",
       "date": "2000-01-10",
-      "value_usd_bn": 164,
-      "what": "day of the merger announcement",
-      "source": "https://www.theguardian.com/business/2000/jan/10/efinance.internet"
+      "value_usd_bn": 290,
+      "what": "the two companies added together, just after the merger was announced",
+      "source": "https://fortune.com/2002/02/04/aol-time-warners-new-math/"
+    },
+    {
+      "company": "aol",
+      "date": "2002-02-04",
+      "value_usd_bn": 135,
+      "what": "reported as below this figure",
+      "source": "https://fortune.com/2002/02/04/aol-time-warners-new-math/"
+    },
+    {
+      "company": "aol",
+      "date": "2002-04-01",
+      "value_usd_bn": 105,
+      "what": "market value on the day",
+      "source": "https://web.archive.org/web/2026/https://www.washingtonpost.com/archive/business/2002/04/01/aol-time-warner-merger-adds-up-to-less-than-the-sum-of-its-parts/2417b5cd-6260-4a78-879b-4ed90e3ee53b/"
+    },
+    {
+      "company": "apple",
+      "date": "1996-12-31",
+      "value_usd_bn": 2.6,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/apple/marketcap/"
+    },
+    {
+      "company": "apple",
+      "date": "1997-12-31",
+      "value_usd_bn": 1.68,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/apple/marketcap/"
+    },
+    {
+      "company": "apple",
+      "date": "1998-12-31",
+      "value_usd_bn": 5.54,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/apple/marketcap/"
+    },
+    {
+      "company": "apple",
+      "date": "1999-12-31",
+      "value_usd_bn": 16.57,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/apple/marketcap/"
+    },
+    {
+      "company": "apple",
+      "date": "2000-03-31",
+      "value_usd_bn": 22.09,
+      "what": "peak",
+      "source": "https://companiesmarketcap.com/apple/marketcap/"
+    },
+    {
+      "company": "apple",
+      "date": "2000-12-31",
+      "value_usd_bn": 5.13,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/apple/marketcap/"
+    },
+    {
+      "company": "apple",
+      "date": "2001-12-31",
+      "value_usd_bn": 7.71,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/apple/marketcap/"
+    },
+    {
+      "company": "apple",
+      "date": "2002-12-31",
+      "value_usd_bn": 5.16,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/apple/marketcap/"
+    },
+    {
+      "company": "at-t",
+      "date": "1996-12-31",
+      "value_usd_bn": 31.11,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/att/marketcap/"
+    },
+    {
+      "company": "at-t",
+      "date": "1997-12-31",
+      "value_usd_bn": 67.29,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/att/marketcap/"
+    },
+    {
+      "company": "at-t",
+      "date": "1998-12-31",
+      "value_usd_bn": 105.06,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/att/marketcap/"
+    },
+    {
+      "company": "at-t",
+      "date": "1999-12-31",
+      "value_usd_bn": 155.74,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/att/marketcap/"
+    },
+    {
+      "company": "at-t",
+      "date": "2000-10-31",
+      "value_usd_bn": 195.27,
+      "what": "peak",
+      "source": "https://companiesmarketcap.com/att/marketcap/"
+    },
+    {
+      "company": "at-t",
+      "date": "2000-12-31",
+      "value_usd_bn": 161.71,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/att/marketcap/"
+    },
+    {
+      "company": "at-t",
+      "date": "2001-12-31",
+      "value_usd_bn": 131.38,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/att/marketcap/"
+    },
+    {
+      "company": "at-t",
+      "date": "2002-12-31",
+      "value_usd_bn": 89.94,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/att/marketcap/"
     },
     {
       "company": "cisco",
@@ -111,6 +244,13 @@
       "date": "1998-12-31",
       "value_usd_bn": 9.71,
       "what": "year end",
+      "source": "https://companiesmarketcap.com/ebay/marketcap/"
+    },
+    {
+      "company": "ebay",
+      "date": "1999-04-30",
+      "value_usd_bn": 25.14,
+      "what": "peak",
       "source": "https://companiesmarketcap.com/ebay/marketcap/"
     },
     {
@@ -248,6 +388,13 @@
     },
     {
       "company": "ibm",
+      "date": "1999-06-30",
+      "value_usd_bn": 233.83,
+      "what": "peak",
+      "source": "https://companiesmarketcap.com/ibm/marketcap/"
+    },
+    {
+      "company": "ibm",
       "date": "1999-12-31",
       "value_usd_bn": 192.47,
       "what": "year end",
@@ -300,6 +447,13 @@
       "date": "1999-12-31",
       "value_usd_bn": 274.43,
       "what": "year end",
+      "source": "https://companiesmarketcap.com/intel/marketcap/"
+    },
+    {
+      "company": "intel",
+      "date": "2000-08-31",
+      "value_usd_bn": 502.71,
+      "what": "peak",
       "source": "https://companiesmarketcap.com/intel/marketcap/"
     },
     {
@@ -397,7 +551,7 @@
       "company": "microsoft",
       "date": "1999-12-31",
       "value_usd_bn": 604.41,
-      "what": "year end",
+      "what": "year end and highest point",
       "source": "https://companiesmarketcap.com/microsoft/marketcap/"
     },
     {
@@ -451,6 +605,13 @@
     },
     {
       "company": "nokia",
+      "date": "2000-04-28",
+      "value_usd_bn": 267.31,
+      "what": "peak",
+      "source": "https://companiesmarketcap.com/nokia/marketcap/"
+    },
+    {
+      "company": "nokia",
       "date": "2000-12-31",
       "value_usd_bn": 204.28,
       "what": "year end",
@@ -489,6 +650,13 @@
       "date": "1999-12-31",
       "value_usd_bn": 151.85,
       "what": "year end",
+      "source": "https://companiesmarketcap.com/nortel-networks/marketcap/"
+    },
+    {
+      "company": "nortel",
+      "date": "2000-07-26",
+      "value_usd_bn": 252.21,
+      "what": "peak",
       "source": "https://companiesmarketcap.com/nortel-networks/marketcap/"
     },
     {
@@ -542,6 +710,13 @@
     },
     {
       "company": "oracle",
+      "date": "2000-08-31",
+      "value_usd_bn": 254.51,
+      "what": "peak",
+      "source": "https://companiesmarketcap.com/oracle/marketcap/"
+    },
+    {
+      "company": "oracle",
       "date": "2000-12-31",
       "value_usd_bn": 162.34,
       "what": "year end",
@@ -586,7 +761,7 @@
       "company": "qualcomm",
       "date": "1999-12-31",
       "value_usd_bn": 124.73,
-      "what": "year end",
+      "what": "year end and highest point",
       "source": "https://companiesmarketcap.com/qualcomm/marketcap/"
     },
     {
@@ -658,6 +833,55 @@
       "value_usd_bn": 8.38,
       "what": "year end",
       "source": "https://companiesmarketcap.com/qwest-communications-international/marketcap/"
+    },
+    {
+      "company": "sprint",
+      "date": "1997-12-31",
+      "value_usd_bn": 25.19,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/sprint-corporation/marketcap/"
+    },
+    {
+      "company": "sprint",
+      "date": "1998-12-31",
+      "value_usd_bn": 29.46,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/sprint-corporation/marketcap/"
+    },
+    {
+      "company": "sprint",
+      "date": "1999-11-18",
+      "value_usd_bn": 59.28,
+      "what": "peak",
+      "source": "https://companiesmarketcap.com/sprint-corporation/marketcap/"
+    },
+    {
+      "company": "sprint",
+      "date": "1999-12-31",
+      "value_usd_bn": 52.85,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/sprint-corporation/marketcap/"
+    },
+    {
+      "company": "sprint",
+      "date": "2000-12-31",
+      "value_usd_bn": 16.21,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/sprint-corporation/marketcap/"
+    },
+    {
+      "company": "sprint",
+      "date": "2001-12-31",
+      "value_usd_bn": 17.84,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/sprint-corporation/marketcap/"
+    },
+    {
+      "company": "sprint",
+      "date": "2002-12-31",
+      "value_usd_bn": 12.95,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/sprint-corporation/marketcap/"
     },
     {
       "company": "sun-microsystems",
@@ -747,8 +971,43 @@
       "company": "time-warner",
       "date": "2001-01-11",
       "value_usd_bn": 94.5,
-      "what": "last day before the merger completed",
+      "what": "last value point, as the merger closed",
       "source": "https://companiesmarketcap.com/time-warner/marketcap/"
+    },
+    {
+      "company": "us-west",
+      "date": "1997-12-31",
+      "value_usd_bn": 21.86,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/us-west/marketcap/"
+    },
+    {
+      "company": "us-west",
+      "date": "1998-12-31",
+      "value_usd_bn": 39.22,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/us-west/marketcap/"
+    },
+    {
+      "company": "us-west",
+      "date": "1999-12-31",
+      "value_usd_bn": 44.06,
+      "what": "year end",
+      "source": "https://companiesmarketcap.com/us-west/marketcap/"
+    },
+    {
+      "company": "us-west",
+      "date": "2000-06-27",
+      "value_usd_bn": 59.35,
+      "what": "peak",
+      "source": "https://companiesmarketcap.com/us-west/marketcap/"
+    },
+    {
+      "company": "us-west",
+      "date": "2000-06-30",
+      "value_usd_bn": 54.79,
+      "what": "last value point, taken over by Qwest",
+      "source": "https://companiesmarketcap.com/us-west/marketcap/"
     },
     {
       "company": "worldcom",
@@ -818,6 +1077,13 @@
       "date": "1999-12-31",
       "value_usd_bn": 113.9,
       "what": "year end",
+      "source": "https://companiesmarketcap.com/yahoo/marketcap/"
+    },
+    {
+      "company": "yahoo",
+      "date": "2000-01-03",
+      "value_usd_bn": 125.04,
+      "what": "peak",
       "source": "https://companiesmarketcap.com/yahoo/marketcap/"
     },
     {

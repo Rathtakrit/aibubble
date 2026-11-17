@@ -105,6 +105,44 @@ test("rejects an unknown extra field", () => {
   expectFail(dir, "deals.json");
 });
 
+test("a small date with a short label passes, and items without either still do", () => {
+  // The fixture has one item with both new fields and the rest with neither.
+  const dir = copyData();
+  expectOk(dir);
+});
+
+test("rejects a small_date of the wrong type", () => {
+  const dir = copyData();
+  const news = read(dir, "news.json");
+  news.items[2].small_date = "yes";
+  write(dir, "news.json", news);
+  expectFail(dir, "news.json");
+});
+
+test("rejects a label longer than 28 characters", () => {
+  const dir = copyData();
+  const news = read(dir, "news.json");
+  news.items[2].label = "x".repeat(29);
+  write(dir, "news.json", news);
+  expectFail(dir, "news.json");
+});
+
+test("rejects an empty label", () => {
+  const dir = copyData();
+  const news = read(dir, "news.json");
+  news.items[2].label = "";
+  write(dir, "news.json", news);
+  expectFail(dir, "news.json");
+});
+
+test("rejects an item that is both a key date and a small date", () => {
+  const dir = copyData();
+  const news = read(dir, "news.json");
+  news.items[2].key_date = true;
+  write(dir, "news.json", news);
+  expectFail(dir, "news.json");
+});
+
 test("rejects a date that is not a real calendar date", () => {
   const dir = copyData();
   const values = read(dir, "values.json");
@@ -216,6 +254,47 @@ test("rejects a deal dated before a company's first_mention", () => {
   deals.items[0].date = "2018-01-01";
   write(dir, "deals.json", deals);
   expectFail(dir, "deals.json");
+});
+
+test("rejects an ended of the wrong type", () => {
+  const dir = copyData();
+  const companies = read(dir, "companies.json");
+  companies.items[0].ended = 2021;
+  write(dir, "companies.json", companies);
+  expectFail(dir, "companies.json");
+});
+
+test("rejects an ended that is not a real calendar date", () => {
+  const dir = copyData();
+  const companies = read(dir, "companies.json");
+  companies.items[0].ended = "2021-02-30";
+  write(dir, "companies.json", companies);
+  expectFail(dir, "companies.json");
+});
+
+test("rejects an ended before the company's first_mention", () => {
+  const dir = copyData();
+  const companies = read(dir, "companies.json");
+  companies.items[0].ended = "2018-12-31";
+  write(dir, "companies.json", companies);
+  expectFail(dir, "companies.json");
+});
+
+test("rejects a value point after the company's ended day", () => {
+  const dir = copyData();
+  const companies = read(dir, "companies.json");
+  companies.items[0].ended = "2019-06-01";
+  write(dir, "companies.json", companies);
+  // samplenet still has points on 2020-01-01 and 2021-01-01.
+  expectFail(dir, "values.json");
+});
+
+test("an ended on the last value point passes, and so does a company with no ended", () => {
+  const dir = copyData();
+  const companies = read(dir, "companies.json");
+  companies.items[0].ended = "2021-01-01";
+  write(dir, "companies.json", companies);
+  expectOk(dir);
 });
 
 test("rejects example.com sources when the status is not sample", () => {

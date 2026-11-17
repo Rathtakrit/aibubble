@@ -26,6 +26,7 @@ const FIELDS = {
     { name: "ticker", type: "string", optional: true },
     { name: "members", type: "strings", optional: true },
     { name: "first_mention", type: "string" },
+    { name: "ended", type: "string", optional: true },
     { name: "source", type: "string" },
   ],
   values: [
@@ -54,6 +55,8 @@ const FIELDS = {
     { name: "players", type: "strings" },
     { name: "kind", type: "string" },
     { name: "key_date", type: "boolean" },
+    { name: "small_date", type: "boolean", optional: true },
+    { name: "label", type: "string", optional: true },
     { name: "source", type: "string" },
   ],
 };
@@ -130,6 +133,19 @@ function checkFields(file, where, item, fields) {
   }
   for (const key of Object.keys(item)) {
     if (!known.has(key)) problem(file, where, `unknown field "${key}"`);
+  }
+}
+
+// A news item's place on the timeline: a red key date or a blue smaller one, never both, and a
+// short label of 1 to 28 characters when it has one.
+function checkTimelineFields(file, where, item) {
+  if (item.key_date === true && item.small_date === true) {
+    problem(file, where, "key_date and small_date are both true");
+  }
+  if (typeof item.label !== "string") return;
+  const length = [...item.label].length;
+  if (length < 1 || length > 28) {
+    problem(file, where, `label is ${length} characters long, not 1 to 28`);
   }
 }
 
@@ -307,6 +323,7 @@ for (const name of FILES) {
     if (name === "news" && typeof item.kind === "string" && !KIND.news.includes(item.kind)) {
       problem(file, where, `unknown kind "${item.kind}"`);
     }
+    if (name === "news") checkTimelineFields(file, where, item);
     if (name === "deals" && typeof item.amount_type === "string" && !AMOUNT_TYPES.includes(item.amount_type)) {
       problem(file, where, `unknown amount_type "${item.amount_type}"`);
     }
@@ -325,6 +342,16 @@ for (const name of FILES) {
         problem(file, where, "id must use lowercase letters, digits and hyphens only");
       }
       checkDate(file, where, item.first_mention, false);
+      if (Object.hasOwn(item, "ended")) {
+        // A company is in the picture up to and including its ended day, never before its first.
+        if (
+          checkDate(file, where, item.ended, false) &&
+          isRealDate(item.first_mention) &&
+          item.ended < item.first_mention
+        ) {
+          problem(file, where, `ended ${item.ended} is before first_mention ${item.first_mention}`);
+        }
+      }
       if (item.kind === "group" && (!Array.isArray(item.members) || item.members.length === 0)) {
         problem(file, where, "a group company needs a non-empty members list");
       }
@@ -386,6 +413,22 @@ if (data.values && Array.isArray(data.values.items)) {
 for (const [id, company] of byId) {
   if (company.kind === "group") continue;
   if (!valueCount.get(id)) problem("companies.json", id, "has no value point in values.json");
+}
+
+// A company's ended day is its last: no value point may fall after it.
+if (data.values && Array.isArray(data.values.items)) {
+  for (const [index, point] of data.values.items.entries()) {
+    if (typeof point !== "object" || point === null || typeof point.company !== "string") continue;
+    const company = byId.get(point.company);
+    if (!company || typeof company.ended !== "string" || !isRealDate(company.ended)) continue;
+    if (typeof point.date === "string" && point.date > company.ended) {
+      problem(
+        "values.json",
+        String(index),
+        `${point.date} for ${point.company} is after its ended day ${company.ended}`,
+      );
+    }
+  }
 }
 
 function checkFirstMention(file, where, date, playerIds) {

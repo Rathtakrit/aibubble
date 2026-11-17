@@ -54,10 +54,11 @@ const pillName = pillLabel(pill);
 const nameOf = new Map(allCompanies.map((company) => [company.id, company.name]));
 const players = current.players.map((player) => nameOf.get(player) ?? player).join(", ");
 const keyDates = ordered.filter((item) => item.key_date);
+const smallDates = ordered.filter((item) => item.small_date);
 const place = new Map(ordered.map((item, index) => [item.id, index + 1]));
 const publisher = publisherName(current.source);
 // One day scale for the dots, the ticks, the years and the slider, so busy months are wider.
-const scale = timelineScale(lastDay, keyDates);
+const scale = timelineScale(lastDay, { red: keyDates, blue: smallDates });
 const sliderValue = Math.round(scale.percentOf(current.date) * 100);
 
 // The legend under the bubble: every kind the set uses, with the colour of its money line. The
@@ -75,24 +76,46 @@ const legend = setKinds.map((kind) => ({
   colour: kindColour(kind.id),
 }));
 
-// A day tick under the line: every 1 January carries its year, the quarter days carry nothing.
-const ticks: { date: string; year: boolean }[] = [];
+// A day tick under the line: every 1 January carries its year, the quarter days carry nothing. A
+// quarter tick less than 6px from the tick before it would read as one thick tick, so it is left
+// out, and a year's name is left out when it would touch the name before it. Both are measured on
+// a 1360px line, the widest the page draws.
+const TICK_LINE_WIDTH = 1360;
+const TICK_GAP = 6;
+const YEAR_NAME_WIDTH = 28;
+const ticks: { date: string; year: boolean; percent: number }[] = [];
+let lastTick = -Infinity;
 for (let year = Number(firstDay.slice(0, 4)); year <= Number(lastDay.slice(0, 4)); year += 1) {
   for (const month of ["01", "04", "07", "10"]) {
     const date = `${year}-${month}-01`;
     if (date < firstDay || date > lastDay) continue;
-    ticks.push({ date, year: month === "01" });
+    const percent = scale.percentOf(date);
+    const yearTick = month === "01";
+    if (!yearTick && ((percent - lastTick) / 100) * TICK_LINE_WIDTH < TICK_GAP) continue;
+    ticks.push({ date, year: yearTick, percent });
+    lastTick = percent;
   }
 }
+const yearNames: { year: string; percent: number }[] = [];
+let lastRight = -Infinity;
+for (const tick of ticks) {
+  if (!tick.year) continue;
+  const middle = (tick.percent / 100) * TICK_LINE_WIDTH;
+  const left = middle - YEAR_NAME_WIDTH / 2;
+  if (left <= lastRight) continue;
+  yearNames.push({ year: tick.date.slice(0, 4), percent: tick.percent });
+  lastRight = middle + YEAR_NAME_WIDTH / 2;
+}
 
-// Which of the three label heights each title takes, so neighbours do not overlap. A title is at
-// most 150px wide and wraps onto at most two lines. The page draws them from this first estimate;
-// explore.ts re-places them once the real widths are known.
+// Which of the two label heights each key date's short text takes, so neighbours do not overlap.
+// The text is the item's label when it has one, else its title, at most 120px wide and two lines.
+// The page draws them from this first estimate; explore.ts re-places them once the real widths
+// are known.
 const labels = placeLabels(
   keyDates.map((item) => ({
     id: item.id,
     percent: scale.percentOf(item.date),
-    width: Math.min(150, item.title.length * 6.4),
+    width: Math.min(120, (item.label ?? item.title).length * 6.4),
   })),
   1280,
 );
@@ -356,11 +379,13 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
             keyDates.map((item) => {
               const left = scale.percentOf(item.date);
               const label = labels.get(item.id);
+              const text = item.label ?? item.title;
               return (
                 <>
                   <button
                     type="button"
                     class="timeline-dot"
+                    data-dot="key"
                     data-news={item.id}
                     style={`left: ${left}%`}
                     title={item.title}
@@ -377,11 +402,38 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
                     hidden={!label}
                     aria-hidden="true"
                   >
-                    {item.title}
+                    {text}
                   </span>
                 </>
               );
             })
+          }
+          {
+            smallDates.map((item) => (
+              <>
+                <button
+                  type="button"
+                  class="timeline-dot"
+                  data-dot="small"
+                  data-news={item.id}
+                  style={`left: ${scale.percentOf(item.date)}%`}
+                  title={item.title}
+                  aria-label={ariaFor(item.id, item.title, item.date)}
+                >
+                  <span class="dot" />
+                </button>
+                <span
+                  class="timeline-label timeline-label-hover"
+                  data-timeline-hover
+                  data-row="0"
+                  data-align="center"
+                  style={`left: ${scale.percentOf(item.date)}%`}
+                  aria-hidden="true"
+                >
+                  {item.label ?? item.title}
+                </span>
+              </>
+            ))
           }
           {
             !isPast &&
@@ -416,19 +468,17 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
             ticks.map((tick) => (
               <span
                 class:list={["timeline-tick", `timeline-tick-${tick.year ? "year" : "quarter"}`]}
-                style={`left: ${scale.percentOf(tick.date)}%`}
+                style={`left: ${tick.percent}%`}
                 aria-hidden="true"
               />
             ))
           }
           {
-            ticks
-              .filter((tick) => tick.year)
-              .map((tick) => (
-                <span class="timeline-year" style={`left: ${scale.percentOf(tick.date)}%`} aria-hidden="true">
-                  {tick.date.slice(0, 4)}
-                </span>
-              ))
+            yearNames.map((name) => (
+              <span class="timeline-year" style={`left: ${name.percent}%`} aria-hidden="true">
+                {name.year}
+              </span>
+            ))
           }
           <div class="timeline-ends" aria-hidden="true"><span>{firstEnd}</span><span>{lastEnd}</span></div>
         </div>
@@ -631,6 +681,22 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
               <button
                 type="button"
                 class="timeline-dot"
+                data-dot="key"
+                data-news={item.id}
+                style={`left: ${scale.percentOf(item.date)}%`}
+                title={item.title}
+                aria-label={ariaFor(item.id, item.title, item.date)}
+              >
+                <span class="dot" />
+              </button>
+            ))
+          }
+          {
+            smallDates.map((item) => (
+              <button
+                type="button"
+                class="timeline-dot"
+                data-dot="small"
                 data-news={item.id}
                 style={`left: ${scale.percentOf(item.date)}%`}
                 title={item.title}

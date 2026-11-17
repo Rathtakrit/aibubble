@@ -50,7 +50,10 @@ const lastDate = defaultDate();
 const lastDay = dayIndex(lastDate);
 const newest: NewsItem | undefined = ordered[ordered.length - 1];
 // The timeline's day scale, built once from the days that carry a dot: busy months are wider.
-const scale = timelineScale(lastDate, ordered.filter((item) => item.key_date));
+const scale = timelineScale(lastDate, {
+  red: ordered.filter((item) => item.key_date),
+  blue: ordered.filter((item) => item.small_date),
+});
 // Story mode's chapters, written into the page while it was built so the browser never reads
 // docs/story itself.
 const chaptersData = document.querySelector<HTMLScriptElement>("[data-story-chapters]");
@@ -607,10 +610,12 @@ readAddress();
 render();
 
 // The titles above the timeline are placed from their real widths after wrapping, on the first
-// of the three heights that has room, with a gap between neighbours; one that fits on none is
+// of the two heights that has room, with a gap between neighbours; one that fits on neither is
 // hidden rather than drawn over another. A title that needs more than two lines (28px at a 14px
 // line) is hidden too, since each height is only as tall as two lines. Story places the chapter
-// titles the same way, in place of the news titles, so the band above the line is used.
+// titles the same way, in place of the news titles, so the band above the line is used. A blue
+// dot's text shows on hover or focus only, so it is not packed in with the others: it takes the
+// height nearest the line, pushed in at an end of the line so it is never cut.
 function placeTimelineLabels(): void {
   const inner = document.querySelector<HTMLElement>("[data-timeline]");
   if (!inner) return;
@@ -619,7 +624,6 @@ function placeTimelineLabels(): void {
   const labels = Array.from(
     inner.querySelectorAll<HTMLElement>(story ? "[data-story-label]" : "[data-timeline-label]"),
   );
-  if (labels.length === 0) return;
 
   for (const label of labels) label.hidden = false;
   const boxes = labels
@@ -639,6 +643,13 @@ function placeTimelineLabels(): void {
     label.dataset.row = String(spot.row);
     label.dataset.align = spot.align;
   });
+
+  for (const label of inner.querySelectorAll<HTMLElement>("[data-timeline-hover]")) {
+    const middle = ((Number.parseFloat(label.style.left) || 0) / 100) * inner.clientWidth;
+    const half = label.offsetWidth / 2;
+    label.dataset.align =
+      middle - half < 0 ? "start" : middle + half > inner.clientWidth ? "end" : "center";
+  }
 }
 
 window.addEventListener("resize", placeTimelineLabels);

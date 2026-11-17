@@ -3,6 +3,8 @@
   "first_day": "1995-01-01",
   "last_day": "2002-12-31",
   "kinds": [
-    { "id": "investment", "label": "Investment deal" }
+    { "id": "investment", "label": "Investment deal" },
+    { "id": "takeover", "label": "Takeover deal" },
+    { "id": "supplier", "label": "Supplier loan or swap" }
   ]
 }

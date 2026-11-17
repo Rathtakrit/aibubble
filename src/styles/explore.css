@@ -93,8 +93,8 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6px 20px;
-  font-size: 13px;
+  gap: 6px 10px;
+  font-size: 12px;
   color: var(--ink-2);
 }
 
@@ -301,8 +301,9 @@
   color: var(--ink-2);
 }
 
-/* A key-date dot: ink on the line, ringed in paper so it sits on the line. The dot of the chosen
-   item is the deep blue of the accent. */
+/* A dot on the line: red for a key date, blue for a smaller event, and the quiet ink for a
+   chapter. Each is ringed in paper so it sits on the line; the chosen one keeps its own colour
+   and gains a ring of ink around it. */
 .dot {
   box-sizing: border-box;
   width: 10px;
@@ -313,14 +314,21 @@
   transition: all 300ms ease;
 }
 
-.is-current .dot {
-  width: 14px;
-  height: 14px;
-  background: var(--accent);
-  border-color: var(--ink);
+.timeline-dot[data-dot="key"] .dot {
+  background: var(--key-date);
 }
 
-/* A key-date dot is a button: 44px tall so it is easy to tap, as narrow as the dot itself, and
+.timeline-dot[data-dot="small"] .dot {
+  width: 7px;
+  height: 7px;
+  background: var(--accent);
+}
+
+.is-current .dot {
+  box-shadow: 0 0 0 2px var(--ink);
+}
+
+/* A date dot is a button: 44px tall so it is easy to tap, as narrow as the dot itself, and
    above the slider so a tap on it opens that item while the rest of the line still drags. */
 .timeline-dot {
   position: absolute;
@@ -539,7 +547,7 @@
   width: 16px;
 }
 
-/* The day line in the bottom sheet: the slider with the key-date dots on it, no labels. */
+/* The day line in the bottom sheet: the slider with the date dots on it, no labels. */
 .sheet-timeline {
   position: relative;
   height: 44px;
@@ -612,6 +620,7 @@ body[data-mode="explore"] .story-only {
 body[data-mode="story"] .explore-only,
 body[data-mode="story"] .timeline-dot[data-news],
 body[data-mode="story"] .timeline-label[data-timeline-label],
+body[data-mode="story"] .timeline-label[data-timeline-hover],
 body[data-mode="explore"] .timeline-label[data-story-label] {
   display: none;
 }
@@ -1093,37 +1102,38 @@ body[data-mode="story"] .sheet .sheet-timeline {
 
   .timeline {
     border-top: 1px solid var(--ink);
-    padding: 12px 40px 14px;
+    padding: 8px 40px;
   }
 
   .timeline-inner {
     position: relative;
-    height: 152px;
+    height: 132px;
     max-width: 1360px;
     margin: 0 auto;
   }
 
-  /* The one line: three heights of titles above it, dots on it, day ticks and years below it.
+  /* The one line: two heights of titles above it, dots on it, day ticks and years below it.
      Each height is 28px, a two-line title, and the next one starts 32px above it, so no title
-     can sit on the one above it however it wraps. The furthest height ends 10px below the top
-     of the box, and the line sits low enough for the furthest height. */
+     can sit on the one above it however it wraps. The nearest height ends 6px above the slider's
+     44px hit area, so no title is drawn over the slider or cut by it. Two label heights, the
+     slider, the year names and the end labels are all the box needs; it keeps no spare rows. */
   .timeline-inner .timeline-axis {
-    top: 110px;
+    top: 92px;
   }
 
   .timeline-inner .day-range {
-    top: 88px;
+    top: 70px;
     z-index: 1;
   }
 
   .timeline-inner .timeline-dot {
-    top: 88px;
+    top: 70px;
   }
 
   .timeline-label {
     position: absolute;
     width: max-content;
-    max-width: 150px;
+    max-width: 120px;
     font-size: 12px;
     line-height: 14px;
     color: var(--ink-2);
@@ -1131,15 +1141,24 @@ body[data-mode="story"] .sheet .sheet-timeline {
   }
 
   .timeline-label[data-row="0"] {
-    bottom: 50px;
+    bottom: 68px;
   }
 
   .timeline-label[data-row="1"] {
-    bottom: 82px;
+    bottom: 100px;
   }
 
-  .timeline-label[data-row="2"] {
-    bottom: 114px;
+  /* A blue dot's text waits until the dot is hovered or focused. It keeps its box while hidden,
+     so explore.ts can line it up against the ends of the line, and sits on the paper so it stays
+     readable where it crosses a red date's text. */
+  .timeline-label-hover {
+    visibility: hidden;
+    background: var(--paper);
+  }
+
+  .timeline-dot:hover + .timeline-label-hover,
+  .timeline-dot:focus-visible + .timeline-label-hover {
+    visibility: visible;
   }
 
   .timeline-label[data-align="center"] {
@@ -1156,19 +1175,19 @@ body[data-mode="story"] .sheet .sheet-timeline {
   }
 
   .timeline-tick-year {
-    top: 110px;
+    top: 92px;
     height: 9px;
   }
 
   .timeline-tick-quarter {
-    top: 110px;
+    top: 92px;
     height: 5px;
     border-left-color: var(--ink-2);
   }
 
   .timeline-year {
     position: absolute;
-    top: 120px;
+    top: 102px;
     transform: translateX(-50%);
     font-size: 12px;
     line-height: 14px;
@@ -1179,14 +1198,15 @@ body[data-mode="story"] .sheet .sheet-timeline {
     position: absolute;
     left: 0;
     right: 0;
-    top: 135px;
+    top: 117px;
     line-height: 14px;
   }
 
   .status {
     max-width: 1360px;
-    margin: 4px auto 0;
+    margin: 2px auto 0;
     font-size: 12px;
+    line-height: 14px;
     color: var(--ink-2);
   }
 }
@@ -1278,6 +1298,47 @@ body[data-mode="story"] .sheet .sheet-timeline {
   body[data-mode="story"] .story-column .chapter-list-items {
     flex: 1 1 auto;
     min-height: 0;
+  }
+}
+
+/* --- a short window: the same page, with less air between its lines --- */
+
+/* At 1280 x 720 the header, the page's padding, the story column and the timeline have to fit
+   720px. A past page's switch between the two past bubbles sits above the date, which makes its
+   column taller than the front page's, so below 800px the gaps between the lines give up the
+   difference: the text keeps its size and every button its 44px, and nothing moves or is cut. */
+@media (min-width: 900px) and (max-height: 800px) {
+  .explore-main {
+    padding-top: 12px;
+    padding-bottom: 8px;
+  }
+
+  .kicker {
+    margin-bottom: 8px;
+  }
+
+  .past-switch {
+    margin-bottom: 4px;
+  }
+
+  .story-column .pill {
+    margin-top: 10px;
+  }
+
+  .headline {
+    margin: 6px 0;
+  }
+
+  .story-column .source {
+    margin-top: 4px;
+  }
+
+  .story-column .players-line {
+    margin: 10px 0 0;
+  }
+
+  .story-column .button-row {
+    margin-top: 12px;
   }
 }
 

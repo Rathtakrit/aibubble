@@ -53,12 +53,21 @@ export type DayLayouts = {
   first: string;
   last: string;
   days: Map<string, Map<string, Placed>>;
+  // The room kept between bubble edges on every day, in frame units: the smallest gap every
+  // pair has, and the bigger one every pair with a deal has.
+  edgeGap: number;
+  dealGap: number;
 };
 
 // Force settings. The simulation works in raw units (r0 = sqrt of the value in US$ bn)
 // around (0, 0); everything is scaled to the frame at the end.
-// GAP is the breathing room kept between circle edges, in raw units.
-const GAP = 1.0;
+// The breathing room between circle edges is a share of the radius of the biggest circle in the
+// set, not a fixed number of raw units: the one scale then turns it into the same visible room
+// on every data set, about 2.5% of the frame's diameter on the final day of all three sets.
+// DEAL_GAP is the bigger room kept between two companies with a deal (about 5%), so a money line
+// between them has length enough to show its arrowhead.
+const EDGE_GAP = 0.2;
+const DEAL_GAP = 0.4;
 const CENTRE_PULL = 0.05;
 const LINK_PULL = 0.02;
 const DAY_ONE_TICKS = 300;
@@ -70,7 +79,7 @@ const RIM_STEPS = 24;
 
 // The overlap clean-up after a day's force ticks: how many passes it may take, and how much
 // overlap (raw units) counts as nothing left to do.
-const RELAX_PASSES = 30;
+const RELAX_PASSES = 20;
 const RELAX_EPSILON = 1e-4;
 // How many days either side the enclosing circle's centre is averaged over.
 const SMOOTH_DAYS = 30;
@@ -80,12 +89,21 @@ const ENTRY_TICKS = 80;
 // How many directions are tried when a newcomer fits nowhere on the rim.
 const PLACE_STEPS = 72;
 
-// The bends tried for a pair's first arrow, x the distance between centres, from the closest to
-// the widest curve; and how much wider each further arrow of the pair bends, so they nest.
-const BEND_TRIES = [0.18, 0.3, 0.45, 0.6, 0.8];
-const BEND_STEP = 0.12;
-// How many points are sampled along a candidate curve to count what it runs through.
-const BEND_SAMPLES = 24;
+// The most a bubble may move from one day to the next, in frame units: about the step the first
+// build allowed, kept so positions glide rather than jump.
+const MAX_DAY_MOVE = 2.85;
+
+// The bends tried for a pair's first arrow, x the distance between centres, smallest first. A
+// straight line is tried before any of them.
+const BEND_TRIES = [0.06, 0.1, 0.15, 0.22, 0.32, 0.45, 0.6, 0.8];
+// How much wider each further arrow of a pair bends, so the pair's arrows nest side by side.
+const BEND_STEP = 0.1;
+// How many points are sampled along a candidate line to count what it runs through.
+const BEND_SAMPLES = 48;
+// The room a money line keeps from a bubble it passes, in frame units.
+export const LINE_MARGIN = 0.25;
+// A bent line may be at most this many times as long as the straight line between its ends.
+export const LONGEST_LINE = 1.6;
 
 // d3-force needs a random source for degenerate cases; a seeded one keeps the layout the
 // same on every run. Nothing here uses Math.random or the clock.
@@ -110,6 +128,11 @@ function hashAngle(id: string): number {
 }
 
 const DAY_MS = 86_400_000;
+
+// One key per unordered pair of companies, for the pair's gap and its deal.
+function pairKey(a: string, b: string): string {
+  return a < b ? `${a}|${b}` : `${b}|${a}`;
+}
 
 function midnight(date: string): number {
   return Date.parse(`${date}T00:00:00Z`);
@@ -140,13 +163,15 @@ type SimNode = SimulationNodeDatum & {
   y: number;
   vx: number;
   vy: number;
+  // The companies this one has a deal with on the day being laid out.
+  partners: Set<SimNode>;
 };
 type SimLink = { source: SimNode; target: SimNode };
 
 // The forces, as d3-force force functions. At about 20 nodes a plain pair loop beats
 // d3-force's own quadtree forces by a wide margin, which is what keeps four years of
 // daily layouts well under half a second. Settings are the fixed ones: collision radius
-// r0 + gap at strength 1 for 3 iterations, centre pull 0.05, partner links at 0.02 with
+// r0 + gap at strength 1 for 1 iteration, centre pull 0.05, partner links at 0.02 with
 // distance the two radii + gap.
 
 // Circles may not overlap: each pair that sits too close is pushed apart in proportion
@@ -154,7 +179,11 @@ type SimLink = { source: SimNode; target: SimNode };
 // alpha so it fully corrects what it finds. The first pass checks every pair and lists the
 // pairs that were too close; the extra iterations re-check only those, because on a
 // settled day nearly every other pair already has room.
-function collideForce(gap: number, strength: number, iterations: number): Force<SimNode, SimLink> {
+function collideForce(
+  gapOf: (a: SimNode, b: SimNode) => number,
+  strength: number,
+  iterations: number,
+): Force<SimNode, SimLink> {
   let nodes: SimNode[] = [];
   let random: () => number = mulberry32(1);
   // Pairs too close in the first pass, as flat (i, j) index pairs.
@@ -163,7 +192,7 @@ function collideForce(gap: number, strength: number, iterations: number): Force<
 
   // Pushes one pair apart when it overlaps; true when it did.
   const separate = (a: SimNode, b: SimNode): boolean => {
-    const radius = a.r0 + b.r0 + 2 * gap;
+    const radius = a.r0 + b.r0 + gapOf(a, b);
     const ax = a.x + a.vx;
     const ay = a.y + a.vy;
     let dx = b.x + b.vx - ax;
@@ -271,13 +300,14 @@ function linkForce(links: SimLink[], gap: number, strength: number): Force<SimNo
 // The tour of pairs is in array order and a pair with coincident centres is separated along an
 // angle hashed from the two ids, so the same input always gives the same places; the pushed
 // positions carry into the next day, so nothing jumps.
-function relaxOverlaps(nodes: SimNode[], gap: number): void {
+function relaxOverlaps(nodes: SimNode[], gapOf: (a: SimNode, b: SimNode) => number): void {
   for (let pass = 0; pass < RELAX_PASSES; pass += 1) {
     let pushed = false;
     for (let i = 0; i < nodes.length; i += 1) {
       const a = nodes[i];
       for (let j = i + 1; j < nodes.length; j += 1) {
         const b = nodes[j];
+        const gap = gapOf(a, b);
         const dx = b.x - a.x;
         const dy = b.y - a.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
@@ -305,12 +335,20 @@ function relaxOverlaps(nodes: SimNode[], gap: number): void {
   }
 }
 
-// The gap a newcomer keeps from everyone else, in raw units, when it looks for a spot.
-function clearAt(x: number, y: number, r0: number, nodes: SimNode[]): boolean {
+// The gap a newcomer keeps from everyone else, in raw units, when it looks for a spot: the deal
+// gap from a partner, the edge gap from every other company.
+function clearAt(
+  x: number,
+  y: number,
+  r0: number,
+  id: string,
+  nodes: SimNode[],
+  gapOf: (a: string, b: string) => number,
+): boolean {
   for (const node of nodes) {
     const dx = node.x - x;
     const dy = node.y - y;
-    const reach = node.r0 + r0 + 2 * GAP;
+    const reach = node.r0 + r0 + gapOf(id, node.id);
     if (dx * dx + dy * dy < reach * reach) return false;
   }
   return true;
@@ -322,37 +360,58 @@ function clusterMiddle(nodes: SimNode[]): Circle {
   return enclosingCircle(nodes.map((node) => ({ x: node.x, y: node.y, r: node.r0 })));
 }
 
-// A free place on the cluster's rim, starting at the angle asked for and turning both ways:
-// the newcomer sits against the outside of the cluster, so it never pushes a company aside
-// and never makes the cluster wider than it already is. Null when the rim is full.
+// A free place on the cluster's rim, near the angle asked for: the newcomer sits against the
+// outside of the cluster, so it never pushes a company aside. Null when the rim is full.
 function rimSpot(
   start: number,
   r0: number,
+  id: string,
   nodes: SimNode[],
   middle: Circle,
+  gapOf: (a: string, b: string) => number,
 ): { x: number; y: number } | null {
-  const distance = Math.max(0, middle.r - r0 - GAP);
+  const distance = Math.max(0, middle.r - r0);
+  // Every free place on the rim is tried, and the one that leaves the tightest circle round the
+  // cluster wins: a newcomer placed on the far side of the cluster would otherwise pull the
+  // whole circle, and with it the frame, a long way on its first day.
+  let best: { x: number; y: number } | null = null;
+  let bestReach = Infinity;
   for (let step = 0; step <= RIM_STEPS; step += 1) {
     const turn = step === 0 ? 0 : (step % 2 === 1 ? -1 : 1) * Math.ceil(step / 2);
     const angle = start + turn * RIM_TURN;
     const x = middle.x + Math.cos(angle) * distance;
     const y = middle.y + Math.sin(angle) * distance;
-    if (clearAt(x, y, r0, nodes)) return { x, y };
+    if (!clearAt(x, y, r0, id, nodes, gapOf)) continue;
+    const reach = enclosingCircle([
+      ...nodes.map((node) => ({ x: node.x, y: node.y, r: node.r0 })),
+      { x, y, r: r0 },
+    ]).r;
+    if (reach < bestReach) {
+      bestReach = reach;
+      best = { x, y };
+    }
   }
-  return null;
+  return best;
 }
 
 // How far out along a ray from the cluster's middle a circle of radius r0 has to sit to be
 // clear of every circle the ray crosses: the first place past the outermost of them. This is
 // the tightest the cluster can take a newcomer that does not fit on the rim.
-function clearAlong(angle: number, r0: number, nodes: SimNode[], middle: Circle): number {
+function clearAlong(
+  angle: number,
+  r0: number,
+  id: string,
+  nodes: SimNode[],
+  middle: Circle,
+  gapOf: (a: string, b: string) => number,
+): number {
   const ux = Math.cos(angle);
   const uy = Math.sin(angle);
   let need = 0;
   for (const node of nodes) {
     const cx = node.x - middle.x;
     const cy = node.y - middle.y;
-    const reach = node.r0 + r0 + 2 * GAP;
+    const reach = node.r0 + r0 + gapOf(id, node.id);
     const along = cx * ux + cy * uy;
     const perp2 = cx * cx + cy * cy - along * along;
     if (perp2 >= reach * reach) continue;
@@ -367,7 +426,8 @@ function clearAlong(angle: number, r0: number, nodes: SimNode[], middle: Circle)
 // the middle of the cluster; with no such partner, at the cluster's rim at an angle from its
 // id. A packed cluster has no room right beside a partner, so the newcomer takes a place on
 // the rim on that side instead, and drifts in over the days that follow. When the rim has no
-// free place either, it starts just outside the rim on that ray, as close in as it can.
+// free place either, it starts just outside the rim in the direction that leaves the cluster's
+// own circle smallest.
 function entrySpot(
   companyId: string,
   r0: number,
@@ -375,6 +435,7 @@ function entrySpot(
   nodes: SimNode[],
   byId: Map<string, SimNode>,
   deals: Deal[],
+  gapOf: (a: string, b: string) => number,
 ): { x: number; y: number } {
   const middle = clusterMiddle(nodes);
   let earliest: Deal | null = null;
@@ -403,14 +464,14 @@ function entrySpot(
       fromCentre > 1e-9
         ? Math.atan2(partner.y - middle.y, partner.x - middle.x)
         : hashAngle(partner.id);
-    const distance = partner.r0 + r0 + GAP;
+    const distance = partner.r0 + r0 + gapOf(companyId, partner.id);
     const x = partner.x + Math.cos(away) * distance;
     const y = partner.y + Math.sin(away) * distance;
-    if (clearAt(x, y, r0, nodes)) return { x, y };
+    if (clearAt(x, y, r0, companyId, nodes, gapOf)) return { x, y };
     angle = Math.atan2(y - middle.y, x - middle.x);
   }
 
-  const rim = rimSpot(angle, r0, nodes, middle);
+  const rim = rimSpot(angle, r0, companyId, nodes, middle, gapOf);
   if (rim !== null) return rim;
   // The rim is full too: sit just outside it where the cluster can take the newcomer most
   // easily, which is the place that leaves the cluster's own circle smallest.
@@ -419,7 +480,7 @@ function entrySpot(
   let bestReach = Infinity;
   for (let step = 0; step < PLACE_STEPS; step += 1) {
     const turn = (step / PLACE_STEPS) * 2 * Math.PI;
-    const out = Math.max(middle.r, clearAlong(turn, r0, nodes, middle));
+    const out = Math.max(middle.r, clearAlong(turn, r0, companyId, nodes, middle, gapOf));
     const x = middle.x + Math.cos(turn) * out;
     const y = middle.y + Math.sin(turn) * out;
     const reach = enclosingCircle([
@@ -522,8 +583,10 @@ function bestPair(pairs: Circle[], items: Placed[]): Circle {
 
 // The smallest circle holding three circles: the one touching all three from the outside. The
 // three "distance + own radius = R" equations give two difference equations that are linear in
-// the middle and in R, so the middle is "start + R * slope" and one quadratic gives R. When the
-// three centres line up, or the answer is really a two-circle one, the best of the pairs wins.
+// the middle and in R, so the middle is "start + R * slope" and one quadratic gives R. The
+// quadratic can have two answers and only the smaller one that holds all three is the tightest;
+// the other sits far outside them. When the three centres line up, or the answer is really a
+// two-circle one, the best of the pairs wins.
 function threeCircle(a: Placed, b: Placed, c: Placed): Circle {
   const pairs = [twoCircle(a, b), twoCircle(a, c), twoCircle(b, c)];
   const ux = a.x - b.x;
@@ -548,20 +611,24 @@ function threeCircle(a: Placed, b: Placed, c: Placed): Circle {
   const qa = slopeX * slopeX + slopeY * slopeY - 1;
   const qb = 2 * (qx * slopeX + qy * slopeY + a.r);
   const qc = qx * qx + qy * qy - a.r * a.r;
-  let r: number;
+  let roots: number[];
   if (Math.abs(qa) < 1e-12) {
     if (Math.abs(qb) < 1e-12) return bestPair(pairs, [a, b, c]);
-    r = -qc / qb;
+    roots = [-qc / qb];
   } else {
     const disc = qb * qb - 4 * qa * qc;
     if (disc < 0) return bestPair(pairs, [a, b, c]);
     const root = Math.sqrt(disc);
-    // The larger root is the circle around all three; the smaller one sits between them.
-    r = Math.max((-qb + root) / (2 * qa), (-qb - root) / (2 * qa));
+    roots = [(-qb + root) / (2 * qa), (-qb - root) / (2 * qa)];
   }
-  const circle = { x: startX + slopeX * r, y: startY + slopeY * r, r };
-  if (!holds(circle, a) || !holds(circle, b) || !holds(circle, c)) return bestPair(pairs, [a, b, c]);
-  return circle;
+  let best: Circle | null = null;
+  for (const r of roots) {
+    if (r < 0) continue;
+    const circle = { x: startX + slopeX * r, y: startY + slopeY * r, r };
+    if (!holds(circle, a) || !holds(circle, b) || !holds(circle, c)) continue;
+    if (best === null || circle.r < best.r) best = circle;
+  }
+  return best ?? bestPair(pairs, [a, b, c]);
 }
 
 // The smallest circle holding every one of a day's circles: the middle and the radius of the
@@ -589,6 +656,64 @@ export function enclosingCircle(items: Placed[]): Circle {
   return circle;
 }
 
+// One scale for every day and the middle each day's cluster is drawn around: the middle of the
+// tightest circle around that day's bubbles, averaged over the 30 days either side so one busy
+// day cannot shift the whole cluster; and the one scale that makes the furthest day touch the
+// fit circle.
+function frameFit(
+  days: Map<string, Map<string, Placed>>,
+  dates: string[],
+): { centres: { x: number; y: number }[]; scale: number } {
+  const centres = dates.map((date) => enclosingCircle([...days.get(date)!.values()]));
+  const smoothed = centres.map((_, index) => {
+    const from = Math.max(0, index - SMOOTH_DAYS);
+    const to = Math.min(centres.length - 1, index + SMOOTH_DAYS);
+    let x = 0;
+    let y = 0;
+    for (let at = from; at <= to; at += 1) {
+      x += centres[at].x;
+      y += centres[at].y;
+    }
+    const count = to - from + 1;
+    return { x: x / count, y: y / count };
+  });
+  let reach = 0;
+  for (const [index, date] of dates.entries()) {
+    const centre = smoothed[index];
+    for (const placed of days.get(date)!.values()) {
+      const dx = placed.x - centre.x;
+      const dy = placed.y - centre.y;
+      const distance = Math.sqrt(dx * dx + dy * dy) + placed.r;
+      if (distance > reach) reach = distance;
+    }
+  }
+  return { centres: smoothed, scale: FRAME.fitRadius / (reach || 1) };
+}
+
+// No bubble moves further than `limit` (raw units) in one day: each day's place is pulled back
+// toward the day before until it is near enough. Without this a small bubble squeezed between
+// two big ones can be thrown a long way by the bigger gaps, and a bubble that jumps makes the
+// money lines jump with it.
+function glide(
+  days: Map<string, Map<string, Placed>>,
+  dates: string[],
+  limit: number,
+): void {
+  for (let index = 1; index < dates.length; index += 1) {
+    const before = days.get(dates[index - 1])!;
+    const today = days.get(dates[index])!;
+    for (const [id, placed] of today) {
+      const was = before.get(id);
+      if (!was) continue;
+      const dx = placed.x - was.x;
+      const dy = placed.y - was.y;
+      const moved = Math.sqrt(dx * dx + dy * dy);
+      if (moved <= limit) continue;
+      placed.x = was.x + (dx * limit) / moved;
+      placed.y = was.y + (dy * limit) / moved;
+    }
+  }
+}
 // The layout for every day from FIRST_DAY to lastDay: day one settles from scratch, then
 // each day starts from the day before so positions change a little and never jump.
 export function dayLayouts(
@@ -616,11 +741,27 @@ export function dayLayouts(
     daily.set(company.id, interpolate(own, dayNumbers));
   }
 
+  // The room between bubble edges, in raw units: a share of the biggest circle, so that after
+  // the one scale it is about 2% of the frame's diameter for every pair, and about twice that
+  // for a pair with a deal.
+  let biggest = 0;
+  for (const point of values) if (point.value_usd_bn > biggest) biggest = point.value_usd_bn;
+  const edgeGap = EDGE_GAP * Math.sqrt(biggest || 1);
+  const dealGap = DEAL_GAP * Math.sqrt(biggest || 1);
+  // The pairs that have a deal on the day being laid out. By id, for a newcomer looking for its
+  // spot; by node, for the forces, which run over every pair on every tick and so must not build
+  // a string key per check.
+  const dealPairsToday = new Set<string>();
+  const gapById = (a: string, b: string): number =>
+    dealPairsToday.has(pairKey(a, b)) ? dealGap : edgeGap;
+  const gapOf = (a: SimNode, b: SimNode): number =>
+    a.partners.has(b) ? dealGap : edgeGap;
+
   // The earliest day each pair of companies has a deal, for the weak links between partners.
   const pairDeals: { a: string; b: string; date: string }[] = [];
   const seenPair = new Map<string, number>();
   for (const deal of deals) {
-    const key = deal.from < deal.to ? `${deal.from}|${deal.to}` : `${deal.to}|${deal.from}`;
+    const key = pairKey(deal.from, deal.to);
     const at = seenPair.get(key);
     if (at === undefined) {
       seenPair.set(key, pairDeals.length);
@@ -644,6 +785,12 @@ export function dayLayouts(
       if (!isShown(company, date)) continue;
       const value = daily.get(company.id)![dayNumber];
       if (value !== null) today.set(company.id, value);
+    }
+
+    // The pairs with a deal today, before a newcomer looks for a spot beside its partner.
+    dealPairsToday.clear();
+    for (const pair of pairDeals) {
+      if (pair.date <= date) dealPairsToday.add(pairKey(pair.a, pair.b));
     }
 
     // A company that leaves is dropped; the rest keep their places with today's radius.
@@ -671,26 +818,38 @@ export function dayLayouts(
       const spot: { x: number; y: number } =
         dayNumber === 0
           ? spiralSpot(nodes.length)
-          : entrySpot(company.id, r0, date, nodes, byId, deals);
-      const node: SimNode = { id: company.id, r0, x: spot.x, y: spot.y, vx: 0, vy: 0 };
+          : entrySpot(company.id, r0, date, nodes, byId, deals, gapById);
+      const node: SimNode = {
+        id: company.id,
+        r0,
+        x: spot.x,
+        y: spot.y,
+        vx: 0,
+        vy: 0,
+        partners: new Set(),
+      };
       nodes.push(node);
       byId.set(company.id, node);
     }
 
     links.length = 0;
+    for (const node of nodes) node.partners.clear();
     for (const pair of pairDeals) {
       if (pair.date > date) continue;
       const source = byId.get(pair.a);
       const target = byId.get(pair.b);
-      if (source && target) links.push({ source, target });
+      if (!source || !target) continue;
+      source.partners.add(target);
+      target.partners.add(source);
+      links.push({ source, target });
     }
 
     if (simulation === null) {
       simulation = forceSimulation(nodes)
         .randomSource(random)
-        .force("collide", collideForce(GAP, 1, 3))
+        .force("collide", collideForce(gapOf, 1, 1))
         .force("pull", centrePull(CENTRE_PULL))
-        .force("link", linkForce(links, GAP, LINK_PULL))
+        .force("link", linkForce(links, dealGap, LINK_PULL))
         .stop();
     }
     if (dayNumber === 0) {
@@ -702,7 +861,7 @@ export function dayLayouts(
     }
     // Forces alone can leave a small circle a little inside two big ones; the push-apart pass
     // leaves every pair the full gap apart before the day is recorded.
-    relaxOverlaps(nodes, GAP);
+    relaxOverlaps(nodes, gapOf);
 
     days.set(
       date,
@@ -716,43 +875,25 @@ export function dayLayouts(
   // after, so one busy day cannot shift the whole cluster and the day-to-day movement stays
   // small.
   const datesInOrder = [...days.keys()];
-  const centres = datesInOrder.map((date) => enclosingCircle([...days.get(date)!.values()]));
-  const smoothed = centres.map((_, index) => {
-    const from = Math.max(0, index - SMOOTH_DAYS);
-    const to = Math.min(centres.length - 1, index + SMOOTH_DAYS);
-    let x = 0;
-    let y = 0;
-    for (let at = from; at <= to; at += 1) {
-      x += centres[at].x;
-      y += centres[at].y;
-    }
-    const count = to - from + 1;
-    return { x: x / count, y: y / count };
-  });
+  // The bigger gaps can throw a small bubble squeezed between two big ones a long way in one
+  // day. A first guess at the scale turns MAX_DAY_MOVE into raw units, and the places are then
+  // held to that glide from the day before; the frame fit is worked out again from what is left.
+  const guess = frameFit(days, datesInOrder);
+  glide(days, datesInOrder, MAX_DAY_MOVE / guess.scale);
+  const fit = frameFit(days, datesInOrder);
 
   // One scale for all days: the biggest day's cluster touches the fit circle exactly, so no day
   // is drawn past the frame and none is drawn much smaller than it needs to be.
-  let reach = 0;
   for (const [index, date] of datesInOrder.entries()) {
-    const centre = smoothed[index];
+    const centre = fit.centres[index];
     for (const placed of days.get(date)!.values()) {
-      const dx = placed.x - centre.x;
-      const dy = placed.y - centre.y;
-      const distance = Math.sqrt(dx * dx + dy * dy) + placed.r;
-      if (distance > reach) reach = distance;
-    }
-  }
-  const scale = FRAME.fitRadius / (reach || 1);
-  for (const [index, date] of datesInOrder.entries()) {
-    const centre = smoothed[index];
-    for (const placed of days.get(date)!.values()) {
-      placed.x = FRAME.cx + (placed.x - centre.x) * scale;
-      placed.y = FRAME.cy + (placed.y - centre.y) * scale;
-      placed.r *= scale;
+      placed.x = FRAME.cx + (placed.x - centre.x) * fit.scale;
+      placed.y = FRAME.cy + (placed.y - centre.y) * fit.scale;
+      placed.r *= fit.scale;
     }
   }
 
-  return { first, last, days };
+  return { first, last, days, edgeGap: edgeGap * fit.scale, dealGap: dealGap * fit.scale };
 }
 
 // A date before the first day uses the first day's layout; after the last day, the last day's.
@@ -817,9 +958,33 @@ export function arrowCurve(from: Placed, to: Placed, bend: number, side: 1 | -1)
   };
 }
 
-// How many of the points along one candidate curve are inside another bubble or outside the frame
-// circle: what a line has to go round. Counting stops at `stopAt`, because a candidate that is
-// already no better than the best one so far cannot win.
+// The straight distance between the two ends of an arrow: the line a reader would draw if the
+// way were free. Bent lines are held to a share of it (LONGEST_LINE).
+export function straightDistance(from: Placed, to: Placed): number {
+  const curve = arrowCurve(from, to, 0, 1);
+  return Math.hypot(curve.x2 - curve.x1, curve.y2 - curve.y1);
+}
+
+// The length along one quadratic curve, from short steps along it.
+function curveLength(curve: Curve): number {
+  let length = 0;
+  let x = curve.x1;
+  let y = curve.y1;
+  for (let sample = 1; sample <= BEND_SAMPLES; sample += 1) {
+    const t = sample / BEND_SAMPLES;
+    const u = 1 - t;
+    const nextX = u * u * curve.x1 + 2 * u * t * curve.cx + t * t * curve.x2;
+    const nextY = u * u * curve.y1 + 2 * u * t * curve.cy + t * t * curve.y2;
+    length += Math.hypot(nextX - x, nextY - y);
+    x = nextX;
+    y = nextY;
+  }
+  return length;
+}
+
+// How many of the points along one candidate line are inside another bubble (plus the small
+// margin) or outside the frame circle: what a line has to go round. Counting stops at `stopAt`,
+// because a candidate that is already no better than the best one so far cannot win.
 function blockCount(
   from: Placed,
   to: Placed,
@@ -837,7 +1002,7 @@ function blockCount(
     const y = u * u * curve.y1 + 2 * u * t * curve.cy + t * t * curve.y2;
     if (Math.hypot(x - FRAME.cx, y - FRAME.cy) > FRAME.radius) count += 1;
     for (const bubble of others) {
-      if (Math.hypot(x - bubble.x, y - bubble.y) < bubble.r) {
+      if (Math.hypot(x - bubble.x, y - bubble.y) < bubble.r + LINE_MARGIN) {
         count += 1;
         break;
       }
@@ -847,10 +1012,12 @@ function blockCount(
   return count;
 }
 
-// Which side of the from->to line a pair's first arrow bends to, and how far: both sides are tried
-// with every bend in BEND_TRIES, and the curve that runs through the fewest other bubbles and
-// leaves the frame circle the fewest times wins. On a tie the smaller bend wins, and on a tie still
-// the side facing away from the frame centre.
+// Which side of the from->to line a pair's first arrow bends to, and how far. A straight line is
+// used whenever it stays clear; otherwise the smallest bend whose curve clears wins. When no bend
+// clears, the line that runs through the least wins, the smaller bend first; a bend whose curve
+// would be longer than LONGEST_LINE x the straight distance is not considered, and the straight
+// line is kept instead. The side facing away from the frame centre is tried first, so it wins a
+// tie.
 export function arrowPath(
   from: Placed,
   to: Placed,
@@ -863,15 +1030,18 @@ export function arrowPath(
   const mx = (from.x + to.x) / 2 - FRAME.cx;
   const my = (from.y + to.y) / 2 - FRAME.cy;
   const away: 1 | -1 = (-dy / distance) * mx + (dx / distance) * my >= 0 ? 1 : -1;
-  // Tried in tie order: the closest curve first, and the side away from the centre before the other.
   const sides: (1 | -1)[] = [away, away === 1 ? -1 : 1];
+  const limit = LONGEST_LINE * straightDistance(from, to);
 
-  let best = { side: away, bend: BEND_TRIES[0] };
-  let bestCount = blockCount(from, to, others, best.bend, best.side, 2 * BEND_SAMPLES);
+  const straight = blockCount(from, to, others, 0, away, Infinity);
+  if (straight === 0) return { side: away, bend: 0 };
+  let best = { side: away, bend: 0 };
+  let bestCount = straight;
   for (const bend of BEND_TRIES) {
-    if (bestCount === 0) break;
+    if (curveLength(arrowCurve(from, to, bend, 1)) > limit) break;
     for (const side of sides) {
       const count = blockCount(from, to, others, bend, side, bestCount);
+      if (count === 0) return { side, bend };
       if (count >= bestCount) continue;
       best = { side, bend };
       bestCount = count;
@@ -945,13 +1115,23 @@ export function arrowsOn(
     const others = bubbles.filter((bubble) => bubble.id !== first.from && bubble.id !== first.to);
     const path = arrowPath(byId.get(first.from)!, byId.get(first.to)!, others);
     pair.forEach((group, index) => {
-      // The pair's other arrows keep the chosen side and bend a little wider each time, so they
-      // nest outside the first one.
-      const bend = path.bend + index * BEND_STEP;
+      const from = byId.get(group.from)!;
+      const to = byId.get(group.to)!;
       // An arrow going the other way flips its side so the pair bends to the same side.
       const side: 1 | -1 =
         group.from === first.from && group.to === first.to ? path.side : path.side === 1 ? -1 : 1;
-      const curve = arrowCurve(byId.get(group.from)!, byId.get(group.to)!, bend, side);
+      // The pair's other arrows keep the chosen side and bend a little wider each time, so they
+      // nest outside the first one. None is allowed past the length limit: the extra bend stops
+      // growing when the next step would take it there. A line that cannot be drawn within the
+      // limit is drawn straight, under the bubbles.
+      const limit = LONGEST_LINE * straightDistance(from, to);
+      let bend = path.bend;
+      for (let step = 1; step <= index; step += 1) {
+        const wider = bend + BEND_STEP;
+        if (curveLength(arrowCurve(from, to, wider, side)) > limit) break;
+        bend = wider;
+      }
+      const curve = arrowCurve(from, to, bend, side);
       out.push({
         from: group.from,
         to: group.to,
