@@ -1397,6 +1397,10 @@ body[data-mode="story"] .sheet .sheet-timeline {
   }
 }
 
+.bubble-frame.burst {
+  stroke-linecap: round;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .dot,
   .bubble,

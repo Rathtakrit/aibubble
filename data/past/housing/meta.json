@@ -2,6 +2,10 @@
   "title": "The housing and credit boom",
   "first_day": "2003-01-01",
   "last_day": "2009-12-31",
+  "burst": {
+    "date": "2008-09-15",
+    "source": "https://news.bbc.co.uk/1/hi/business/7615931.stm"
+  },
   "kinds": [
     { "id": "investment", "label": "Investment deal" },
     { "id": "takeover", "label": "Takeover deal" }

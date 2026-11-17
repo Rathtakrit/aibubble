@@ -3,8 +3,10 @@
 import test from "node:test";
 // @ts-expect-error node:assert has no types in this repo
 import assert from "node:assert";
-import { fitView, sceneTransform } from "./camera.ts";
+import { dayView, fitView, sceneTransform } from "./camera.ts";
+import { bubblesForDate, enclosingCircle, FRAME } from "./layout.ts";
 import type { Bubble } from "./layout.ts";
+import { burst, useDataset } from "./data.ts";
 
 function bubble(id: string, x: number, y: number, r: number): Bubble {
   return { id, name: id, kind: "listed", x, y, r, value: 100 };
@@ -82,6 +84,46 @@ test("a player not shown is ignored", () => {
   const shown = [bubble("a", 30, 40, 2)];
   const withMissing = fitView(shown, ["a", "not-on-screen"], 1);
   assert.deepEqual(withMissing, fitView(shown, ["a"], 1));
+});
+
+test("the burst day and later fit all bubbles; earlier days and AI keep the old view", () => {
+  const shown = [bubble("a", 40, 45, 4), bubble("b", 60, 55, 5)];
+  for (const burst of ["2000-03-10", "2008-09-15"]) {
+    const before = `${Number(burst.slice(0, 4)) - 1}-12-31`;
+    assert.deepEqual(dayView(shown, ["a"], 1, before, burst), fitView(shown, ["a"], 1));
+    for (const date of [burst, `${Number(burst.slice(0, 4)) + 1}-06-30`]) {
+      const view = dayView(shown, [], 1, date, burst);
+      assert.deepEqual(dayView(shown, ["a"], 1, date, burst), view);
+      assert.equal(dayView(shown, [], 1.5, date, burst).z, view.z * 1.5);
+      assert.equal(dayView(shown, [], 0.4, date, burst).z, Math.max(1, view.z * 0.4));
+    }
+  }
+  assert.deepEqual(dayView(shown, [], 1, "2026-11-17"), fitView(shown, [], 1));
+  assert.deepEqual(dayView([], [], 1, "2002-10-09", "2000-03-10"), fitView([], [], 1));
+});
+
+test("past clusters fill the round frame at the reported dates at desktop and phone sizes", () => {
+  try {
+    for (const [id, date] of [["dotcom", "2002-10-09"], ["housing", "2009-06-30"]] as const) {
+      useDataset(id);
+      const shown = bubblesForDate(date);
+      const view = dayView(shown, [], 1, date, burst?.date);
+      const circle = enclosingCircle(shown);
+      assert.ok(Math.abs(circle.r * view.z - FRAME.fitRadius) < 1e-6);
+      assert.equal(view.cx, circle.x);
+      assert.equal(view.cy, circle.y);
+      for (const framePixels of [316, 350]) {
+        const clusterPixels = 2 * circle.r * view.z / (2 * FRAME.radius) * framePixels;
+        assert.ok(clusterPixels > framePixels * 0.9, `${id}: cluster only ${clusterPixels}px in ${framePixels}px frame`);
+      }
+      for (const b of shown) {
+        const reach = (Math.hypot(b.x - view.cx, b.y - view.cy) + b.r) * view.z;
+        assert.ok(reach <= FRAME.fitRadius + 1e-6, `${id}: ${b.id} is clipped`);
+      }
+    }
+  } finally {
+    useDataset("ai");
+  }
 });
 
 test("the scene transform puts the camera point at the centre", () => {

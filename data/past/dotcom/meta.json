@@ -2,6 +2,10 @@
   "title": "The dot-com boom",
   "first_day": "1995-01-01",
   "last_day": "2002-12-31",
+  "burst": {
+    "date": "2000-03-10",
+    "source": "https://www.wired.com/2010/03/0310nasdaq-bust/"
+  },
   "kinds": [
     { "id": "investment", "label": "Investment deal" },
     { "id": "takeover", "label": "Takeover deal" },

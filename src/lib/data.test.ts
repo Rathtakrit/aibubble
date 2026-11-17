@@ -6,6 +6,7 @@ import test from "node:test";
 import assert from "node:assert";
 import {
   companies,
+  burst,
   isShown,
   kindColour,
   kinds,
@@ -93,12 +94,16 @@ test("useDataset switches companies, first day, last day and kinds, and switchin
   useDataset("dotcom");
   assert.ok(companies.some((one) => one.id === "aol"), "the dot-com set has no AOL");
   assert.ok(!companies.some((one) => one.id === "openai"), "an AI company is in the dot-com set");
+  assert.equal(burst?.date, "2000-03-10");
+  assert.equal(burst?.source, "https://www.wired.com/2010/03/0310nasdaq-bust/");
   assert.equal(FIRST_DAY, "1995-01-01");
   assert.equal(LAST_DAY, "2002-12-31");
   assert.deepEqual(kinds.map((one) => one.id), ["investment", "takeover", "supplier"]);
 
   useDataset("housing");
   assert.ok(companies.some((one) => one.id === "lehman-brothers"));
+  assert.equal(burst?.date, "2008-09-15");
+  assert.equal(burst?.source, "https://news.bbc.co.uk/1/hi/business/7615931.stm");
   assert.equal(FIRST_DAY, "2003-01-01");
   assert.equal(LAST_DAY, "2009-12-31");
   assert.deepEqual(kinds.map((one) => one.id), ["investment", "takeover"]);
@@ -110,6 +115,7 @@ test("useDataset switches companies, first day, last day and kinds, and switchin
   assert.equal(LAST_DAY, aiLast);
   assert.deepEqual(kinds.map((one) => one.id), aiKinds);
   assert.equal(status, aiStatus);
+  assert.equal(burst, undefined);
 });
 
 test("a set's ended companies are the ones that were bought or failed", () => {

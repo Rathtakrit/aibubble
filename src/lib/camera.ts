@@ -1,6 +1,7 @@
 // The camera inside the round frame: it flies to the players of the current item and zooms to fit
 // them. Pure maths, no DOM. The bubble lives in a 100 x 100 square with its centre at (50, 50).
 
+import { enclosingCircle, FRAME } from "./layout.ts";
 import type { Bubble } from "./layout.ts";
 
 export type CameraView = {
@@ -57,6 +58,25 @@ export function fitView(bubbles: Bubble[], playerIds: string[], manual: number):
   // The camera only moves towards the players once it has zoomed in.
   const pull = Math.min(1, (z - MIN_ZOOM) / 0.5);
   return { cx: 50 + (bx - 50) * pull, cy: 50 + (by - 50) * pull, z };
+}
+
+// After a burst, fit the cluster's enclosing circle to the layout's padded round frame.
+// The player camera's 56-unit square target would leave the cluster barely half as wide.
+export function dayView(
+  bubbles: Bubble[],
+  playerIds: string[],
+  manual: number,
+  date: string,
+  burstDate?: string,
+): CameraView {
+  if (burstDate === undefined || date < burstDate || bubbles.length === 0) {
+    return fitView(bubbles, playerIds, manual);
+  }
+  const circle = enclosingCircle(bubbles);
+  const autoZ = Math.max(MIN_ZOOM, FRAME.fitRadius / circle.r);
+  // Keep zoom buttons relative to the fitted cluster, even if it needs more than the player cap.
+  const z = clamp(MIN_ZOOM, autoZ * manual, Math.max(MAX_ZOOM, autoZ * ZOOMS[ZOOMS.length - 1]));
+  return { cx: circle.x, cy: circle.y, z };
 }
 
 // The transform for the scene group: the point (cx, cy) lands at the centre (50, 50), scaled by z.

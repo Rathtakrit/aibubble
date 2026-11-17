@@ -4,6 +4,7 @@
 
 import {
   companies,
+  burst,
   datasetId,
   datasetTitle,
   deals,
@@ -443,7 +444,7 @@ function render(soon = false): void {
           ? [company.id, ...partnersOf(company.id, day)]
           : [];
     for (const svg of document.querySelectorAll<SVGSVGElement>("[data-bubble]")) {
-      renderBubble(svg, day, { players, focus: company?.id, manual: ZOOMS[zoomIndex] });
+      renderBubble(svg, day, { players, focus: company?.id, manual: ZOOMS[zoomIndex], burstDate: burst?.date });
     }
   }
 

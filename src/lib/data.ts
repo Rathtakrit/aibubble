@@ -72,7 +72,8 @@ export type DealKind = { id: string; label: string };
 export type DatasetId = "ai" | "dotcom" | "housing";
 
 // The shape of a past folder's meta.json: what the folder holds and the days it covers.
-type MetaFile = { title: string; first_day: string; last_day: string; kinds: DealKind[] };
+type Burst = { date: string; source: string };
+type MetaFile = { title: string; first_day: string; last_day: string; kinds: DealKind[]; burst?: Burst };
 
 // One data set: the four files, the words the page needs, and the days it covers.
 type Dataset = {
@@ -89,6 +90,7 @@ type Dataset = {
   firstDay: string;
   // Null when the set ends on the latest day in its files, as the AI bubble's always has.
   lastDay: string | null;
+  burst?: Burst;
 };
 
 const DAY_MS = 86_400_000;
@@ -140,6 +142,7 @@ const DATASETS: Record<DatasetId, Dataset> = {
     kinds: DOTCOM_META.kinds,
     firstDay: DOTCOM_META.first_day,
     lastDay: DOTCOM_META.last_day,
+    burst: DOTCOM_META.burst,
   },
   housing: {
     id: "housing",
@@ -152,6 +155,7 @@ const DATASETS: Record<DatasetId, Dataset> = {
     kinds: HOUSING_META.kinds,
     firstDay: HOUSING_META.first_day,
     lastDay: HOUSING_META.last_day,
+    burst: HOUSING_META.burst,
   },
 };
 
@@ -164,6 +168,7 @@ export let values: ValuePoint[] = DATASETS.ai.values;
 export let deals: Deal[] = DATASETS.ai.deals;
 export let news: NewsItem[] = DATASETS.ai.news;
 export let kinds: DealKind[] = DATASETS.ai.kinds;
+export let burst: Burst | undefined = DATASETS.ai.burst;
 // The last day of the set: its meta.json last_day for a past one, the latest date in the files
 // for the AI bubble.
 export let LAST_DAY: string = DATASETS.ai.lastDay ?? latestDateOf(DATASETS.ai);
@@ -181,6 +186,7 @@ export function useDataset(id: DatasetId): void {
   deals = set.deals;
   news = set.news;
   kinds = set.kinds;
+  burst = set.burst;
   LAST_DAY = set.lastDay ?? latestDateOf(set);
   setFirstDay(set.firstDay);
 }

@@ -7,7 +7,7 @@ import { join } from "node:path";
 
 const FILES = ["companies", "values", "deals", "news"];
 const STATUSES = ["sample", "draft", "approved"];
-const META_FIELDS = ["title", "first_day", "last_day", "kinds"];
+const META_FIELDS = ["title", "first_day", "last_day", "kinds", "burst"];
 const FIRST_DAY = "2017-06-12";
 const TODAY = new Date().toISOString().slice(0, 10);
 
@@ -185,6 +185,35 @@ function checkMeta(value) {
   if (isRealDate(value.first_day) && isRealDate(value.last_day) && value.first_day > value.last_day) {
     problem("meta.json", "last_day", `${value.last_day} is before first_day ${value.first_day}`);
     ok = false;
+  }
+  if (Object.hasOwn(value, "burst")) {
+    const burst = value.burst;
+    if (typeof burst !== "object" || burst === null || Array.isArray(burst)) {
+      problem("meta.json", "burst", "is not one object");
+      ok = false;
+    } else {
+      checkFields("meta.json", "burst", burst, [
+        { name: "date", type: "string" },
+        { name: "source", type: "string" },
+      ]);
+      if (!isRealDate(burst.date)) {
+        problem("meta.json", "burst.date", `"${burst.date}" is not a real calendar date in YYYY-MM-DD`);
+        ok = false;
+      } else if (
+        (isRealDate(value.first_day) && burst.date < value.first_day) ||
+        (isRealDate(value.last_day) && burst.date > value.last_day)
+      ) {
+        problem("meta.json", "burst.date", `${burst.date} is outside the set's days`);
+        ok = false;
+      }
+      try {
+        const url = new URL(burst.source);
+        if (url.protocol !== "http:" && url.protocol !== "https:") throw new Error();
+      } catch {
+        problem("meta.json", "burst.source", "is not an http(s) web address");
+        ok = false;
+      }
+    }
   }
   if (!Array.isArray(value.kinds) || value.kinds.length === 0 || value.kinds.length > 3) {
     problem("meta.json", "kinds", "is not a list of one to three deal kinds");
