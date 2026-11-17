@@ -9,7 +9,7 @@
       "players": [],
       "kind": "money",
       "key_date": false,
-      "source": "https://en.wikipedia.org/wiki/Closing_milestones_of_the_Nasdaq_Composite"
+      "source": "https://www.latimes.com/archives/la-xpm-1995-07-18-fi-25114-story.html"
     },
     {
       "id": "1995-08-09-netscape-first-day",
@@ -163,17 +163,17 @@
       "source": "https://web.archive.org/web/20020206205510/http://money.cnn.com:80/1999/01/28/technology/yahoo_a/"
     },
     {
-      "id": "1999-06-19-microsoft-att",
-      "date": "1999-06-19",
-      "title": "Microsoft buys $5bn of AT&T shares",
-      "summary": "Microsoft agreed on 19 June 1999 to buy $5bn of AT&T shares.",
+      "id": "1999-05-06-microsoft-att",
+      "date": "1999-05-06",
+      "title": "Microsoft to buy $5bn of AT&T securities",
+      "summary": "On 6 May 1999 Microsoft agreed to pay $5bn for new AT&T convertible trust preferred securities and warrants, winning more access to AT&T's cable networks.",
       "players": [
         "microsoft",
         "at-t"
       ],
       "kind": "money",
       "key_date": false,
-      "source": "https://en.wikipedia.org/wiki/List_of_mergers_and_acquisitions_by_Microsoft"
+      "source": "https://web.archive.org/web/19990507000000id_/http://money.cnn.com/1999/05/06/technology/att/"
     },
     {
       "id": "1999-06-21-worldcom-peak",
@@ -201,16 +201,16 @@
       "source": "https://www.theguardian.com/business/1999/oct/06/3"
     },
     {
-      "id": "1999-11-30-buffett-fortune",
-      "date": "1999-11-30",
+      "id": "1999-11-22-buffett-fortune",
+      "date": "1999-11-22",
       "title": "Buffett warns of unrealistic expectations",
-      "summary": "In a November 1999 Fortune article, Warren Buffett said investors expected too much from shares.",
+      "summary": "In a Fortune article published on 22 November 1999, Warren Buffett said investors in stocks were expecting far too much.",
       "players": [],
       "kind": "money",
       "key_date": false,
       "small_date": true,
       "label": "Buffett's Fortune warning",
-      "source": "https://en.wikipedia.org/wiki/Warren_Buffett"
+      "source": "https://fortune.com/1999/11/22/warren-buffett-on-stock-market"
     },
     {
       "id": "1999-12-09-lucent-peak",
@@ -228,19 +228,19 @@
       "id": "1999-12-31-qualcomm-year",
       "date": "1999-12-31",
       "title": "Qualcomm shares rise 2,619% in 1999",
-      "summary": "In 1999 Qualcomm shares rose 2,619% and the Nasdaq 85.6%, even though more stocks fell than rose.",
+      "summary": "In 1999 Qualcomm shares rose 2,619% and the Nasdaq composite 85.6%, even though more Nasdaq stocks fell than rose.",
       "players": [
         "qualcomm"
       ],
       "kind": "money",
       "key_date": false,
-      "source": "https://en.wikipedia.org/wiki/Dot-com_bubble"
+      "source": "https://www.nytimes.com/2000/01/03/business/the-year-in-the-markets-1999-extraordinary-winners-and-more-losers.html"
     },
     {
       "id": "2000-01-06-lucent-warning",
       "date": "2000-01-06",
-      "title": "Lucent warns and the shares fall 28%",
-      "summary": "On 6 January 2000 Lucent said it had missed its quarterly estimates; the shares fell 28% and $64bn of market value went.",
+      "title": "Lucent warns and the shares fall almost 30%",
+      "summary": "On 6 January 2000 Lucent said quarterly earnings would miss estimates; the next day the shares fell 20 points, and $64bn, almost 30% of its value, went.",
       "players": [
         "lucent"
       ],
@@ -248,7 +248,7 @@
       "key_date": false,
       "small_date": true,
       "label": "Lucent misses estimates",
-      "source": "https://en.wikipedia.org/wiki/Lucent_Technologies"
+      "source": "https://www.bostonfed.org/publications/regional-review/2000/quarter-1/making-the-numbers.aspx"
     },
     {
       "id": "2000-01-10-aol-time-warner",
@@ -272,7 +272,7 @@
       "players": [],
       "kind": "money",
       "key_date": false,
-      "source": "https://en.wikipedia.org/wiki/Dot-com_bubble"
+      "source": "https://web.archive.org/web/20200302153230/https://www.fastcompany.com/90453258/20-years-ago-the-dot-coms-took-over-the-super-bowl"
     },
     {
       "id": "2000-02-16-global-crossing-peak",
@@ -357,13 +357,13 @@
       "id": "2000-03-31-shiller-book",
       "date": "2000-03-31",
       "title": "Shiller's book warns of a bubble",
-      "summary": "Robert Shiller's book Irrational Exuberance, published in March 2000, argued that the stock market was a bubble.",
+      "summary": "Robert Shiller's book Irrational Exuberance, published in March 2000 as the Nasdaq peaked, argued that the stock market was a bubble.",
       "players": [],
       "kind": "money",
       "key_date": false,
       "small_date": true,
       "label": "Shiller's bubble book",
-      "source": "https://en.wikipedia.org/wiki/Irrational_Exuberance_(book)"
+      "source": "https://www.pbs.org/wgbh/pages/frontline/shows/dotcon/historical/shiller.html"
     },
     {
       "id": "2000-04-03-microsoft-ruling",
@@ -404,14 +404,14 @@
       "id": "2000-06-30-qwest-us-west",
       "date": "2000-06-30",
       "title": "Qwest closes its purchase of US West",
-      "summary": "Qwest took over the Baby Bell US West on 30 June 2000 in a $48bn deal, and US West stopped trading.",
+      "summary": "Qwest completed its $48bn purchase of the Baby Bell US West on 30 June 2000, the first merger of a long-distance carrier and a local phone company.",
       "players": [
         "qwest",
         "us-west"
       ],
       "kind": "money",
       "key_date": false,
-      "source": "https://en.wikipedia.org/wiki/Qwest"
+      "source": "https://www.edn.com/qwest-us-west-pairing-alters-long-haul-landscape/"
     },
     {
       "id": "2000-08-08-qwest-peak",
@@ -583,15 +583,15 @@
     {
       "id": "2002-06-25-worldcom-fraud",
       "date": "2002-06-25",
-      "title": "WorldCom admits $3.8bn of false entries",
-      "summary": "On 25 June 2002 WorldCom said it would restate its accounts after finding $3.8bn of improper entries.",
+      "title": "WorldCom admits $3.9bn of improper entries",
+      "summary": "On 25 June 2002 WorldCom said it would restate its accounts after finding $3.055bn of improper transfers in 2001 and $797m more in early 2002.",
       "players": [
         "worldcom"
       ],
       "kind": "money",
       "key_date": true,
       "label": "WorldCom fraud revealed",
-      "source": "https://en.wikipedia.org/wiki/WorldCom_scandal"
+      "source": "https://www.sec.gov/Archives/edgar/data/723527/000091205702025338/a2083227zex-99_1.txt"
     },
     {
       "id": "2002-07-21-worldcom-bankruptcy",
@@ -620,13 +620,13 @@
     {
       "id": "2002-10-09-nasdaq-low",
       "date": "2002-10-09",
-      "title": "Nasdaq at its low, down 78%",
-      "summary": "At its trough on 9 October 2002 the Nasdaq-100 was 78% below its peak, and stocks had lost $5tn since the top.",
+      "title": "Nasdaq closes at a six-year low",
+      "summary": "On 9 October 2002 the Nasdaq composite closed at 1,114.11, a six-year low; the Wilshire 5000 was 50% below its March 2000 high, with $8.5tn gone.",
       "players": [],
       "kind": "money",
       "key_date": true,
       "label": "Nasdaq bottom",
-      "source": "https://en.wikipedia.org/wiki/Dot-com_bubble"
+      "source": "https://web.archive.org/web/20021015000000id_/http://money.cnn.com/2002/10/09/markets/markets_newyork/"
     }
   ]
 }
