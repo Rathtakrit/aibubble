@@ -16,7 +16,8 @@ import {
   valuePointOn,
 } from "../lib/data.ts";
 import type { Company, NewsItem } from "../lib/data.ts";
-import { arrowsForDate, bubblesForDate, defaultDate, formatValue, totalForDate } from "../lib/layout.ts";
+import { arrowsForDate, bubblesForDate, defaultDate, formatValue, installLayouts, totalForDate } from "../lib/layout.ts";
+import type { DayLayouts } from "../lib/layout.ts";
 import { renderBubble } from "../lib/bubble.ts";
 import { ZOOMS } from "../lib/camera.ts";
 import type { Chapter } from "../lib/story.ts";
@@ -39,6 +40,19 @@ const requested = document.body.dataset.dataset;
 useDataset(requested === "dotcom" || requested === "housing" ? requested : "ai");
 // A past page has no Story mode: no chapters, and ?chapter= is ignored.
 const isPast = datasetId !== "ai";
+let layoutsReady = false;
+const layoutWorker = new Worker(new URL("./layout.worker.ts", import.meta.url), { type: "module" });
+layoutWorker.onmessage = (event: MessageEvent<DayLayouts>) => {
+  installLayouts(datasetId, event.data);
+  layoutsReady = true;
+  layoutWorker.terminate();
+  render();
+};
+layoutWorker.onerror = () => {
+  layoutWorker.terminate();
+  console.error("Bubble layouts could not load. Reload the page to try again.");
+};
+layoutWorker.postMessage(datasetId);
 const STORY_ENABLED = document.body.dataset.storyEnabled === "true";
 
 // Explore walks money news only, from the set's first day on; the other news waits for its own tab.
@@ -105,6 +119,11 @@ function partnersOf(id: string, date: string): string[] {
 }
 
 function isCompanyShown(id: string, date: string): boolean {
+  if (!layoutsReady) {
+    const company = companyById.get(id);
+    return !!company && company.first_mention <= date && (!company.ended || date <= company.ended)
+      && valueOn(values, id, date) !== null;
+  }
   return bubblesForDate(date).some((bubble) => bubble.id === id);
 }
 
@@ -308,15 +327,17 @@ function render(soon = false): void {
   // The bubble follows the day; a chapter frames its players as a news item does, a chosen item
   // frames its players, a chosen company frames itself and the companies it has money lines
   // with, and a plain day shows the whole frame.
-  const players = storyChapter
-    ? storyChapter.players
-    : item
-      ? item.players
-      : company
-        ? [company.id, ...partnersOf(company.id, day)]
-        : [];
-  for (const svg of document.querySelectorAll<SVGSVGElement>("[data-bubble]")) {
-    renderBubble(svg, day, { players, focus: company?.id, manual: ZOOMS[zoomIndex] });
+  if (layoutsReady) {
+    const players = storyChapter
+      ? storyChapter.players
+      : item
+        ? item.players
+        : company
+          ? [company.id, ...partnersOf(company.id, day)]
+          : [];
+    for (const svg of document.querySelectorAll<SVGSVGElement>("[data-bubble]")) {
+      renderBubble(svg, day, { players, focus: company?.id, manual: ZOOMS[zoomIndex] });
+    }
   }
 
   if (soon) writeAddressSoon();
