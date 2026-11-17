@@ -109,7 +109,7 @@ for (const tick of ticks) {
   lastRight = middle + YEAR_NAME_WIDTH / 2;
 }
 
-// Which of the two label heights each key date's short text takes, so neighbours do not overlap.
+// Alternate key dates above and below, with two heights per side to keep neighbours apart.
 // The text is the item's label when it has one, else its title, at most 120px wide and two lines.
 // The page draws them from this first estimate; explore.ts re-places them once the real widths
 // are known.
@@ -178,13 +178,18 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
             href="/"
             aria-current={isPast ? undefined : "page"}>Explore</a
           >
+          <a
+            class:list={["nav-item", id === "dotcom" && "nav-current"]}
+            href="/past/dotcom/"
+            aria-current={id === "dotcom" ? "page" : undefined}>Dot-com</a
+          >
+          <a
+            class:list={["nav-item", id === "housing" && "nav-current"]}
+            href="/past/housing/"
+            aria-current={id === "housing" ? "page" : undefined}>Housing</a
+          >
           <span class="nav-item">Science<span class="nav-tag">soon</span></span>
           <span class="nav-item">News<span class="nav-tag">soon</span></span>
-          <a
-            class:list={["nav-item", isPast && "nav-current"]}
-            href="/past/dotcom/"
-            aria-current={isPast ? "page" : undefined}>Past bubbles</a
-          >
         </nav>
       </header>
 
@@ -196,26 +201,6 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
               <p class="kicker story-only" data-bind="story-kicker">
                 Chapter 1 of {chapters.length}
               </p>
-            )
-          }
-          {
-            isPast && (
-              <div class="mode-switch past-switch" role="group" aria-label="Past bubble">
-                <a
-                  class:list={["mode-button", id === "dotcom" && "nav-current"]}
-                  href="/past/dotcom/"
-                  aria-current={id === "dotcom" ? "page" : undefined}
-                >
-                  Dot-com, 1995 to 2002
-                </a>
-                <a
-                  class:list={["mode-button", id === "housing" && "nav-current"]}
-                  href="/past/housing/"
-                  aria-current={id === "housing" ? "page" : undefined}
-                >
-                  Housing, 2003 to 2009
-                </a>
-              </div>
             )
           }
           <p class="big-date" data-bind="date">{dayLabel(current.date)}</p>
@@ -364,6 +349,7 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
       </main>
 
       <section class="timeline" aria-label="Timeline">
+        <div class="timeline-row">
         <div class="timeline-inner" data-timeline>
           <div class="timeline-axis" aria-hidden="true"></div>
           <input
@@ -389,6 +375,7 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
                     class="timeline-dot"
                     data-dot="key"
                     data-news={item.id}
+                    data-timeline-date={item.date}
                     style={`left: ${left}%`}
                     title={item.title}
                     aria-label={ariaFor(item.id, item.title, item.date)}
@@ -398,9 +385,12 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
                   <span
                     class="timeline-label"
                     data-timeline-label
+                    data-timeline-date={item.date}
+                    data-timeline-id={item.id}
                     data-row={label?.row}
+                    data-side={label?.side}
                     data-align={label?.align ?? "center"}
-                    style={`left: ${left}%`}
+                    style={`left: ${left}%; margin-left: ${label?.shift ?? 0}px`}
                     hidden={!label}
                     aria-hidden="true"
                   >
@@ -411,13 +401,15 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
             })
           }
           {
-            smallDates.map((item) => (
+            ordered.filter((item) => !item.key_date).map((item) => (
               <>
                 <button
                   type="button"
                   class="timeline-dot"
                   data-dot="small"
+                   data-zoom-only={!item.small_date || undefined}
                   data-news={item.id}
+                    data-timeline-date={item.date}
                   style={`left: ${scale.percentOf(item.date)}%`}
                   title={item.title}
                   aria-label={ariaFor(item.id, item.title, item.date)}
@@ -427,6 +419,9 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
                 <span
                   class="timeline-label timeline-label-hover"
                   data-timeline-hover
+                   data-zoom-only={!item.small_date || undefined}
+                    data-timeline-date={item.date}
+                    data-timeline-id={item.id}
                   data-row="0"
                   data-align="center"
                   style={`left: ${scale.percentOf(item.date)}%`}
@@ -470,6 +465,7 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
             ticks.map((tick) => (
               <span
                 class:list={["timeline-tick", `timeline-tick-${tick.year ? "year" : "quarter"}`]}
+                data-timeline-date={tick.date}
                 style={`left: ${tick.percent}%`}
                 aria-hidden="true"
               />
@@ -477,7 +473,7 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
           }
           {
             yearNames.map((name) => (
-              <span class="timeline-year" style={`left: ${name.percent}%`} aria-hidden="true">
+              <span class="timeline-year" data-timeline-date={`${name.year}-01-01`} style={`left: ${name.percent}%`} aria-hidden="true">
                 {name.year}
               </span>
             ))
@@ -485,6 +481,12 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
           <div class="timeline-ends" aria-hidden="true"><span>{firstEnd}</span><span>{lastEnd}</span></div>
         </div>
 
+        <div class="zoom-buttons timeline-zoom">
+            <button type="button" class="zoom-button" data-action="timeline-zoom" aria-label="Zoom timeline in" aria-pressed="false">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"></path></svg>
+            </button>
+          </div>
+        </div>
         {statusLine && <p class="status">{statusLine}</p>}
       </section>
     </div>
@@ -512,6 +514,23 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
 
       <section class="sheet" aria-label="News item" data-sheet>
         <div class="grabber" aria-hidden="true"></div>
+        <nav class="mode-switch" aria-label="Bubbles">
+          <a
+            class:list={["mode-button", !isPast && "nav-current"]}
+            href="/"
+            aria-current={isPast ? undefined : "page"}>Explore</a
+          >
+          <a
+            class:list={["mode-button", id === "dotcom" && "nav-current"]}
+            href="/past/dotcom/"
+            aria-current={id === "dotcom" ? "page" : undefined}>Dot-com</a
+          >
+          <a
+            class:list={["mode-button", id === "housing" && "nav-current"]}
+            href="/past/housing/"
+            aria-current={id === "housing" ? "page" : undefined}>Housing</a
+          >
+        </nav>
         {
           STORY_ENABLED && !isPast && (
             <div class="mode-switch" role="group" aria-label="Mode">
@@ -520,26 +539,6 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
               </a>
               <a class="mode-button nav-current" data-mode="explore" href="/" aria-current="page">
                 Explore
-              </a>
-            </div>
-          )
-        }
-        {
-          isPast && (
-            <div class="mode-switch past-switch" role="group" aria-label="Past bubble">
-              <a
-                class:list={["mode-button", id === "dotcom" && "nav-current"]}
-                href="/past/dotcom/"
-                aria-current={id === "dotcom" ? "page" : undefined}
-              >
-                Dot-com, 1995 to 2002
-              </a>
-              <a
-                class:list={["mode-button", id === "housing" && "nav-current"]}
-                href="/past/housing/"
-                aria-current={id === "housing" ? "page" : undefined}
-              >
-                Housing, 2003 to 2009
               </a>
             </div>
           )
@@ -665,6 +664,7 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
           ))}
         </div>
 
+        <div class="timeline-row">
         <div class="sheet-timeline">
           <div class="timeline-axis" aria-hidden="true"></div>
           <input
@@ -685,6 +685,7 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
                 class="timeline-dot"
                 data-dot="key"
                 data-news={item.id}
+                    data-timeline-date={item.date}
                 style={`left: ${scale.percentOf(item.date)}%`}
                 title={item.title}
                 aria-label={ariaFor(item.id, item.title, item.date)}
@@ -694,12 +695,14 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
             ))
           }
           {
-            smallDates.map((item) => (
+            ordered.filter((item) => !item.key_date).map((item) => (
               <button
                 type="button"
                 class="timeline-dot"
                 data-dot="small"
+                   data-zoom-only={!item.small_date || undefined}
                 data-news={item.id}
+                    data-timeline-date={item.date}
                 style={`left: ${scale.percentOf(item.date)}%`}
                 title={item.title}
                 aria-label={ariaFor(item.id, item.title, item.date)}
@@ -723,6 +726,12 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
                 </button>
               ))
           }
+        </div>
+        <div class="zoom-buttons timeline-zoom">
+            <button type="button" class="zoom-button" data-action="timeline-zoom" aria-label="Zoom timeline in" aria-pressed="false">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"></path></svg>
+            </button>
+          </div>
         </div>
         <div class="timeline-ends" aria-hidden="true"><span>{firstEnd}</span><span>{lastEnd}</span></div>
 

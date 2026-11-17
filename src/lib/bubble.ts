@@ -9,7 +9,7 @@
 import { arrowCurve, arrowsForDate, bubblesForDate, formatDate, formatValue, FRAME } from "./layout.ts";
 import type { Arrow, Bubble, Placed } from "./layout.ts";
 import { kindColour } from "./data.ts";
-import { fitView, sceneTransform } from "./camera.ts";
+import { dayView, sceneTransform } from "./camera.ts";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 const CLIP_ID = "aibubble-clip";
@@ -699,6 +699,7 @@ export type BubbleOptions = {
   focus?: string;
   // The reader's own zoom on top of the automatic fit.
   manual?: number;
+  burstDate?: string;
 };
 
 export function renderBubble(
@@ -720,9 +721,14 @@ export function renderBubble(
     options.focus !== undefined && bubbles.some((bubble) => bubble.id === options.focus)
       ? options.focus
       : null;
-  const view = fitView(bubbles, options.players ?? [], options.manual ?? 1);
+  const view = dayView(bubbles, options.players ?? [], options.manual ?? 1, date, options.burstDate);
 
   const { bubbleLayer, arrowLayer, scene } = ensureScene(svg);
+  const ring = svg.querySelector<SVGCircleElement>("circle.bubble-frame")!;
+  const afterBurst = options.burstDate !== undefined && date >= options.burstDate;
+  ring.classList.toggle("burst", afterBurst);
+  if (afterBurst) ring.setAttribute("stroke-dasharray", "0 4.5");
+  else ring.removeAttribute("stroke-dasharray");
   let drawing = drawings.get(svg);
   if (!drawing) {
     drawing = {

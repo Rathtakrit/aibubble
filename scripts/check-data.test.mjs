@@ -340,6 +340,36 @@ test("a folder with a meta.json takes its first day, last day and deal kinds fro
   expectOk(dir);
 });
 
+test("burst accepts real dates within the set and http(s) sources", () => {
+  for (const date of ["2016-01-01", "2020-03-10", "2021-12-31"]) {
+    for (const source of ["http://example.com/event", "https://example.com/event"]) {
+      const dir = olderFixture();
+      write(dir, "meta.json", meta({ burst: { date, source } }));
+      expectOk(dir);
+    }
+  }
+});
+
+test("rejects burst dates outside the set or not real calendar dates", () => {
+  for (const date of ["2015-12-31", "2022-01-01", "2020-02-30", "not-a-date"]) {
+    const dir = olderFixture();
+    write(dir, "meta.json", meta({ burst: { date, source: "https://example.com/event" } }));
+    const result = run(dir);
+    assert.equal(result.status, 1, result.stdout + result.stderr);
+    assert.match(result.stdout, /meta.json: burst.date:/);
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("rejects malformed burst objects and sources", () => {
+  for (const burst of [null, [], "2000-03-10", {}, { date: "2020-03-10", source: "ftp://example.com" },
+    { date: "2020-03-10", source: "https://" }]) {
+    const dir = olderFixture();
+    write(dir, "meta.json", meta({ burst }));
+    expectFail(dir, "meta.json");
+  }
+});
+
 test("without a meta.json the AI first day and deal kinds still apply", () => {
   // The same folder the test above passes: 2016 is before the AI set's first day, and
   // "takeover" is not one of the AI set's three deal kinds.

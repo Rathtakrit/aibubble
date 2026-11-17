@@ -15,6 +15,9 @@ import {
   publisherName,
   siteName,
   timelineScale,
+  timelineWindow,
+  windowPercent,
+  windowPlace,
 } from "./timeline.ts";
 
 const source = "https://example.com/sample";
@@ -239,7 +242,7 @@ test("science news shows Science, money news the kind of its deal", () => {
   assert.equal(pillKind(otherDay, deals), "money");
 });
 
-test("labels sit on two heights and the overlapping ones are left out", () => {
+test("labels alternate sides and use the second height before hiding", () => {
   const placed = placeLabels(
     [
       { id: "a", percent: 10, width: 80 },
@@ -251,12 +254,13 @@ test("labels sit on two heights and the overlapping ones are left out", () => {
     ],
     1000,
   );
-  // "a" takes the height nearest the line, "b" the one above it, and both "c" and "d" have no
-  // room on either height.
+  assert.equal(placed.get("a")?.side, "above");
+  assert.equal(placed.get("b")?.side, "below");
   assert.equal(placed.get("a")?.row, 0);
-  assert.equal(placed.get("b")?.row, 1);
-  assert.equal(placed.has("c"), false);
-  assert.equal(placed.has("d"), false);
+  assert.equal(placed.get("b")?.row, 0);
+  assert.equal(placed.get("c")?.row, 1);
+  assert.equal(placed.get("d")?.row, 1);
+  assert.equal(placed.size, 6);
   // Far enough apart: the height nearest the line again, centred on its date.
   assert.equal(placed.get("e")?.row, 0);
   assert.equal(placed.get("e")?.align, "center");
@@ -264,18 +268,44 @@ test("labels sit on two heights and the overlapping ones are left out", () => {
   assert.equal(placed.get("f")?.align, "end");
 });
 
-test("three close dates: the third has nowhere to go and is left out", () => {
+test("five close red dates alternate sides and none is hidden", () => {
   const placed = placeLabels(
     [
       { id: "one", percent: 20, width: 120 },
-      { id: "two", percent: 23, width: 120 },
-      { id: "three", percent: 26, width: 120 },
+      { id: "two", percent: 25, width: 120 },
+      { id: "three", percent: 30, width: 120 },
+      { id: "four", percent: 35, width: 120 },
+      { id: "five", percent: 40, width: 120 },
     ],
     800,
   );
-  assert.equal(placed.get("one")?.row, 0);
-  assert.equal(placed.get("two")?.row, 1);
-  assert.equal(placed.has("three"), false);
+  assert.equal(placed.size, 5);
+  assert.deepEqual([...placed.values()].map((spot) => spot.side), ["above", "below", "above", "below", "above"]);
+  assert.deepEqual([...placed.values()].map((spot) => spot.row), [0, 0, 1, 1, 0]);
+});
+
+test("only a third overlapping label on the same side is hidden, without changing alternation", () => {
+  const placed = placeLabels(
+    Array.from({ length: 6 }, (_, index) => ({ id: String(index), percent: 50, width: 120 })),
+    800,
+  );
+  assert.equal(placed.size, 4);
+  assert.equal(placed.has("4"), false);
+  assert.equal(placed.has("5"), false);
+  assert.deepEqual([...placed.values()].map((spot) => spot.side), ["above", "below", "above", "below"]);
+});
+
+test("labels are centred where possible and clamped exactly at both edges", () => {
+  const placed = placeLabels([
+    { id: "right", percent: 99, width: 120 },
+    { id: "middle", percent: 50, width: 120 },
+    { id: "left", percent: 1, width: 120 },
+  ], 800);
+  assert.equal(placed.get("left")?.shift, -8);
+  assert.equal(placed.get("middle")?.shift, 0);
+  assert.equal(placed.get("right")?.shift, 8);
+  assert.deepEqual([...placed.keys()], ["left", "middle", "right"]);
+  assert.equal(placeLabels([], 0).size, 0);
 });
 
 test("an end-aligned label at the right edge is measured from its own left edge", () => {
@@ -283,13 +313,52 @@ test("an end-aligned label at the right edge is measured from its own left edge"
     [
       // A short label at 75% sits on 720..780px.
       { id: "before", percent: 75, width: 60 },
-      // At 97% a 200px label is lined up with the end of the line, so it really starts at 770px.
+      // At 97% a 200px label must move inward to finish at the container edge.
       { id: "edge", percent: 97, width: 200 },
     ],
     1000,
   );
   assert.equal(placed.get("before")?.row, 0);
   assert.equal(placed.get("edge")?.align, "end");
-  // Its box runs 770..970, which covers the one below it, so it takes the higher height.
-  assert.equal(placed.get("edge")?.row, 1);
+  // Clamped to 800..1000, on the opposite side from the preceding label.
+  assert.equal(placed.get("edge")?.shift, 30);
+  assert.equal(placed.get("edge")?.side, "below");
+  assert.equal(placed.get("edge")?.row, 0);
+});
+
+test("timeline zoom centres unequal neighbours and excludes other events", () => {
+  const events = inDateOrder([...busyDots, ...smallDots]);
+  const scale = timelineScale(last, dots);
+  const window = timelineWindow(events, "m4", scale);
+  assert.deepEqual(window.ids, ["m3", "m4", "s1"]);
+  assert.equal(windowPercent(scale.percentOf("2025-03-24"), window), 50);
+  for (const id of window.ids) {
+    const event = events.find((item) => item.id === id)!;
+    const percent = scale.percentOf(event.date);
+    const position = windowPercent(percent, window);
+    assert.ok(position > 0 && position < 100);
+    assert.ok(Math.abs(windowPlace(position, window) - percent) < 1e-10);
+  }
+});
+
+test("timeline zoom keeps the nearest three at both ends", () => {
+  const events = inDateOrder([...busyDots, ...smallDots]);
+  const scale = timelineScale(last, dots);
+  for (const id of ["m1", "s2"]) {
+    const window = timelineWindow(events, id, scale);
+    assert.equal(window.ids.length, 3);
+    assert.ok(window.ids.includes(id));
+    const selected = events.find((item) => item.id === id)!;
+    assert.ok(windowPercent(scale.percentOf(selected.date), window) > 0);
+    assert.ok(windowPercent(scale.percentOf(selected.date), window) < 100);
+  }
+});
+
+test("timeline zoom handles coincident dates and short or empty lists", () => {
+  const scale = timelineScale(last, dots);
+  for (const events of [[], items.slice(0, 1), items.filter((item) => item.date === "2023-06-01")]) {
+    const window = timelineWindow(events, events[0]?.id ?? "missing", scale);
+    assert.ok(window.start < window.middle && window.middle < window.end);
+    for (const event of events) assert.ok(Number.isFinite(windowPercent(scale.percentOf(event.date), window)));
+  }
 });
