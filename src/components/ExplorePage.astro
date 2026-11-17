@@ -109,7 +109,7 @@ for (const tick of ticks) {
   lastRight = middle + YEAR_NAME_WIDTH / 2;
 }
 
-// Which of the two label heights each key date's short text takes, so neighbours do not overlap.
+// Alternate key dates above and below, with two heights per side to keep neighbours apart.
 // The text is the item's label when it has one, else its title, at most 120px wide and two lines.
 // The page draws them from this first estimate; explore.ts re-places them once the real widths
 // are known.
@@ -399,8 +399,9 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
                     class="timeline-label"
                     data-timeline-label
                     data-row={label?.row}
+                    data-side={label?.side}
                     data-align={label?.align ?? "center"}
-                    style={`left: ${left}%`}
+                    style={`left: ${left}%; margin-left: ${label?.shift ?? 0}px`}
                     hidden={!label}
                     aria-hidden="true"
                   >

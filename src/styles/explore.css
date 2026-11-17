@@ -912,6 +912,8 @@ body[data-mode="story"] .sheet .sheet-timeline {
   }
 
   .layout-desktop {
+    --timeline-lower: 0px;
+    --timeline-extra: calc(12px + var(--timeline-lower));
     display: flex;
     flex-direction: column;
     min-height: 100vh;
@@ -1073,7 +1075,7 @@ body[data-mode="story"] .sheet .sheet-timeline {
 
   /* The bubble is a square, and everything else on the page has to stay in view without
      scrolling: the header, the padding, the two lines under the bubble and the timeline take
-     380px of the window's height, so the bubble gives back whatever the window has above that.
+     380px plus the compact lower-label band, so the bubble gives back the remaining height.
      The room comes from the space above the date and around the bubble, not from the text. */
   .bubble-column {
     /* The zoom buttons stand in a strip of their own beside the square, 10px clear of it, so the
@@ -1082,8 +1084,8 @@ body[data-mode="story"] .sheet .sheet-timeline {
     --zoom-strip: 56px;
     flex: 1 1 560px;
     min-width: 0;
-    max-width: min(calc(680px + var(--zoom-strip)), calc(100vh - 380px + var(--zoom-strip)));
-    max-width: min(calc(680px + var(--zoom-strip)), calc(100dvh - 380px + var(--zoom-strip)));
+    max-width: min(calc(680px + var(--zoom-strip)), calc(100vh - 380px - var(--timeline-extra) + var(--zoom-strip)));
+    max-width: min(calc(680px + var(--zoom-strip)), calc(100dvh - 380px - var(--timeline-extra) + var(--zoom-strip)));
     margin: 0 auto;
   }
 
@@ -1118,27 +1120,29 @@ body[data-mode="story"] .sheet .sheet-timeline {
 
   .timeline-inner {
     position: relative;
-    height: 132px;
+    height: calc(132px + var(--timeline-extra));
     max-width: 1360px;
     margin: 0 auto;
   }
 
-  /* The one line: two heights of titles above it, dots on it, day ticks and years below it.
-     Each height is 28px, a two-line title, and the next one starts 32px above it, so no title
-     can sit on the one above it however it wraps. The nearest height ends 6px above the slider's
-     44px hit area, so no title is drawn over the slider or cut by it. Two label heights, the
-     slider, the year names and the end labels are all the box needs; it keeps no spare rows. */
+  /* Reserve a second lower height only when placement actually uses it. Labels clear the
+     visible dots and ignore pointer input, leaving the slider's full hit area intact.
+     The 28px lower text band has a 4px gap before the years; total growth is at most 44px. */
+  .layout-desktop:has(.timeline-label[data-side="below"][data-row="1"]:not([hidden])) {
+    --timeline-lower: 32px;
+  }
+
   .timeline-inner .timeline-axis {
-    top: 92px;
+    top: 70px;
   }
 
   .timeline-inner .day-range {
-    top: 70px;
+    top: 48px;
     z-index: 1;
   }
 
   .timeline-inner .timeline-dot {
-    top: 70px;
+    top: 48px;
   }
 
   .timeline-label {
@@ -1152,11 +1156,21 @@ body[data-mode="story"] .sheet .sheet-timeline {
   }
 
   .timeline-label[data-row="0"] {
-    bottom: 68px;
+    bottom: calc(100% - 60px);
   }
 
   .timeline-label[data-row="1"] {
-    bottom: 100px;
+    bottom: calc(100% - 28px);
+  }
+
+  .timeline-label[data-side="below"][data-row="0"] {
+    top: 80px;
+    bottom: auto;
+  }
+
+  .timeline-label[data-side="below"][data-row="1"] {
+    top: calc(80px + 32px);
+    bottom: auto;
   }
 
   /* A blue dot's text waits until the dot is hovered or focused. It keeps its box while hidden,
@@ -1186,19 +1200,19 @@ body[data-mode="story"] .sheet .sheet-timeline {
   }
 
   .timeline-tick-year {
-    top: 92px;
+    top: 70px;
     height: 9px;
   }
 
   .timeline-tick-quarter {
-    top: 92px;
+    top: 70px;
     height: 5px;
     border-left-color: var(--ink-2);
   }
 
   .timeline-year {
     position: absolute;
-    top: 102px;
+    top: calc(100px + var(--timeline-extra));
     transform: translateX(-50%);
     font-size: 12px;
     line-height: 14px;
@@ -1209,7 +1223,7 @@ body[data-mode="story"] .sheet .sheet-timeline {
     position: absolute;
     left: 0;
     right: 0;
-    top: 117px;
+    top: calc(115px + var(--timeline-extra));
     line-height: 14px;
   }
 

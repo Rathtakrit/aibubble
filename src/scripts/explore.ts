@@ -655,13 +655,8 @@ readAddress();
 render();
 void prepareLayouts().catch((error: unknown) => console.error(error));
 
-// The titles above the timeline are placed from their real widths after wrapping, on the first
-// of the two heights that has room, with a gap between neighbours; one that fits on neither is
-// hidden rather than drawn over another. A title that needs more than two lines (28px at a 14px
-// line) is hidden too, since each height is only as tall as two lines. Story places the chapter
-// titles the same way, in place of the news titles, so the band above the line is used. A blue
-// dot's text shows on hover or focus only, so it is not packed in with the others: it takes the
-// height nearest the line, pushed in at an end of the line so it is never cut.
+// Measure wrapped titles, alternate sides and try two heights per side. Oversized or crowded
+// titles retain the dot's native hover title. Blue dots keep their hover/focus-only labels.
 function placeTimelineLabels(): void {
   const inner = document.querySelector<HTMLElement>("[data-timeline]");
   if (!inner) return;
@@ -672,22 +667,21 @@ function placeTimelineLabels(): void {
   );
 
   for (const label of labels) label.hidden = false;
-  const boxes = labels
-    .map((label, index) => ({ id: String(index), label }))
-    .filter(({ label }) => label.offsetHeight > 0 && label.offsetHeight <= 28)
-    .map(({ id, label }) => ({
-      id,
-      percent: Number.parseFloat(label.style.left) || 0,
-      width: label.offsetWidth,
-    }));
+  const boxes = labels.map((label, index) => ({
+    id: String(index),
+    percent: Number.parseFloat(label.style.left) || 0,
+    width: label.offsetWidth,
+  }));
   const placed = placeLabels(boxes, inner.clientWidth);
 
   labels.forEach((label, index) => {
     const spot = placed.get(String(index));
-    label.hidden = spot === undefined;
+    label.hidden = spot === undefined || label.offsetHeight > 28;
     if (!spot) return;
+    label.dataset.side = spot.side;
     label.dataset.row = String(spot.row);
     label.dataset.align = spot.align;
+    label.style.marginLeft = `${spot.shift}px`;
   });
 
   for (const label of inner.querySelectorAll<HTMLElement>("[data-timeline-hover]")) {

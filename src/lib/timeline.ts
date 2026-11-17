@@ -248,21 +248,22 @@ export function pillKind(item: Pick<NewsItem, "date" | "players" | "kind">, deal
   return "money";
 }
 
-// --- timeline labels: two heights over the line, and never two on top of each other ---
+// --- timeline labels: alternate sides, with two heights on each side ---
 
 export type LabelBox = { id: string; percent: number; width: number };
 
 export type LabelPlacement = {
-  // 0 is the height nearest the line, 1 the one above it.
+  side: "above" | "below";
+  // 0 is nearest the line, 1 is further away on the same side.
   row: 0 | 1;
+  // Pixel correction after alignment, to clamp the label to the container's edges.
+  shift: number;
   // Where the text sits against its date: centred on it, or pushed in at an end of the line.
   align: "start" | "center" | "end";
 };
 
-// Places each label beside the ones already placed. A label goes on the first height where its
-// real box - aligned to the start, the middle or the end of its text against the date - clears
-// the box already on that height, plus a little room; one that fits on neither height is left
-// out rather than drawn on top of another.
+// Input positions follow date order. Alternate sides even when a label cannot fit, trying the
+// near height then the far height on that side before leaving it out.
 export function placeLabels(
   boxes: readonly LabelBox[],
   containerWidth: number,
@@ -270,28 +271,27 @@ export function placeLabels(
 ): Map<string, LabelPlacement> {
   const out = new Map<string, LabelPlacement>();
   if (containerWidth <= 0) return out;
-  // The box already taken on each of the two heights: [left, right] in pixels.
-  const taken: [number, number][] = [
-    [-Infinity, -Infinity],
-    [-Infinity, -Infinity],
-  ];
+  const taken: Record<LabelPlacement["side"], [number, number][][]> = {
+    above: [[], []],
+    below: [[], []],
+  };
 
-  for (const box of [...boxes].sort((a, b) => a.percent - b.percent)) {
+  const ordered = [...boxes].sort((a, b) => a.percent - b.percent);
+  for (const [index, box] of ordered.entries()) {
+    const side = index % 2 === 0 ? "above" : "below";
     const width = Math.min(box.width, containerWidth);
     const middle = (box.percent / 100) * containerWidth;
     // A label that would run off an end of the line is lined up with that end instead.
     const align: LabelPlacement["align"] =
       middle - width / 2 < 0 ? "start" : middle + width / 2 > containerWidth ? "end" : "center";
     const alignedLeft = align === "start" ? middle : align === "end" ? middle - width : middle - width / 2;
-    const left = clamp(0, alignedLeft, containerWidth - width);
+    const left = clamp(0, middle - width / 2, containerWidth - width);
     const right = left + width;
 
     for (const row of [0, 1] as const) {
-      const [takenLeft, takenRight] = taken[row];
-      // Two boxes clash when each reaches into the other, with the extra room between them.
-      if (left < takenRight + gap && right > takenLeft - gap) continue;
-      taken[row] = [left, right];
-      out.set(box.id, { row, align });
+      if (taken[side][row].some(([start, end]) => left < end + gap && right > start - gap)) continue;
+      taken[side][row].push([left, right]);
+      out.set(box.id, { side, row, align, shift: left - alignedLeft });
       break;
     }
   }
