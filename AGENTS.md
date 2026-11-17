@@ -9,7 +9,6 @@ This repo is public. Anyone can read every file, issue, pull request and commit,
 ## Never
 - Commit secrets: keys, tokens, passwords or `.env` files. They live in repo secrets only.
 - Publish anything AI-written without the owner's approval in a pull request.
-- Write story chapters. The owner writes them; copy them in word for word.
 - Say buy or sell, or predict prices.
 - Add a paid service, or a cost of any kind, without the owner's OK.
 - Touch anything outside this repo.
@@ -22,3 +21,16 @@ This repo is public. Anyone can read every file, issue, pull request and commit,
   placeholders, not data.
 - Where a "Review" table in the brief and `design/` differ, the brief wins.
 - Works at phone width (layout C) and desktop (layout B). Touch targets at least 44 px. Respect reduced motion.
+
+## Night shift
+For runs started by `.github/workflows/night-shift.yml`. You run unattended: nobody can answer questions.
+- One issue, one branch, one pull request. Never push to main.
+- Do only what the issue asks. List anything else you noticed in the pull request description.
+- If the issue is unclear, change nothing and say what you need in your final message.
+- Before you finish, run the build and tests. If they fail and you can't fix them, say what failed.
+- Write the pull request description for a non-programmer: what changed, how to check it, what you weren't sure
+  about.
+- Never touch login, permissions, payments, secrets, `.env` files, DNS, deploy settings or GitHub workflows.
+- Never use real people's private data. Never delete files this task didn't create.
+- Add a package only when the issue allows it, and say why in the pull request.
+- Copy the nearest similar file in the codebase.
