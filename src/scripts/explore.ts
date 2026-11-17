@@ -39,6 +39,7 @@ const requested = document.body.dataset.dataset;
 useDataset(requested === "dotcom" || requested === "housing" ? requested : "ai");
 // A past page has no Story mode: no chapters, and ?chapter= is ignored.
 const isPast = datasetId !== "ai";
+const STORY_ENABLED = document.body.dataset.storyEnabled === "true";
 
 // Explore walks money news only, from the set's first day on; the other news waits for its own tab.
 const ordered = inDateOrder(news.filter((item) => item.kind === "money" && item.date >= FIRST_DAY));
@@ -357,6 +358,7 @@ function focusVisible(selector: string): void {
 }
 
 function goToChapter(index: number): void {
+  if (!STORY_ENABLED) return;
   const chapter = chapters[index];
   if (!chapter) return;
   chapterIndex = index;
@@ -557,7 +559,7 @@ for (const svg of document.querySelectorAll<SVGSVGElement>("[data-bubble]")) {
 function readAddress(): void {
   const params = new URLSearchParams(window.location.search);
   // ?chapter=3 opens chapter 3; a number that is not a chapter opens the first.
-  if (!isPast && params.has("chapter") && chapters.length > 0) {
+  if (STORY_ENABLED && !isPast && params.has("chapter") && chapters.length > 0) {
     const wanted = Number(params.get("chapter"));
     const at = Number.isInteger(wanted) && wanted >= 1 && wanted <= chapters.length ? wanted - 1 : 0;
     chapterIndex = at;
