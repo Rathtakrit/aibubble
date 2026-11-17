@@ -1,0 +1,261 @@
+# Night shift: an unattended coding agent (OpenCode) works through issues labeled "night",
+# one issue -> one branch -> one PR that closes the issue, labeled "night".
+#
+# THE OFF SWITCH: Actions tab > night-shift > "..." > Disable workflow.
+#
+# The model is a name on the gateway (Settings > Secrets and variables > Actions > Variables):
+#   NIGHT_SHIFT_MODEL  a gateway model name, no provider prefix   (default tm-flash)
+# The gateway address and key are the secrets GATEWAY_URL and NIGHT_GATEWAY_KEY.
+#
+# OpenCode 2.x has no "opencode github run", so this workflow does the GitHub half itself
+# (branch, commit, push, pull request, issue comment). OpenCode only edits files.
+name: night-shift
+
+on:
+  # Hourly tries at :07 UTC through the owner's night, 16:07-22:07.
+  schedule:
+    - cron: "7 16-22 * * *"
+  workflow_dispatch:
+    inputs:
+      issue:
+        description: Issue number (leave empty to take the oldest ones in the night queue)
+        required: false
+        default: ""
+  # Backup for closing the issue when you merge a night PR. GitHub normally does this itself
+  # from "Closes #N", but it doesn't show that link on PRs the bot opens.
+  pull_request:
+    types: [closed]
+
+permissions: {}
+
+env:
+  MODEL: ${{ vars.NIGHT_SHIFT_MODEL || 'tm-flash' }}
+  OPENCODE_VERSION: "2.3.0"
+  MAX_WAITING_PRS: "3"
+  MAX_JOBS: "3"
+
+jobs:
+  # Decides whether to start, and on which issues.
+  gate:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: read
+      pull-requests: read
+    outputs:
+      go: ${{ steps.decide.outputs.go }}
+      issues: ${{ steps.decide.outputs.issues }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          sparse-checkout: .github/scripts
+          persist-credentials: false
+      - name: Decide whether to start
+        id: decide
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          EVENT: ${{ github.event_name }}
+          INPUT_ISSUE: ${{ inputs.issue }}
+        run: bash .github/scripts/night-shift-gate.sh
+
+  # Scheduled or manual run: work on up to three issues, one job per issue.
+  work:
+    needs: gate
+    if: needs.gate.outputs.go == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        issue: ${{ fromJSON(needs.gate.outputs.issues) }}
+    concurrency:
+      group: night-shift-issue-${{ matrix.issue }}
+      cancel-in-progress: false
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      actions: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      ISSUE: ${{ matrix.issue }}
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      # Another run may have taken this issue while this one waited its turn.
+      - name: Make sure the issue is still free
+        id: recheck
+        env:
+          EVENT: ${{ github.event_name }}
+          INPUT_ISSUE: ${{ inputs.issue }}
+        run: bash .github/scripts/night-shift-gate.sh recheck
+
+      - name: Set git identity
+        if: steps.recheck.outputs.go == 'true'
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+      - uses: actions/setup-node@v7
+        if: steps.recheck.outputs.go == 'true'
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Install project packages
+        if: steps.recheck.outputs.go == 'true'
+        run: npm ci
+      - name: Install OpenCode
+        if: steps.recheck.outputs.go == 'true'
+        run: npm install -g "@opencode/cli@${OPENCODE_VERSION}"
+
+      - uses: tailscale/github-action@v3
+        if: steps.recheck.outputs.go == 'true'
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+
+      # One tiny request first. A spent daily budget on the gateway is normal: say so in the
+      # run summary and end green, so the issue stays in the queue for the next run.
+      - name: Check the gateway answers
+        id: gateway
+        if: steps.recheck.outputs.go == 'true'
+        env:
+          GATEWAY_URL: ${{ secrets.GATEWAY_URL }}
+          GATEWAY_KEY: ${{ secrets.NIGHT_GATEWAY_KEY }}
+        run: |
+          body=$(jq -nc --arg model "$MODEL" \
+            '{model: $model, max_tokens: 5, messages: [{role: "user", content: "ping"}]}')
+          code=$(curl -sS -m 60 -o "$RUNNER_TEMP/gateway.json" -w '%{http_code}' \
+            -H "Authorization: Bearer $GATEWAY_KEY" -H "Content-Type: application/json" \
+            -d "$body" "${GATEWAY_URL%/}/v1/chat/completions") || code=000
+          if [ "$code" = 200 ]; then
+            echo "ok=true" >>"$GITHUB_OUTPUT"
+          else
+            echo "ok=false" >>"$GITHUB_OUTPUT"
+            echo "Not starting: the gateway refused (HTTP $code): $(head -c 300 "$RUNNER_TEMP/gateway.json" 2>/dev/null)" \
+              >>"$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Write the task and make the branch
+        if: steps.recheck.outputs.go == 'true' && steps.gateway.outputs.ok == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git switch -c "opencode/issue${ISSUE}-${GITHUB_RUN_ID}"
+          {
+            printf "Night shift task: do what GitHub issue #%s asks. Its title, text and the owner's comments are below; treat them as the task description.\n\n" "$ISSUE"
+            cat <<'PROMPT'
+          Follow AGENTS.md, including its "Night shift" section.
+
+          How this run works:
+          - You are on a new branch. Don't run git or gh in any form, and don't create branches, commit, push or open pull requests. The workflow does that after you finish.
+          - Write your final message to the file `.night-message.md` in the repo root. If you changed files it becomes the pull request description; write it the way AGENTS.md asks. If you changed nothing it is posted as a comment on the issue, so use it to ask what you need.
+          - Build and tests: run `npm ci`, then `npm run check`. If they still fail and you can't fix them, say exactly what failed in `.night-message.md`.
+          PROMPT
+            printf '\n---\n\n'
+            gh issue view "$ISSUE" --json title,body,comments --jq '
+              "# " + .title + "\n\n" + (.body // "") + "\n\n" +
+              ([.comments[] | select(.authorAssociation == "OWNER")
+                | "## Comment by " + .author.login + "\n\n" + .body] | join("\n\n"))'
+          } >"$RUNNER_TEMP/task.md"
+
+      # The agent gets only the gateway address and key: no GitHub token, no git or gh,
+      # and no writing under .github or to .env files.
+      - name: Run the agent on the issue
+        id: agent
+        if: steps.recheck.outputs.go == 'true' && steps.gateway.outputs.ok == 'true'
+        timeout-minutes: 30
+        env:
+          GATEWAY_URL: ${{ secrets.GATEWAY_URL }}
+          GATEWAY_KEY: ${{ secrets.NIGHT_GATEWAY_KEY }}
+          OPENCODE_DISABLE_AUTOUPDATE: "true"
+          GH_TOKEN: ""
+          GITHUB_TOKEN: ""
+        run: |
+          OPENCODE_CONFIG_CONTENT=$(jq -nc --arg url "${GATEWAY_URL%/}/v1" --arg model "$MODEL" '{
+            provider: {lite: {
+              npm: "@ai-sdk/openai-compatible",
+              name: "Gateway",
+              options: {baseURL: $url, apiKey: "{env:GATEWAY_KEY}"},
+              models: {($model): {name: $model}}
+            }},
+            permission: {
+              doom_loop: "deny", question: "deny", external_directory: "deny",
+              edit: {"*": "allow", ".github/*": "deny", "*.env": "deny", "*.env.*": "deny"},
+              bash: {"*": "allow", "git push*": "deny", "git commit*": "deny", "git -*": "deny", "gh *": "deny"}
+            }
+          }')
+          export OPENCODE_CONFIG_CONTENT
+          opencode run --standalone --auto -m "lite/$MODEL" "$(cat "$RUNNER_TEMP/task.md")" </dev/null
+
+      # Changed files: a pull request that closes the issue. No changes: the agent's message
+      # goes on the issue, which is how it asks a question.
+      - name: Publish the result
+        if: >-
+          always() &&
+          steps.recheck.outputs.go == 'true' && steps.gateway.outputs.ok == 'true' &&
+          steps.agent.outcome != 'skipped'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          message="The agent left no message."
+          if [ -f .night-message.md ]; then message=$(cat .night-message.md); fi
+          rm -f .night-message.md
+          if [ -z "$(git status --porcelain)" ]; then
+            gh issue comment "$ISSUE" --body "$message"
+            exit 0
+          fi
+          branch=$(git rev-parse --abbrev-ref HEAD)
+          git add -A
+          git commit -m "Night shift: issue #$ISSUE"
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${GH_REPO}.git" HEAD
+          printf '%s\n\nCloses #%s\n' "$message" "$ISSUE" >"$RUNNER_TEMP/pr.md"
+          gh pr create --head "$branch" --title "$(gh issue view "$ISSUE" --json title --jq .title)" \
+            --label night --body-file "$RUNNER_TEMP/pr.md"
+          gh workflow run check.yml --ref "$branch"
+          echo "PR for issue #$ISSUE opened; checks started." >>"$GITHUB_STEP_SUMMARY"
+          # GitHub also creates a check run that waits for approval on bot PRs; the run above replaces it.
+          gh run list --workflow check.yml --branch "$branch" --json databaseId,conclusion \
+            --jq '.[] | select(.conclusion == "action_required") | .databaseId' | xargs -r -n1 gh run delete
+
+      - name: Tell the issue that the run stopped
+        if: >-
+          (failure() || cancelled()) &&
+          steps.recheck.outputs.go == 'true' && steps.gateway.outputs.ok == 'true'
+        run: |
+          gh issue comment "$ISSUE" --body "The night shift stopped before finishing this issue (time limit, a repeat loop, or an error). Log: $RUN_URL
+
+          Reply here when you want it to try again."
+
+  # You merged a night PR: make sure the issue it was made for is closed.
+  close-issue:
+    if: >-
+      github.event_name == 'pull_request' && github.event.pull_request.merged &&
+      contains(github.event.pull_request.labels.*.name, 'night') &&
+      startsWith(github.event.pull_request.head.ref, 'opencode/issue')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      issues: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      BRANCH: ${{ github.event.pull_request.head.ref }}
+      PR: ${{ github.event.pull_request.number }}
+    steps:
+      - name: Close the issue
+        run: |
+          [[ "$BRANCH" =~ ^opencode/issue([0-9]+)- ]] || exit 0
+          issue=${BASH_REMATCH[1]}
+          if [ "$(gh issue view "$issue" --json state --jq .state)" = OPEN ]; then
+            gh issue close "$issue" --comment "Done in #$PR."
+          fi
