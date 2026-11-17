@@ -129,6 +129,38 @@ export function timelineScale(lastDate: string, dots: ScaleDots): TimelineScale 
   return { percentOf, dateOf };
 }
 
+export type TimelineWindow = { start: number; middle: number; end: number; ids: string[] };
+
+// Keep the two neighbours, using the nearest three at either end. The existing day scale
+// supplies all coordinates; splitting at the selected date keeps an uneven pair centred.
+export function timelineWindow(items: readonly Dated[], id: string, scale: TimelineScale): TimelineWindow {
+  const ordered = inDateOrder(items);
+  const at = ordered.findIndex((item) => item.id === id);
+  if (at < 0) return { start: 0, middle: 50, end: 100, ids: [] };
+  const first = Math.max(0, Math.min(at - 1, ordered.length - 3));
+  const visible = ordered.slice(first, first + 3);
+  const low = scale.percentOf(visible[0].date);
+  const high = scale.percentOf(visible[visible.length - 1].date);
+  const margin = Math.max((high - low) / 10, 0.01);
+  const start = low - margin;
+  const end = high + margin;
+  const selected = scale.percentOf(ordered[at].date);
+  const middle = at > first && at < first + visible.length - 1 ? selected : (start + end) / 2;
+  return { start, middle, end, ids: visible.map((item) => item.id) };
+}
+
+export function windowPercent(percent: number, window: TimelineWindow): number {
+  return percent <= window.middle
+    ? 50 * (percent - window.start) / (window.middle - window.start)
+    : 50 + 50 * (percent - window.middle) / (window.end - window.middle);
+}
+
+export function windowPlace(percent: number, window: TimelineWindow): number {
+  return percent <= 50
+    ? window.start + (percent / 50) * (window.middle - window.start)
+    : window.middle + ((percent - 50) / 50) * (window.end - window.middle);
+}
+
 const shortDateFormat = new Intl.DateTimeFormat("en-GB", {
   day: "numeric",
   month: "short",

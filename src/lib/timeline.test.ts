@@ -15,6 +15,9 @@ import {
   publisherName,
   siteName,
   timelineScale,
+  timelineWindow,
+  windowPercent,
+  windowPlace,
 } from "./timeline.ts";
 
 const source = "https://example.com/sample";
@@ -321,4 +324,41 @@ test("an end-aligned label at the right edge is measured from its own left edge"
   assert.equal(placed.get("edge")?.shift, 30);
   assert.equal(placed.get("edge")?.side, "below");
   assert.equal(placed.get("edge")?.row, 0);
+});
+
+test("timeline zoom centres unequal neighbours and excludes other events", () => {
+  const events = inDateOrder([...busyDots, ...smallDots]);
+  const scale = timelineScale(last, dots);
+  const window = timelineWindow(events, "m4", scale);
+  assert.deepEqual(window.ids, ["m3", "m4", "s1"]);
+  assert.equal(windowPercent(scale.percentOf("2025-03-24"), window), 50);
+  for (const id of window.ids) {
+    const event = events.find((item) => item.id === id)!;
+    const percent = scale.percentOf(event.date);
+    const position = windowPercent(percent, window);
+    assert.ok(position > 0 && position < 100);
+    assert.ok(Math.abs(windowPlace(position, window) - percent) < 1e-10);
+  }
+});
+
+test("timeline zoom keeps the nearest three at both ends", () => {
+  const events = inDateOrder([...busyDots, ...smallDots]);
+  const scale = timelineScale(last, dots);
+  for (const id of ["m1", "s2"]) {
+    const window = timelineWindow(events, id, scale);
+    assert.equal(window.ids.length, 3);
+    assert.ok(window.ids.includes(id));
+    const selected = events.find((item) => item.id === id)!;
+    assert.ok(windowPercent(scale.percentOf(selected.date), window) > 0);
+    assert.ok(windowPercent(scale.percentOf(selected.date), window) < 100);
+  }
+});
+
+test("timeline zoom handles coincident dates and short or empty lists", () => {
+  const scale = timelineScale(last, dots);
+  for (const events of [[], items.slice(0, 1), items.filter((item) => item.date === "2023-06-01")]) {
+    const window = timelineWindow(events, events[0]?.id ?? "missing", scale);
+    assert.ok(window.start < window.middle && window.middle < window.end);
+    for (const event of events) assert.ok(Number.isFinite(windowPercent(scale.percentOf(event.date), window)));
+  }
 });

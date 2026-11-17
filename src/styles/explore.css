@@ -422,6 +422,29 @@
   color: var(--ink-2);
 }
 
+/* The toggle shares the camera controls' size, in a strip clear of the day line. */
+.timeline-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.timeline-row > .timeline-inner,
+.timeline-row > .sheet-timeline {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.timeline-zoom {
+  flex: 0 0 auto;
+  margin-top: 10px;
+}
+
+body:not([data-timeline-zoomed="true"]) [data-zoom-only="true"],
+[data-outside="true"] {
+  display: none !important;
+}
+
 /* --- phone: the bubble as a map with a bottom sheet (layout C) --- */
 
 .layout-phone {
@@ -1128,8 +1151,17 @@ body[data-mode="story"] .sheet .sheet-timeline {
   /* Reserve a second lower height only when placement actually uses it. Labels clear the
      visible dots and ignore pointer input, leaving the slider's full hit area intact.
      The 28px lower text band has a 4px gap before the years; total growth is at most 44px. */
-  .layout-desktop:has(.timeline-label[data-side="below"][data-row="1"]:not([hidden])) {
+  .layout-desktop:has(.timeline-label[data-side="below"][data-row="1"]:not([hidden]):not([data-outside="true"])) {
     --timeline-lower: 32px;
+  }
+
+  .timeline-row {
+    max-width: 1360px;
+    margin: 0 auto;
+  }
+
+  .timeline-zoom {
+    margin-top: 48px;
   }
 
   .timeline-inner .timeline-axis {
@@ -1179,6 +1211,21 @@ body[data-mode="story"] .sheet .sheet-timeline {
   .timeline-label-hover {
     visibility: hidden;
     background: var(--paper);
+  }
+
+  body[data-timeline-zoomed="true"] .timeline-label[data-timeline-id] {
+    visibility: visible;
+    max-width: min(320px, 100%);
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal;
+  }
+
+  body[data-timeline-zoomed="true"] .timeline-label.is-current {
+    color: var(--ink);
   }
 
   .timeline-dot:hover + .timeline-label-hover,
