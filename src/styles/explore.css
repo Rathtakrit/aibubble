@@ -164,9 +164,20 @@
   gap: 12px;
 }
 
-/* The source line: publisher and date, quiet until hovered or focused. */
+/* The source line: publisher and date, quiet until hovered or focused.
+   The words are 13px on a line of about 20px, but a tap needs 44px, so the link's own box is
+   44px tall and 44px wide. The extra height is taken back with margins, half of it above and half
+   below, less the space the line already had above it (--source-gap, set where the line is used).
+   The same amount comes off the height, so the text stays on its baseline, the lines above and
+   below keep their places and the page gains no scroll. 1lh is the link's own line height. */
 .source {
-  display: inline-block;
+  --source-gap: 0px;
+  display: inline-flex;
+  align-items: center;
+  min-width: 44px;
+  min-height: 44px;
+  margin-top: calc(var(--source-gap) - (44px - 1lh) / 2);
+  margin-bottom: calc((1lh - 44px) / 2);
   font-size: 13px;
   color: var(--ink-2);
   text-decoration: none;
@@ -516,7 +527,7 @@
 }
 
 .sheet .source {
-  margin-top: 4px;
+  --source-gap: 4px;
 }
 
 .pill-row {
@@ -1025,7 +1036,7 @@ body[data-mode="story"] .sheet .sheet-timeline {
   }
 
   .story-column .source {
-    margin-top: 8px;
+    --source-gap: 8px;
   }
 
   .story-column .players-line {
@@ -1330,7 +1341,7 @@ body[data-mode="story"] .sheet .sheet-timeline {
   }
 
   .story-column .source {
-    margin-top: 4px;
+    --source-gap: 4px;
   }
 
   .story-column .players-line {
