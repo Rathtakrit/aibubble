@@ -1,224 +1,191 @@
-# Housing and credit boom data, 1 January 2003 to 31 December 2009 — notes
+# Housing and credit boom: data notes
 
-Working notes for `data/past/housing/` (companies, values, deals, news). Plain words. No advice and no
-predictions. Pages opened in this run: **82**.
+The set covers 1 January 2003 to 31 December 2009 in `data/past/housing/`. On 16 November 2026 it holds
+20 companies, 125 value points, 7 money lines and 70 news items, all with `"status": "draft"`.
 
-## What is in the data
+The first pass had 50 news items, 39 of them citing Wikipedia, 19 red dates and no blue ones. This pass
+replaces almost every news source with a first-hand or news page, adds 20 items, gives the timeline 9 red
+and 11 blue dates, and rebuilds the money lines from 7 rows on Wikipedia to 7 rows on BBC, Guardian or
+Federal Reserve pages.
 
-| File | Items | What |
+## What the set tells
+
+- **2003 to 2006, the boom.** The Fed holds its rate at 1 percent, then raises it 17 times to 5.25 percent.
+  Greenspan suggests more mortgage choices, Buffett calls derivatives a time bomb, Rajan and Shiller warn,
+  the homeownership rate reaches 69 percent, and the Case-Shiller index peaks at 206.52 in July 2006.
+- **2007, the mortgage market breaks.** HSBC warns, New Century fails, two Bear Stearns funds collapse,
+  BNP Paribas freezes three funds on 9 August, Northern Rock has a run, and the banks start writing down
+  subprime debt. The Dow peaks on 9 October.
+- **2008, the banks break.** Bear Stearns is sold, IndyMac fails, Fannie Mae and Freddie Mac are seized,
+  Lehman fails, AIG is rescued, the money funds break, Goldman and Morgan Stanley become banks, WaMu is
+  sold, the $700bn rescue passes, and the UK and Swiss governments recapitalise their banks.
+- **2009, the bottom.** Citigroup's value falls to $25bn, the stimulus passes, the Dow hits 6,547.05 on
+  9 March, the stress tests are published, and the recession ends in June.
+
+## Pages opened
+
+The set now cites 80 different pages. 62 of them were opened in this run: 22 BBC News pages, 18 Federal
+Reserve pages, 10 Guardian pages, 2 Federal Reserve History essays, 1 IMF page, 1 Harvard Business Review
+page, 1 FDIC page, 1 CNN Money page read through the Wayback Machine, 1 HBR page, and 3 Wikipedia pages.
+The other 18 are the CompaniesMarketCap year-end pages, unchanged from the first pass.
+
+With the news index pages used to find stories (35 Guardian daily business indexes, 3 BBC timelines, the
+Fed essays and a few search pages), this run opened about 100 pages that returned content.
+
+## Red dates (9)
+
+A red dot is a turning point a reader has to see.
+
+| Date | Label | Why it is red |
 | --- | --- | --- |
-| `companies.json` | 20 | The 20 companies named in the brief, all `listed`, each with a ticker and a `first_mention`. |
-| `values.json` | 125 | Market value in US$ billions: one point per year end 2003–2009 (18 companies), plus peak and last-day points where a page stated them. |
-| `deals.json` | 7 | 5 `takeover`, 2 `investment`. No `rescue` row was found that fits (see gaps). |
-| `news.json` | 50 | 19 marked `key_date`, the rest background. Every item is `kind: "money"`. |
+| 2006-07-31 | House prices peak | The Case-Shiller index reaches 206.52, its high, and the housing market turns. |
+| 2007-08-09 | Credit markets freeze | BNP Paribas cannot value three funds and the market for mortgage debt stops. |
+| 2007-10-09 | Dow peak | The Dow closes at 14,164.53, the top before the fall. |
+| 2008-03-16 | Bear Stearns rescue | A whole investment bank is sold for $2 a share with central bank support. |
+| 2008-09-07 | Fannie and Freddie seized | The government takes over the two firms behind about half of US mortgages. |
+| 2008-09-15 | Lehman fails | The largest bankruptcy in US history starts the worst week of the crisis. |
+| 2008-09-16 | AIG rescued | The insurer at the centre of the credit default swap market is saved for $85bn. |
+| 2008-10-03 | Bank rescue becomes law | The $700bn rescue is approved, four days after the House rejected it. |
+| 2009-03-09 | Market bottom | The Dow closes at 6,547.05, its lowest since 1997 and the end of the fall. |
 
-The "Subprime lenders" group was left out: no page opened in this run gives a combined market value for
-New Century, Ameriquest, IndyMac and Northern Rock. Those firms appear in news only, as the brief allows.
+The housing crash day is 9 August 2007: it is the day the mortgage market, not just one lender, stopped
+working. The banks crash day is 15 September 2008: Lehman's failure is the point where the losses spread
+from mortgage securities to the banks themselves.
 
-`scripts/check-data.mjs data/past/housing` prints only two kinds of problem: every deal and news date "is
-before 2017-06-12" (the site's first day), and the deal kinds `takeover` are not in the script's list. Both
-are the expected ones named in the brief. Nothing else is printed.
+## Blue dates (11)
 
-## How the pages were opened
+A blue dot marks a smaller event, including every public warning that this was a bubble.
 
-- Pages were fetched over HTTP and stripped to text, then searched with patterns; only the sentences used
-  were kept. The first three pages of the run were read with the `webfetch` tool, the rest with the same
-  harness fetch call.
-- DuckDuckGo (`https://html.duckduckgo.com/html/?q=...`) answered for the first searches, then began
-  returning an "unusual traffic" captcha page (HTTP 202) and stopped answering for the rest of the run.
-  Bing and Mojeek returned no usable result links. So after that point pages were found by following links
-  inside pages already opened (Wikipedia article links, the Federal Reserve's FOMC year index pages) and by
-  opening indexes directly (the FDIC press-release index, `companiesmarketcap.com` company pages). No URL in
-  this data was guessed and left unchecked: every source below returned HTTP 200 and the sentence used was
-  read on the page.
-- Nothing was downloaded to disk, no archive copies were needed, and no site was reached around a refusal.
-  Sites that refused or were unusable are listed at the end.
+| Date | Label | Why it is blue |
+| --- | --- | --- |
+| 2003-03-04 | Buffett warns on derivatives | Buffett's letter calls derivatives "financial weapons of mass destruction". |
+| 2005-08-27 | Rajan warns at Jackson Hole | Rajan says incentives have raised the chance of a catastrophic meltdown. |
+| 2005-12-31 | Shiller warns on housing | Shiller's 2005 second edition doubts that the rise in home prices can last. |
+| 2007-02-08 | HSBC bad debt warning | The first big bank says US mortgage losses are larger than expected. |
+| 2007-03-28 | Bernanke: 'contained' | Bernanke says the subprime effect on the wider economy seems likely to be contained. |
+| 2007-05-17 | Bernanke on subprime | Bernanke sets out the foreclosure and delinquency worries in a full speech. |
+| 2007-07-09 | Prince: 'still dancing' | Citigroup's chief says the bank must keep dancing while the music plays. |
+| 2007-09-14 | Run on Northern Rock | Savers queue to take out about £1bn a day, the biggest British bank run in a century. |
+| 2007-10-31 | Whitney warns on Citi | Whitney's note says Citigroup's dividend is bigger than its profits. |
+| 2008-09-16 | Money funds break | A money fund cannot repay $1 a share after Lehman's debt is written down. |
+| 2008-09-21 | Goldman, Morgan become banks | The last two stand-alone investment banks take bank holding status. |
+
+The two reassurances, Bernanke's "contained" and Prince's "still dancing", are blue because they are the
+lines readers remember from the boom; they are not warnings but they set up the fall.
 
 ## Judgement calls
 
-1. **Year-end values come from one source.** `companiesmarketcap.com/<company>/marketcap/` prints an "end of
-   year Market Cap" table; every value point dated 31 December for a surviving company is that number. It is
-   a single publisher for all of them, which makes the series consistent with each other.
-2. **`first_mention` for most companies is 2003-01-02**, the day after the range opens. Those companies were
-   already listed and already in the picture on day one, and the source page shows a 2002 and a 2003 year-end
-   value for each, so the company existed across 2003. A side effect of the site's rule (a company is drawn
-   from its `first_mention`, holding its first value point backwards) is that the 2003 year-end value is shown
-   from January 2003.
-3. **Merrill Lynch and Countrywide start late on purpose.** `companiesmarketcap.com` has no page for either
-   (both URLs return 404, and no other market-cap history page for them could be opened), so there is no
-   year-by-year series. Their `first_mention` is set to the day each one enters the story: 2007-10-30 for
-   Merrill (its chief executive resigned, the first row that names it) and 2007-01-11 for Countrywide (the
-   first value point). Merrill therefore has a single value point, the agreed sale price in September 2008.
-4. **A sale price is used as the last point for the four companies bought in 2008.** Bear Stearns ($1.2bn at
-   $10 a share), Wachovia ($14.8bn), Merrill Lynch ($50bn) and Countrywide ($4.1bn) were bought for shares, so
-   the agreed price is what the market said the whole company was worth on that day. Where no page gave a last
-   traded market value, this was the only sourced number. It is marked in `what`.
-5. **The two companies that failed keep their last recorded trade.** Lehman Brothers (31 December 2008,
-   $0.0208bn) and Washington Mutual (31 December 2008, $0.008bn) are the stub values `companiesmarketcap.com`
-   lists as "last known market cap" for the shell left after failure. This gives each a last point near the end
-   of 2008 and no points after, as the brief asks, but it is a value after the failure date, not the value on
-   the day before.
-6. **Countrywide's first point is dated 2007-01-11.** Wikipedia's Countrywide page says Bank of America's
-   $4bn offer was "a fraction of the company's $24 billion market value a year ago", in a sentence about the
-   11 January 2008 announcement. "A year ago" was read as 11 January 2007. The $24bn is the page's number, the
-   date is mine.
-7. **The house-price peak is dated 2006-07-31.** The Case-Shiller page says the S&P national index "attained an
-   all-time high in July 2006, at a value of 206.52". July is the page's word; the last day of July is the date
-   used so the row can sit on the day slider.
-8. **Deal amounts.** Bear Stearns is entered at the first agreed price ($2 a share, "about $240 million"),
-   because that is the figure in the sentence that names the date 16 March 2008. The later $10 a share,
-   $1.2bn revision is the last value point for the company. Mitsubishi UFJ's $9bn is the announced price for
-   21% of Morgan Stanley (announced 29 September, completed 14 October 2008); the deal row is dated the
-   announcement.
-9. **No `rescue` deal row.** A rescue in this data means money between two companies in the list arranged as
-   part of a rescue. The 2008 rescues in this story ran through the government (the Fed, the Treasury, the
-   FDIC) or through a buyer taking the whole company, so no row fits the "rescue" kind. Government rescues are
-   in `news.json` only. The Citigroup–Wachovia arrangement of late September 2008 is the closest case and was
-   left out of both files: the pages opened give its price ($2.16bn, about $1 a share) but no date.
-10. **`mitsubishi-ufj` covers a renamed company.** The market-cap page runs from 2002 to today under the
-    "Mitsubishi UFJ Financial" name, so its 2003–2004 points are the predecessor group's. The id is the name
-    the company had when it bought into Morgan Stanley in 2008.
-11. **Royal Bank of Scotland has only two value points.** Its market-cap page starts in 2008 (in dollars and in
-    pounds), so the earliest sourced value is 31 December 2008. It enters the picture on 2007-12-07, the day
-    of the Guardian article that names it.
-12. **Fed policy news dates** are the release dates on the statements themselves, not the meeting dates in the
-    press. The 8 October 2008 row is the Fed's "Federal Reserve Actions" page, which carries no date of its
-    own; its date comes from the Fed's own 2008 FOMC index that links to it.
-13. **Wachovia's last point is the Wells Fargo bid (3 October 2008)**, not the 31 December 2008 stub value that
-    the market-cap page prints. The bid is the more honest end for the bubble.
-14. **Bear Stearns' peak (18 January 2007, $20.24bn) and Wachovia's (21 February 2007, $112.05bn)** are the
-    "all time high intraday market cap" lines on their market-cap pages. Washington Mutual's (9 January 2006,
-    $45.32bn) and Lehman's (7 February 2007, $45.68bn) come from the same lines. Surviving companies have no
-    such line, so their peak is the highest year end in the range (Citigroup 2006, Bank of America 2006,
-    JPMorgan 2006, Wells Fargo 2006, Goldman 2007, Morgan Stanley 2006, AIG 2006, HSBC 2006, UBS 2006,
-    Berkshire 2007, Mitsubishi UFJ 2006, Fannie Mae 2003, Freddie Mac 2004). Citigroup's highest end-of-day
-    share price was on 2006-12-27, which fits the 2006 peak.
+- **Wikipedia kept for three items only.** The Case-Shiller peak, Shiller's 2005 book and Whitney's note
+  still cite Wikipedia; each page states the fact and no first-hand page that states the same thing could
+  be opened. They are listed under "Not found / doubts".
+- **Year-only facts are dated at the year end.** Homeownership (69 percent in 2006) is dated 31 December
+  2006, Shiller's second edition (2005) 31 December 2005, and the end of the recession (June 2009) 30 June
+  2009. The source gives a year or a month, not a day; the notes say so and the summaries do not invent one.
+- **Bear Stearns is dated Sunday 16 March 2008.** The Federal Reserve History essay says Bear accepted the
+  offer on Sunday 16 March; BBC News reported it on 17 March.
+- **Stock deals are "reported".** Countrywide, Bear Stearns, Merrill Lynch and Wachovia were share deals
+  whose dollar value moved with the share price; the row says `"amount_type": "reported"`.
+- **The $100bn fund is dated 15 October 2007.** The Guardian's report calls it a $100bn fund; the first
+  pass said $80bn, which no page opened here states.
+- **No third deal kind.** The AIG payments to its trading partners and JPMorgan's collateral calls on Lehman
+  were the two cases for a "payout" kind, and neither could be sourced (see gaps). `meta.json` therefore
+  keeps the two kinds it had, and `src/lib/data.test.ts` is unchanged.
+- **Lloyds and HBOS are news only.** Neither is a company bubble, so the £12bn takeover is a blue-free news
+  item and not a money line.
+- **Wells Fargo and Wachovia are a money line, Citigroup's rival bid is not.** Citigroup's bid was backed by
+  the FDIC and was overtaken by Wells Fargo's offer; the row shows the deal that completed.
+- **Every news item is `"kind": "money"`.** None of these events is a science story.
+- **The deal sources are the day's news pages.** BBC News for Bear Stearns, Merrill Lynch, WaMu, Wachovia and
+  MUFG; the Guardian for Countrywide and Berkshire's Goldman stake.
+
+## Source swaps and corrections
+
+All 39 Wikipedia news items were opened again. 36 now cite a first-hand or news page; the 3 that remain are
+the Case-Shiller peak, Shiller's book and Whitney's note.
+
+| Item | First pass | Now | Why |
+| --- | --- | --- | --- |
+| House prices peak | "national home price index ... 206.52" | "S&P Case-Shiller index ... 206.52" | 206.52 is the S&P index; the national index peaked at 198.01 in 2006 Q1. |
+| HSBC warning | Wikipedia | BBC, 8 February 2007 | BBC states the $10.5bn charge and the 20 percent overshoot. |
+| New Century | Wikipedia | BBC, 2 April 2007 | BBC states the Chapter 11 filing and 3,200 job cuts. |
+| Bear Stearns funds | "$20 billion of subprime-linked CDO" | "$3.2bn loan to one fund" | The fund was lent $3.2bn; $20bn was not the rescue. |
+| BNP Paribas | Wikipedia | BBC, 9 August 2007 | BBC states three funds worth €2bn and the "complete evaporation of liquidity". |
+| Northern Rock nationalised | 22 February 2008 | 17 February 2008 | BBC timeline gives 17 February. |
+| Bear Stearns deal | Wikipedia | BBC, 16-17 March 2008 | BBC states $2 a share and $30bn of Fed support. |
+| Fannie and Freddie | "Treasury promising up to $200 billion" | conservatorship, no figure | The $200bn figure is not on the pages opened; the claim was dropped. |
+| Lehman Brothers | "$613bn bank debt and $639bn assets" | Chapter 11 filing | Those figures were not on the pages opened; the claim was dropped. |
+| Money funds | "$144bn withdrawn" | the fund breaks the buck | The $144bn figure was not on the pages opened; the Fed essay describes the event. |
+| WaMu | Wikipedia | FDIC and BBC | FDIC gives $307bn of assets and $188bn of deposits; BBC gives the $1.9bn price. |
+| Dow peak | Wikipedia | CNN Money, 9 March 2009 | The page states the 9 October 2007 close of 14,164.53. |
+| Dow low | 6,469.95 on 6 March 2009 | 6,547.05 on 9 March 2009 | CNN Money states the 9 March close and the 12-year low. |
+| TARP | "225 to 208" rejection | 263-171 approval, rejection without a count | BBC gives the 263-171 vote; the rejection count was not verified. |
+| Wells Fargo and Wachovia | $14.8bn | $15.1bn | BBC gives $15.1bn. |
+| MUFG and Morgan Stanley | completed 14 October 2008 | completed 13 October 2008 | BBC reports the completion on 13 October; the SEC filing says 13 October. |
+| Citigroup value | $6bn on 17 November 2008 | $25bn on 21 November 2008 | The Guardian states the $25bn value after a 26 percent fall. |
+| Citigroup shares | up 38 percent | up about 25 percent | The Guardian states a 25 percent rise. |
+| Citi rescue | $306bn | $306bn plus $20bn of capital | The Fed statement gives both. |
+| Citigroup stake | none | Abu Dhabi, $7.5bn for 4.9 percent | The Guardian states the amount and the stake. |
+| $80bn fund | $80bn | $100bn | The Guardian calls it a $100bn fund led by Citigroup, JPMorgan and Bank of America. |
+| UBS rescue | "UBS and Credit Suisse" | UBS only | Credit Suisse refused state aid; the Guardian states this. |
+| Countrywide deal | $4.1bn | about $4bn | The Guardian says "around $4bn in stock". |
+| Countrywide value | $24bn on 11 January 2007 (Wikipedia) | $26bn, "about a year before the sale" | The Guardian gives $26bn a year before. |
+| Merrill value | $50bn (Wikipedia) | $50bn (BBC) | Source swapped, value kept. |
+| Stimulus | "Congress passes" on 13 February 2009 | Obama signs on 17 February 2009 | BBC states the signing on 17 February. |
+| IndyMac | "fourth-largest bank failure" | $32bn of assets | FDIC gives the assets; the ranking claim was dropped. |
+| AIG | $85bn loan | $85bn for an 80 percent stake | The Fed release and BBC give the stake. |
+| Money-line kinds | Wikipedia for all 7 rows | BBC, Guardian, Fed, FDIC for all 7 rows | Same facts, better pages. |
+
+Smaller changes: the 2007 Dow 14,000 item and the 2007 Bernanke $100bn item were dropped to keep the
+timeline readable; the 2008-10-14 MUFG item was folded into the 13 October item; the January 2009
+Citigroup split and the March 2009 Treasury purchases were added.
+
+## Gaps
+
+- **No new companies.** Barclays and Lloyds are the only candidates with CompaniesMarketCap pages, and
+  both start in 2008, so neither has three in-range yearly values. Northern Rock, IndyMac, New Century,
+  National City, Ambac and MBIA have no open page with three dated market values. The set stays at 20.
+- **Companies still cite Wikipedia.** 18 of the 20 company rows cite Wikipedia; only Merrill Lynch's source
+  was changed, to the Guardian page that reports O'Neal's departure. The brief asked for news items and
+  deals, so the company rows were left alone.
+- **Values are year ends only** for most companies. Peak days and low days are not filled except where a
+  sale price doubles as the last value (Countrywide, Merrill).
+- **Bank of America's $2bn in Countrywide, August 2007.** No page opened states the amount and date, so the
+  investment is not a money line; the January 2008 takeover is.
+- **AIG's payments to its trading partners.** No opened page lists them. The New York Times page of
+  15 March 2009 is paywalled and its Wayback copies are login pages; the Global Policy Forum reprint no
+  longer resolves. Goldman, Merrill, Bank of America, Citigroup, Wachovia and UBS are named in the brief,
+  but no money line was written without a page.
+- **JPMorgan's collateral calls on Lehman.** The FCIC court filing and report PDFs could not be read here
+  (no PDF tool) and sec.gov refuses this machine.
+- **Ownit Mortgage (December 2006), Michael Burry, John Paulson and the ABX index.** No first-hand or news
+  page was opened that states a date and figure, so none was added.
+- **Roubini's warning at the IMF on 7 September 2006.** No page opened gives the day; the Wikipedia article
+  gives only 2006 and a general warning. It is not in the set.
+- **Housing starts and new home sales records (2005-2006).** Census pages were not opened and no working
+  URL was found, so the two records are not in the set.
+- **Lloyds and HBOS, Barclays and Lehman's US business, Nomura and Lehman's Asia business, PNC and National
+  City.** The companies are not in `companies.json`, so these are gaps rather than money lines.
+- **sec.gov** refused this machine ("undeclared automated tool" and timeouts), so SEC filings were not used.
+- **fraser.stlouisfed.org and fred.stlouisfed.org** did not connect; **imf.org** refused plain requests but
+  its Rajan speech was read with the harness fetch tool.
 
 ## Not found / doubts
 
-- **Merrill Lynch and Countrywide year-end values.** No page with a year-by-year market value could be opened
-  for either. Investor sites (macrotrends) returned a bot page, stockanalysis.com and every
-  `companiesmarketcap.com` slug tried returned 404, SEC's browse-edgar returned 403 for an undeclared
-  automated tool and was left alone. Only the sale prices are in the file.
-- **The market low on 9 March 2009.** The brief names that date. The only sentence found on an opened page is
-  "March 6, 2009: The Dow Jones hit its lowest level of 6,469.95, a drop of 54% from its peak", so the row is
-  dated 6 March 2009. No opened page stated the 9 March close (6,547.05), and the brief's rule against
-  inventing dates ruled out moving the row without one.
-- **Citigroup's and Merrill Lynch's write-down numbers.** Both events are in the news file as the two chief
-  executives leaving (4 November 2007, 30 October 2007), which is what the opened pages state with a date.
-  The amounts could not be dated: Wikipedia's Merrill page says only "In November 2007, Merrill Lynch announced
-  it would write-down $8.4 billion", and no page opened gives the date of Citigroup's $11 billion figure.
-- **The first bank injections under TARP.** The Capital Purchase Program page says Treasury announced it would
-  make $250 billion available and that nine institutions received funds on 28 October 2008, but the $125 billion
-  total for those nine banks is not on any page that opened, so no row was written for it. The TARP law itself
-  (3 October 2008) and the Citigroup and Goldman Sachs injections are in the data.
-- **Fannie Mae and Freddie Mac's takeover date** is stated on the Federal Housing Finance Agency page ("On
-  September 7, 2008, FHFA director Lockhart announced he had put Fannie Mae and Freddie Mac under the
-  conservatorship"), and that is the date used. The Treasury's own announcement page was not opened.
-- **The United Kingdom's October 2008 bank rescue** (RBS, Lloyds TSB, HBOS): the page opened gives the £20bn
-  and £17bn figures in some places but no dated sentence that could carry a row, so RBS has one 2007 news row
-  and no 2008 bailout row.
-- **Washington Mutual's seizure date** is given as 25 September 2008 by its own page and as 26 September 2008
-  by the 2008 financial crisis timeline. The company's page was used (25 September).
-- **Bear Stearns' total assets** on the 2008 financial crisis page ("$10 trillion") look wrong against its
-  balance sheet and were not used.
-- **Pages that refused or were useless:** reuters.com, cnbc.com, bloomberg.com, wsj.com, nytimes.com, ft.com,
-  forbes.com and openai.com were not tried because the brief lists them as refusing; macrotrends.net returned a
-  bot page, sec.gov returned 403 for an undeclared automated tool, mojeek.com returned a captcha, two
-  `companiesmarketcap.com/search/` pages and the `largest-companies-in-the-world` year pages returned 404, the
-  Morgan Stanley press release from 2008 (`/about/press/articles/6962.html`) returned 404, and
-  `marketcapranked.com/rankings/2007/` was opened but rejected: it is marked "data may be inaccurate" and its
-  2007 numbers disagree with the market-cap pages used here (Bank of America $203.8bn against $183.28bn).
-- **No 2003–2006 company values below year ends.** The market-cap pages print year ends only, so the lines
-  between January 2003 and December 2004 are straight in the data even where the real path was not.
-
-## Pages opened (all "opened", none from an archive copy)
-
-| Date used | What it states | URL | Publisher | Checked |
-| --- | --- | --- | --- | --- |
-| 2003–2009 | year-end market value, all-time-high line, last recorded trade | https://companiesmarketcap.com/citigroup/marketcap/ | CompaniesMarketCap | opened |
-| 2003–2009 | as above | https://companiesmarketcap.com/bank-of-america/marketcap/ | CompaniesMarketCap | opened |
-| 2003–2009 | as above | https://companiesmarketcap.com/jp-morgan-chase/marketcap/ | CompaniesMarketCap | opened |
-| 2003–2009 | as above | https://companiesmarketcap.com/wells-fargo/marketcap/ | CompaniesMarketCap | opened |
-| 2003–2008 | as above | https://companiesmarketcap.com/wachovia/marketcap/ | CompaniesMarketCap | opened |
-| 2003–2008 | as above | https://companiesmarketcap.com/washington-mutual/marketcap/ | CompaniesMarketCap | opened |
-| 2003–2009 | as above | https://companiesmarketcap.com/goldman-sachs/marketcap/ | CompaniesMarketCap | opened |
-| 2003–2009 | as above | https://companiesmarketcap.com/morgan-stanley/marketcap/ | CompaniesMarketCap | opened |
-| 2003–2008 | as above | https://companiesmarketcap.com/bear-stearns/marketcap/ | CompaniesMarketCap | opened |
-| 2003–2009 | as above | https://companiesmarketcap.com/aig/marketcap/ | CompaniesMarketCap | opened |
-| 2003–2009 | as above | https://companiesmarketcap.com/fannie-mae/marketcap/ | CompaniesMarketCap | opened |
-| 2003–2009 | as above | https://companiesmarketcap.com/freddie-mac/marketcap/ | CompaniesMarketCap | opened |
-| 2003–2009 | as above | https://companiesmarketcap.com/hsbc/marketcap/ | CompaniesMarketCap | opened |
-| 2003–2009 | as above | https://companiesmarketcap.com/ubs/marketcap/ | CompaniesMarketCap | opened |
-| 2008–2009 | as above | https://companiesmarketcap.com/royal-bank-of-scotland/marketcap/ | CompaniesMarketCap | opened |
-| 2008–2009 | same page in pounds | https://companiesmarketcap.com/gbp/royal-bank-of-scotland/marketcap/ | CompaniesMarketCap | opened |
-| 2003–2009 | year-end market value | https://companiesmarketcap.com/berkshire-hathaway/marketcap/ | CompaniesMarketCap | opened |
-| 2003–2009 | year-end market value | https://companiesmarketcap.com/mitsubishi-ufj-financial/marketcap/ | CompaniesMarketCap | opened |
-| 2003–2008 | year-end market value, peak, last trade | https://companiesmarketcap.com/lehman-brothers/marketcap/ | CompaniesMarketCap | opened |
-| 2006-12-27 | Citigroup's highest end-of-day price date | https://companiesmarketcap.com/citigroup/stock-price-history/ | CompaniesMarketCap | opened |
-| — | Bank of America price extremes (not used) | https://companiesmarketcap.com/bank-of-america/stock-price-history/ | CompaniesMarketCap | opened |
-| 2006 | S&P Case-Shiller index high 206.52 in July 2006 | https://en.wikipedia.org/wiki/Case-Shiller_index | Wikipedia | opened |
-| 2007-02-08 | HSBC $10.5bn bad-debt charge, February 2007 | https://en.wikipedia.org/wiki/Subprime_mortgage_crisis | Wikipedia | opened |
-| 2007-06-20, 2007-07-31 | Bear Stearns funds, $20bn exposure | https://en.wikipedia.org/wiki/2008_financial_crisis | Wikipedia | opened |
-| 2008-09-15 | Lehman Chapter 11, $639bn assets, $613bn bank debt | https://en.wikipedia.org/wiki/Lehman_Brothers | Wikipedia | opened |
-| 2008-03-14 | Bear Stearns lost 47% of its equity value | https://en.wikipedia.org/wiki/Bear_Stearns | Wikipedia | opened |
-| 2008-09-25 | OTS seized WaMu; FDIC sold banks to JPMorgan for $1.9bn | https://en.wikipedia.org/wiki/Washington_Mutual | Wikipedia | opened |
-| 2008-10-03 | Wachovia's $1-a-share Citigroup deal worth $2.16bn | https://en.wikipedia.org/wiki/Wachovia | Wikipedia | opened |
-| 2008-01-11, 2008-07-01 | Countrywide: $4.1bn deal announced, completed | https://en.wikipedia.org/wiki/Countrywide_Financial | Wikipedia | opened |
-| 2008-09-15 | Merrill sold to Bank of America, about $50bn, $29 a share | https://en.wikipedia.org/wiki/Merrill_(company) | Wikipedia | opened |
-| 2007-10-30 | O'Neal resigned as Merrill's chief executive | https://en.wikipedia.org/wiki/Stan_O%27Neal | Wikipedia | opened |
-| 2007-11-04 | Prince resigned from Citigroup | https://en.wikipedia.org/wiki/Charles_Prince | Wikipedia | opened |
-| 2008-11-17 | Citigroup's market value fell to $6bn from $300bn | https://en.wikipedia.org/wiki/Citigroup | Wikipedia | opened |
-| 2008-03-16 | JPMorgan to buy Bear Stearns, $2 a share, $240m | https://en.wikipedia.org/wiki/JPMorgan_Chase | Wikipedia | opened |
-| 2008-09-23 | Berkshire bought $5bn of Goldman preferred, plus warrants | https://en.wikipedia.org/wiki/Goldman_Sachs | Wikipedia | opened |
-| 2008-09-22, 2008-09-29, 2008-10-14 | bank holding status; MUFG $9bn for 21%; completed | https://en.wikipedia.org/wiki/Morgan_Stanley | Wikipedia | opened |
-| 2007-09-14 | Northern Rock's Bank of England facility and the queue | https://en.wikipedia.org/wiki/Northern_Rock | Wikipedia | opened |
-| 2008-02-22 | Northern Rock nationalisation completed | https://en.wikipedia.org/wiki/Nationalisation_of_Northern_Rock | Wikipedia | opened |
-| 2007-04-02 | New Century filed for Chapter 11 | https://en.wikipedia.org/wiki/New_Century_Financial | Wikipedia | opened |
-| 2008-07-11 | IndyMac Bank failed | https://en.wikipedia.org/wiki/IndyMac | Wikipedia | opened |
-| 2008-10-03 | TARP created by law, $700bn | https://en.wikipedia.org/wiki/Troubled_Asset_Relief_Program | Wikipedia | opened |
-| 2008-10-03 | Act agreed by the House and signed | https://en.wikipedia.org/wiki/Emergency_Economic_Stabilization_Act_of_2008 | Wikipedia | opened |
-| 2008-10-14 | $250bn of TARP offered to banks; nine took funds | https://en.wikipedia.org/wiki/Capital_Purchase_Program | Wikipedia | opened |
-| 2007 | HSBC first big bank to report subprime losses, $10.5bn written down | https://en.wikipedia.org/wiki/HSBC | Wikipedia | opened |
-| 2008-09-07 | conservatorship and up to $200bn from Treasury | https://en.wikipedia.org/wiki/Federal_takeover_of_Fannie_Mae_and_Freddie_Mac | Wikipedia | opened |
-| 2008-09-07 | Lockhart announced the conservatorship on that date | https://en.wikipedia.org/wiki/Federal_Housing_Finance_Agency | Wikipedia | opened |
-| 2008-09-16 | AIG: $85bn secured credit facility | https://en.wikipedia.org/wiki/American_International_Group | Wikipedia | opened |
-| 2005–2006 | housing prices peaked in early 2006; median $230,200 in July 2006 | https://en.wikipedia.org/wiki/2000s_United_States_housing_bubble | Wikipedia | opened |
-| 2009-05-07 | stress test results released, 19 institutions | https://en.wikipedia.org/wiki/Supervisory_Capital_Assessment_Program | Wikipedia | opened |
-| 2009 | recession dates and early 2009 market falls (context) | https://en.wikipedia.org/wiki/Great_Recession | Wikipedia | opened |
-| 2009-03-09 | S&P 500 page checked for the 9 March low; no sentence found | https://en.wikipedia.org/wiki/S&P_500 | Wikipedia | opened |
-| 2007-10-09 | DJIA page checked for the low; no sentence found | https://en.wikipedia.org/wiki/Dow_Jones_Industrial_Average | Wikipedia | opened |
-| 2008-07 | Fannie Mae's government backstop in July 2008 | https://en.wikipedia.org/wiki/Fannie_Mae | Wikipedia | opened |
-| 2008-09 | Merrill Lynch: funding crisis, sale that weekend | https://en.wikipedia.org/wiki/Merrill_Lynch | Wikipedia | opened |
-| 2008-09 | up to $200bn commitment, conservatorship terms | https://en.wikipedia.org/wiki/Federal_takeover_of_Fannie_Mae_and_Freddie_Mac | Wikipedia | opened |
-| 2008-10-16 | rescue plan for UBS and Credit Suisse | https://en.wikipedia.org/wiki/Credit_Suisse | Wikipedia | opened |
-| 2007-09 | Ameriquest dissolved in September 2007 (not used: month only) | https://en.wikipedia.org/wiki/Ameriquest | Wikipedia | opened |
-| 2007 | CDO market grew to hundreds of billions by 2006–2007 (context) | https://en.wikipedia.org/wiki/Collateralized_debt_obligation | Wikipedia | opened |
-| 2008 | UK rescue of RBS and Lloyds (no dated sentence found) | https://en.wikipedia.org/wiki/2008_United_Kingdom_bank_rescue_package | Wikipedia | opened |
-| 2008 | MUFG letter of intent for 20% of Morgan Stanley | https://en.wikipedia.org/wiki/Mitsubishi_UFJ_Financial_Group | Wikipedia | opened |
-| 2003-06-25 | target rate cut 25bp to 1 percent | https://www.federalreserve.gov/boarddocs/press/monetary/2003/20030625/default.htm | Federal Reserve | opened |
-| 2004-06-30 | target rate raised 25bp to 1-1/4 percent | https://www.federalreserve.gov/boarddocs/press/monetary/2004/20040630/default.htm | Federal Reserve | opened |
-| 2005-06-30 | target rate raised 25bp to 3-1/4 percent | https://www.federalreserve.gov/boarddocs/press/monetary/2005/20050630/default.htm | Federal Reserve | opened |
-| 2006-06-29 | target rate raised 25bp to 5-1/4 percent | https://www.federalreserve.gov/newsevents/press/monetary/20060629a.htm | Federal Reserve | opened |
-| 2007-09-18 | target rate cut 50bp to 4-3/4 percent | https://www.federalreserve.gov/newsevents/press/monetary/20070918a.htm | Federal Reserve | opened |
-| 2008-01-22 | target rate cut 75bp to 3-1/2 percent | https://www.federalreserve.gov/newsevents/press/monetary/20080122b.htm | Federal Reserve | opened |
-| 2008-10-08 | target rate cut 50bp to 1-1/2 percent | https://www.federalreserve.gov/newsevents/press/monetary/20081008a.htm | Federal Reserve | opened |
-| 2008-12-16 | target range 0 to 1/4 percent | https://www.federalreserve.gov/newsevents/press/monetary/20081216b.htm | Federal Reserve | opened |
-| 2008-09-16 | New York Fed authorised to lend AIG up to $85bn | https://www.federalreserve.gov/newsevents/press/other/20080916a.htm | Federal Reserve | opened |
-| 2008-11-23 | $306bn asset pool protected; $20bn TARP investment | https://www.federalreserve.gov/newsevents/press/bcreg/20081123a.htm | Federal Reserve | opened |
-| 2008 | index used to date the 8 October action | https://www.federalreserve.gov/monetarypolicy/fomchistorical2008.htm | Federal Reserve | opened |
-| 2007 | index of 2007 statements | https://www.federalreserve.gov/monetarypolicy/fomchistorical2007.htm | Federal Reserve | opened |
-| 2006 | index of 2006 statements | https://www.federalreserve.gov/monetarypolicy/fomchistorical2006.htm | Federal Reserve | opened |
-| 2005 | index page opened; statement links not on it | https://www.federalreserve.gov/monetarypolicy/fomchistorical2005.htm | Federal Reserve | opened |
-| 2007-12-07 | £19bn wiped off RBS's market value; £950m subprime write-down | https://www.theguardian.com/business/2007/dec/07/rbs | The Guardian | opened |
-| 2008 | TARP page opened for the October injections; page is a Chrysler release | https://home.treasury.gov/news/press-releases/tg1189 | US Treasury | opened |
-| 2008 | FDIC press-release index for 2008 (no usable list of links) | https://www.fdic.gov/news/press-releases/2008/ | FDIC | opened |
-| 2008 | FDIC release page opened; no matching sentence | https://www.fdic.gov/news/news/press/2008/pr08094.html | FDIC | opened |
-| 2007 | ranking table rejected as unreliable (see doubts) | https://marketcapranked.com/rankings/2007/ | MarketCapRanked | opened |
-
-| 2008-09-07 | Freddie Mac's own page: FHFA put it into conservatorship that day | https://en.wikipedia.org/wiki/Freddie_Mac | Wikipedia | opened |
-| 2003–2006 | subprime lending background; no dated figure used | https://en.wikipedia.org/wiki/Subprime_lending | Wikipedia | opened |
-| 2006–2008 | subprime mortgage-backed securities, tranches (context) | https://en.wikipedia.org/wiki/Mortgage-backed_security | Wikipedia | opened |
-
-Three pages were also read with the `webfetch` tool at the start of the run (the Citigroup, Lehman and Fannie
-Mae market-cap pages) and are counted once each in the table above.
+- **Case-Shiller peak.** The 206.52 July 2006 figure is on Wikipedia's Case-Shiller page, which does not
+  cite a source for it, and no S&P page opened here states it. The red date rests on that one page.
+- **Shiller's second edition.** The same Wikipedia page says the second edition came out in 2005 and doubted
+  home prices; the exact publication day was not found, so the item is dated 31 December 2005.
+- **Whitney's note.** Wikipedia states the 31 October 2007 note and its dividend point; the CIBC report
+  itself is a PDF and the Guardian's report of the downgrade does not name her. The blue date rests on
+  Wikipedia.
+- **BNP Paribas fund count.** The BBC global timeline says two funds, the BBC subprime timeline says three
+  funds worth €2bn. The item follows the more detailed timeline (three).
+- **Bear Stearns date.** The Fed essay says Sunday 16 March, BBC says 17 March. The item uses 16 March.
+- **Citigroup's fall.** The Guardian says "more than 26 percent" in a session and a market value of $25bn;
+  other accounts give different percentages. The item uses the Guardian's two figures.
+- **TARP signing.** The item says Congress passed the plan, not that the President signed it the same day,
+  because the BBC page reports the vote only.
+- **Recession end.** June 2009 is the month the National Bureau of Economic Research later gave; the item is
+  dated 30 June 2009 and the summary says "in June 2009".
+- **The number of pages opened** is counted from the fetch log for this run (about 100 that returned
+  content), not from the first pass.

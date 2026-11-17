@@ -2,15 +2,103 @@
   "status": "draft",
   "items": [
     {
+      "id": "1997-08-06-microsoft-apple",
+      "date": "1997-08-06",
+      "from": "microsoft",
+      "to": "apple",
+      "kind": "investment",
+      "amount_usd_bn": 0.15,
+      "amount_type": "paid",
+      "title": "Microsoft buys $150m of Apple shares",
+      "source": "https://en.wikipedia.org/wiki/List_of_mergers_and_acquisitions_by_Microsoft"
+    },
+    {
+      "id": "1999-06-19-microsoft-at-t",
+      "date": "1999-06-19",
+      "from": "microsoft",
+      "to": "at-t",
+      "kind": "investment",
+      "amount_usd_bn": 5,
+      "amount_type": "paid",
+      "title": "Microsoft buys $5bn of AT&T shares",
+      "source": "https://en.wikipedia.org/wiki/List_of_mergers_and_acquisitions_by_Microsoft"
+    },
+    {
+      "id": "1999-10-05-worldcom-sprint",
+      "date": "1999-10-05",
+      "from": "worldcom",
+      "to": "sprint",
+      "kind": "takeover",
+      "amount_usd_bn": 129,
+      "amount_type": "reported",
+      "title": "WorldCom agrees to buy Sprint",
+      "source": "https://en.wikipedia.org/wiki/WorldCom"
+    },
+    {
+      "id": "1999-12-31-qwest-enron-swap",
+      "date": "1999-12-31",
+      "from": "enron",
+      "to": "qwest",
+      "kind": "supplier",
+      "amount_usd_bn": 0.0363,
+      "amount_type": "reported",
+      "title": "Qwest books $36.3m on an Enron capacity swap",
+      "source": "https://www.sec.gov/Archives/edgar/data/1037949/000104746904032285/a2145562zex-99_2.htm"
+    },
+    {
       "id": "2000-01-10-aol-time-warner",
       "date": "2000-01-10",
       "from": "aol",
       "to": "time-warner",
-      "kind": "investment",
+      "kind": "takeover",
       "amount_usd_bn": 180,
       "amount_type": "reported",
       "title": "AOL agrees to buy Time Warner in a share deal",
       "source": "https://en.wikipedia.org/wiki/Merger_of_AOL_and_Time_Warner"
+    },
+    {
+      "id": "2000-06-30-qwest-us-west",
+      "date": "2000-06-30",
+      "from": "qwest",
+      "to": "us-west",
+      "kind": "takeover",
+      "amount_usd_bn": 48,
+      "amount_type": "reported",
+      "title": "Qwest completes its purchase of US West",
+      "source": "https://en.wikipedia.org/wiki/Qwest"
+    },
+    {
+      "id": "2001-03-31-qwest-global-crossing",
+      "date": "2001-03-31",
+      "from": "global-crossing",
+      "to": "qwest",
+      "kind": "supplier",
+      "amount_usd_bn": 0.105,
+      "amount_type": "reported",
+      "title": "Qwest sells $105m of capacity to Global Crossing",
+      "source": "https://www.sec.gov/Archives/edgar/data/1037949/000104746904032285/a2145562zex-99_2.htm"
+    },
+    {
+      "id": "2001-09-30-qwest-enron-swap",
+      "date": "2001-09-30",
+      "from": "enron",
+      "to": "qwest",
+      "kind": "supplier",
+      "amount_usd_bn": 0.0855,
+      "amount_type": "reported",
+      "title": "Qwest books $85.5m on a swap with Enron",
+      "source": "https://www.sec.gov/Archives/edgar/data/1037949/000104746904032285/a2145562zex-99_2.htm"
+    },
+    {
+      "id": "2001-09-30-qwest-global-crossing-swap",
+      "date": "2001-09-30",
+      "from": "qwest",
+      "to": "global-crossing",
+      "kind": "supplier",
+      "amount_usd_bn": 0.0672,
+      "amount_type": "reported",
+      "title": "Qwest buys $67.2m of capacity from Global Crossing",
+      "source": "https://www.sec.gov/Archives/edgar/data/1037949/000104746904032285/a2145562zex-99_2.htm"
     }
   ]
 }

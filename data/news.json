@@ -10,7 +10,7 @@
         "alphabet"
       ],
       "kind": "science",
-      "key_date": true,
+      "key_date": false,
       "source": "https://arxiv.org/abs/1706.03762"
     },
     {
@@ -76,7 +76,7 @@
         "microsoft"
       ],
       "kind": "science",
-      "key_date": true,
+      "key_date": false,
       "source": "https://arxiv.org/abs/2005.14165"
     },
     {
@@ -88,7 +88,7 @@
         "alphabet"
       ],
       "kind": "science",
-      "key_date": true,
+      "key_date": false,
       "source": "https://deepmind.google/discover/blog/alphafold-a-solution-to-a-50-year-old-grand-challenge-in-biology/"
     },
     {
@@ -168,7 +168,7 @@
         "microsoft"
       ],
       "kind": "science",
-      "key_date": true,
+      "key_date": false,
       "source": "https://techcrunch.com/2025/11/30/chatgpt-launched-three-years-ago-today/"
     },
     {
@@ -180,7 +180,7 @@
         "meta"
       ],
       "kind": "science",
-      "key_date": true,
+      "key_date": false,
       "source": "https://ai.meta.com/blog/large-language-model-llama-meta-ai/"
     },
     {
@@ -190,7 +190,7 @@
       "summary": "Anthropic's first public model, offered as a chat assistant and an API.",
       "players": [],
       "kind": "science",
-      "key_date": true,
+      "key_date": false,
       "source": "https://www.anthropic.com/news/introducing-claude"
     },
     {
@@ -202,7 +202,7 @@
         "microsoft"
       ],
       "kind": "science",
-      "key_date": true,
+      "key_date": false,
       "source": "https://techcrunch.com/2023/03/14/openai-releases-gpt-4-ai-that-it-claims-is-state-of-the-art/"
     },
     {
@@ -251,7 +251,7 @@
         "openai"
       ],
       "kind": "science",
-      "key_date": true,
+      "key_date": false,
       "source": "https://techcrunch.com/2024/02/15/openais-newest-model-can-generate-videos-and-they-look-decent/"
     },
     {
@@ -301,7 +301,7 @@
         "microsoft"
       ],
       "kind": "science",
-      "key_date": true,
+      "key_date": false,
       "source": "https://techcrunch.com/2024/05/13/openais-newest-model-is-gpt-4o/"
     },
     {
@@ -325,7 +325,7 @@
         "openai"
       ],
       "kind": "science",
-      "key_date": true,
+      "key_date": false,
       "source": "https://techcrunch.com/2024/09/12/openai-unveils-a-model-that-can-fact-check-itself/"
     },
     {
@@ -335,7 +335,7 @@
       "summary": "Hopfield and Hinton shared the physics prize for work that made today's neural networks possible.",
       "players": [],
       "kind": "science",
-      "key_date": true,
+      "key_date": false,
       "source": "https://www.nobelprize.org/prizes/physics/2024/press-release/"
     },
     {
@@ -369,7 +369,7 @@
       "summary": "A Chinese lab published a reasoning model and its paper, with the weights released.",
       "players": [],
       "kind": "science",
-      "key_date": true,
+      "key_date": false,
       "source": "https://arxiv.org/abs/2501.12948"
     },
     {
@@ -432,7 +432,7 @@
         "microsoft"
       ],
       "kind": "science",
-      "key_date": true,
+      "key_date": false,
       "source": "https://techcrunch.com/2025/08/07/openais-gpt-5-is-here/"
     },
     {
@@ -456,7 +456,7 @@
         "alphabet"
       ],
       "kind": "science",
-      "key_date": true,
+      "key_date": false,
       "source": "https://blog.google/products-and-platforms/products/gemini/gemini-3/"
     },
     {
@@ -469,7 +469,7 @@
         "microsoft"
       ],
       "kind": "science",
-      "key_date": true,
+      "key_date": false,
       "source": "https://techcrunch.com/2026/04/23/openai-chatgpt-gpt-5-5-ai-model-superapp/"
     },
     {
@@ -479,7 +479,7 @@
       "summary": "Open-weight models built for very long inputs, a million tokens, at a low price.",
       "players": [],
       "kind": "science",
-      "key_date": true,
+      "key_date": false,
       "source": "https://www.deepseek.com/en/news/v4-preview/"
     },
     {
@@ -549,7 +549,7 @@
         "microsoft"
       ],
       "kind": "money",
-      "key_date": true,
+      "key_date": false,
       "source": "https://news.microsoft.com/source/2019/07/22/openai-forms-exclusive-computing-partnership-with-microsoft-to-build-new-azure-ai-supercomputing-technologies/"
     },
     {
@@ -627,8 +627,10 @@
         "microsoft"
       ],
       "kind": "money",
-      "key_date": true,
-      "source": "https://blogs.microsoft.com/blog/2023/01/23/microsoftandopenaiextendpartnership/"
+      "key_date": false,
+      "source": "https://blogs.microsoft.com/blog/2023/01/23/microsoftandopenaiextendpartnership/",
+      "label": "Microsoft's OpenAI billions",
+      "small_date": true
     },
     {
       "id": "2023-05-23-anthropic-raises-450m-series-c",
@@ -664,7 +666,8 @@
       ],
       "kind": "money",
       "key_date": true,
-      "source": "https://www.cbsnews.com/news/nvidia-1-trillion-market-value-becoming-ai-first-chip-company-to-do-so/"
+      "source": "https://www.cbsnews.com/news/nvidia-1-trillion-market-value-becoming-ai-first-chip-company-to-do-so/",
+      "label": "Nvidia hits $1tn"
     },
     {
       "id": "2023-09-14-arm-s-shares-begin-trading-after-51-ipo",
@@ -689,7 +692,7 @@
         "anthropic"
       ],
       "kind": "money",
-      "key_date": true,
+      "key_date": false,
       "source": "https://www.aboutamazon.com/news/company-news/amazon-aws-anthropic-ai"
     },
     {
@@ -742,7 +745,9 @@
       ],
       "kind": "money",
       "key_date": false,
-      "source": "https://www.cnn.com/2024/02/23/investing/nvidia-market-cap-2-trillion"
+      "source": "https://www.cnn.com/2024/02/23/investing/nvidia-market-cap-2-trillion",
+      "label": "Nvidia hits $2tn",
+      "small_date": true
     },
     {
       "id": "2024-05-22-nvidia-s-sales-up-262-on-the-year",
@@ -766,8 +771,19 @@
         "microsoft"
       ],
       "kind": "money",
-      "key_date": true,
+      "key_date": false,
       "source": "https://www.bbc.com/news/articles/cyrr40x0z2mo"
+    },
+    {
+      "id": "2024-06-20-cahn-600bn-question",
+      "date": "2024-06-20",
+      "title": "Sequoia's Cahn puts the AI gap at $600bn",
+      "summary": "A Sequoia Capital partner wrote that the gap between AI revenue and the build-out had grown to a $600bn question.",
+      "players": [],
+      "kind": "money",
+      "key_date": true,
+      "label": "First big bubble warning",
+      "source": "https://www.sequoiacap.com/article/ais-600b-question/"
     },
     {
       "id": "2024-10-02-openai-raises-6-6bn-at-157bn",
@@ -793,7 +809,8 @@
       ],
       "kind": "money",
       "key_date": true,
-      "source": "https://techcrunch.com/2025/01/21/openai-teams-up-with-softbank-and-oracle-on-50b-data-center-project/"
+      "source": "https://techcrunch.com/2025/01/21/openai-teams-up-with-softbank-and-oracle-on-50b-data-center-project/",
+      "label": "Stargate: $500bn"
     },
     {
       "id": "2025-01-27-deepseek-rout-nvidia-loses-600bn",
@@ -805,7 +822,8 @@
       ],
       "kind": "money",
       "key_date": true,
-      "source": "https://www.theguardian.com/technology/2025/jan/28/deepseek-selloff"
+      "source": "https://www.theguardian.com/technology/2025/jan/28/deepseek-selloff",
+      "label": "DeepSeek rout: $600bn"
     },
     {
       "id": "2025-03-03-anthropic-raises-at-a-61-5bn-valuation",
@@ -829,8 +847,10 @@
         "nvidia"
       ],
       "kind": "money",
-      "key_date": true,
-      "source": "https://www.coreweave.com/news/coreweave-announces-pricing-of-initial-public-offering"
+      "key_date": false,
+      "source": "https://www.coreweave.com/news/coreweave-announces-pricing-of-initial-public-offering",
+      "label": "CoreWeave lists",
+      "small_date": true
     },
     {
       "id": "2025-03-31-openai-raises-40bn-at-300bn",
@@ -878,8 +898,20 @@
         "nvidia"
       ],
       "kind": "money",
-      "key_date": true,
+      "key_date": false,
       "source": "https://www.bbc.co.uk/news/articles/c8j13m74lklo"
+    },
+    {
+      "id": "2025-07-16-slok-more-overvalued-than-1990s",
+      "date": "2025-07-16",
+      "title": "Apollo's Slok: AI more overvalued than in the 1990s",
+      "summary": "Apollo's chief economist wrote that the top 10 S&P 500 companies are more overvalued now than they were in the 1990s IT bubble.",
+      "players": [],
+      "kind": "money",
+      "key_date": false,
+      "small_date": true,
+      "label": "Slok: bigger than 1990s",
+      "source": "https://www.apolloacademy.com/ai-bubble-today-is-bigger-than-the-it-bubble-in-the-1990s/"
     },
     {
       "id": "2025-08-11-nvidia-and-amd-give-us-15-of-china-sales",
@@ -893,6 +925,20 @@
       "kind": "money",
       "key_date": false,
       "source": "https://www.bbc.com/news/articles/cvgvvnx8y19o"
+    },
+    {
+      "id": "2025-08-14-altman-investors-overexcited",
+      "date": "2025-08-14",
+      "title": "Altman says investors are overexcited",
+      "summary": "OpenAI's chief executive told reporters he thought investors as a whole were overexcited about AI, while still calling it vital.",
+      "players": [
+        "openai"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "small_date": true,
+      "label": "Altman: yes, overexcited",
+      "source": "https://www.theverge.com/ai-artificial-intelligence/759965/sam-altman-openai-ai-bubble-interview"
     },
     {
       "id": "2025-09-02-anthropic-raises-13bn-at-183bn",
@@ -916,8 +962,10 @@
         "openai"
       ],
       "kind": "money",
-      "key_date": true,
-      "source": "https://techcrunch.com/2025/09/10/openai-and-oracle-reportedly-ink-historic-cloud-computing-deal"
+      "key_date": false,
+      "source": "https://techcrunch.com/2025/09/10/openai-and-oracle-reportedly-ink-historic-cloud-computing-deal",
+      "label": "Oracle's $300bn OpenAI deal",
+      "small_date": true
     },
     {
       "id": "2025-09-22-nvidia-to-invest-up-to-100bn-in-openai",
@@ -930,7 +978,8 @@
       ],
       "kind": "money",
       "key_date": true,
-      "source": "https://nvidianews.nvidia.com/news/openai-and-nvidia-announce-strategic-partnership-to-deploy-10gw-of-nvidia-systems"
+      "source": "https://nvidianews.nvidia.com/news/openai-and-nvidia-announce-strategic-partnership-to-deploy-10gw-of-nvidia-systems",
+      "label": "Nvidia's $100bn OpenAI bet"
     },
     {
       "id": "2025-09-24-stargate-adds-five-more-data-centre-sites",
@@ -947,6 +996,20 @@
       "source": "https://group.softbank/en/news/press/20250924"
     },
     {
+      "id": "2025-10-03-bezos-industrial-bubble",
+      "date": "2025-10-03",
+      "title": "Bezos calls AI an industrial bubble",
+      "summary": "At Italian Tech Week, Amazon's founder called the AI boom a kind of industrial bubble, not a financial one.",
+      "players": [
+        "amazon"
+      ],
+      "kind": "money",
+      "key_date": false,
+      "small_date": true,
+      "label": "Bezos: industrial bubble",
+      "source": "https://singjupost.com/transcript-amazon-founder-jeff-bezos-on-tech-future-ai-space-revolution-italian-tech-week-2025/"
+    },
+    {
       "id": "2025-10-28-microsoft-takes-27-of-openai-group-pbc",
       "date": "2025-10-28",
       "title": "Microsoft takes 27% of OpenAI Group PBC",
@@ -956,7 +1019,7 @@
         "openai"
       ],
       "kind": "money",
-      "key_date": true,
+      "key_date": false,
       "source": "https://blogs.microsoft.com/blog/2025/10/28/the-next-chapter-of-the-microsoft-openai-partnership/"
     },
     {
@@ -969,7 +1032,8 @@
       ],
       "kind": "money",
       "key_date": true,
-      "source": "https://www.bbc.co.uk/news/articles/cp8e970vn5vo"
+      "source": "https://www.bbc.co.uk/news/articles/cp8e970vn5vo",
+      "label": "Nvidia first to $5tn"
     },
     {
       "id": "2025-11-03-burry-discloses-shorts-against-nvidia-and-palantir",
@@ -982,7 +1046,21 @@
       ],
       "kind": "money",
       "key_date": false,
-      "source": "https://www.businessinsider.com/why-michael-burry-big-short-nvidia-palantir-ai-bubble-stocks-2025-11"
+      "source": "https://www.businessinsider.com/why-michael-burry-big-short-nvidia-palantir-ai-bubble-stocks-2025-11",
+      "label": "Burry bets against AI",
+      "small_date": true
+    },
+    {
+      "id": "2025-11-21-dalio-bubble-territory",
+      "date": "2025-11-21",
+      "title": "Dalio: we are in bubble territory",
+      "summary": "Bridgewater's founder said the picture was clear: the market was in bubble territory, though the bubble had not yet been pricked.",
+      "players": [],
+      "kind": "money",
+      "key_date": false,
+      "small_date": true,
+      "label": "Dalio: in bubble territory",
+      "source": "https://fortune.com/2025/11/21/ray-dalio-dont-sell-bubble-ai-warning-returns/"
     },
     {
       "id": "2025-11-25-nvidia-memo-answers-the-bubble-charge",
@@ -1022,6 +1100,18 @@
       "source": "https://valueaddvc.com/xai-valuation"
     },
     {
+      "id": "2026-03-16-gurley-ai-reset",
+      "date": "2026-03-16",
+      "title": "Gurley expects an AI reset",
+      "summary": "Benchmark's Bill Gurley told CNBC that waves create bubbles, and that an AI reset would come one day.",
+      "players": [],
+      "kind": "money",
+      "key_date": false,
+      "small_date": true,
+      "label": "Gurley: an AI reset",
+      "source": "https://www.businessinsider.com/bill-gurley-ai-stocks-boom-bubble-infrastructure-reset-capital-spending-2026-3"
+    },
+    {
       "id": "2026-03-31-openai-closes-122bn-at-852bn",
       "date": "2026-03-31",
       "title": "OpenAI closes $122bn at $852bn",
@@ -1031,8 +1121,9 @@
         "softbank"
       ],
       "kind": "money",
-      "key_date": false,
-      "source": "https://web.archive.org/web/2026/https://openai.com/index/accelerating-the-next-phase-ai/"
+      "key_date": true,
+      "source": "https://web.archive.org/web/2026/https://openai.com/index/accelerating-the-next-phase-ai/",
+      "label": "OpenAI at $852bn"
     },
     {
       "id": "2026-06-01-anthropic-files-confidentially-for-ipo",
@@ -1072,7 +1163,9 @@
       ],
       "kind": "money",
       "key_date": false,
-      "source": "https://www.jsonline.com/story/communities/north/2026/07/16/agency-downgrades-credit-rating-of-tech-giant-oracle-amid-legal-battle/90945654007/"
+      "source": "https://www.jsonline.com/story/communities/north/2026/07/16/agency-downgrades-credit-rating-of-tech-giant-oracle-amid-legal-battle/90945654007/",
+      "label": "Oracle cut to BBB-",
+      "small_date": true
     },
     {
       "id": "2026-07-20-oracle-credit-insurance-at-18-year-high",
@@ -1135,7 +1228,7 @@
         "openai"
       ],
       "kind": "money",
-      "key_date": true,
+      "key_date": false,
       "source": "https://techcrunch.com/2026/10/08/openais-revenue-is-reportedly-20-billion-less-than-previously-projected/"
     },
     {
@@ -1226,7 +1319,8 @@
       ],
       "kind": "money",
       "key_date": true,
-      "source": "https://www.theguardian.com/technology/2026/nov/06/us-tech-stock-ai-bubble-bursting-market-meltdown-explainer"
+      "source": "https://www.theguardian.com/technology/2026/nov/06/us-tech-stock-ai-bubble-bursting-market-meltdown-explainer",
+      "label": "$2.5tn wiped in a day"
     },
     {
       "id": "2026-11-06-openai-closes-11bn-at-1-25tn",
@@ -1263,7 +1357,8 @@
       ],
       "kind": "money",
       "key_date": true,
-      "source": "https://nvidianews.nvidia.com/news/nvidia-announces-ceo-transition"
+      "source": "https://nvidianews.nvidia.com/news/nvidia-announces-ceo-transition",
+      "label": "Huang resigns"
     }
   ]
 }

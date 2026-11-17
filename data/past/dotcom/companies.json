@@ -87,7 +87,7 @@
       "kind": "listed",
       "ticker": "AOL",
       "first_mention": "2000-01-10",
-      "source": "https://www.theguardian.com/business/2000/jan/10/efinance.internet"
+      "source": "https://en.wikipedia.org/wiki/Merger_of_AOL_and_Time_Warner"
     },
     {
       "id": "yahoo",
@@ -152,6 +152,38 @@
       "ticker": "TWX",
       "first_mention": "1997-12-31",
       "source": "https://companiesmarketcap.com/time-warner/marketcap/"
+    },
+    {
+      "id": "apple",
+      "name": "Apple",
+      "kind": "listed",
+      "ticker": "AAPL",
+      "first_mention": "1996-12-31",
+      "source": "https://companiesmarketcap.com/apple/marketcap/"
+    },
+    {
+      "id": "at-t",
+      "name": "AT&T",
+      "kind": "listed",
+      "ticker": "T",
+      "first_mention": "1996-12-31",
+      "source": "https://companiesmarketcap.com/att/marketcap/"
+    },
+    {
+      "id": "us-west",
+      "name": "US West",
+      "kind": "listed",
+      "ticker": "USW",
+      "first_mention": "1997-12-31",
+      "source": "https://companiesmarketcap.com/us-west/marketcap/"
+    },
+    {
+      "id": "sprint",
+      "name": "Sprint",
+      "kind": "listed",
+      "ticker": "S",
+      "first_mention": "1997-12-31",
+      "source": "https://companiesmarketcap.com/sprint-corporation/marketcap/"
     }
   ]
 }
