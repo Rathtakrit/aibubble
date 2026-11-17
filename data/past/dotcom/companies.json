@@ -143,6 +143,7 @@
       "kind": "listed",
       "ticker": "ENE",
       "first_mention": "1997-12-31",
+      "ended": "2001-12-31",
       "source": "https://companiesmarketcap.com/enron/marketcap/"
     },
     {
@@ -151,6 +152,7 @@
       "kind": "listed",
       "ticker": "TWX",
       "first_mention": "1997-12-31",
+      "ended": "2001-01-11",
       "source": "https://companiesmarketcap.com/time-warner/marketcap/"
     },
     {
@@ -175,6 +177,7 @@
       "kind": "listed",
       "ticker": "USW",
       "first_mention": "1997-12-31",
+      "ended": "2000-06-30",
       "source": "https://companiesmarketcap.com/us-west/marketcap/"
     },
     {

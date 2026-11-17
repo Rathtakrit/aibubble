@@ -394,6 +394,75 @@ test("a company before its first mention is absent", () => {
   ]);
 });
 
+test("a company that ended is gone the next day, with its money line and value, and nobody jumps", () => {
+  const endingCompanies: Company[] = [
+    { id: "x", name: "X", kind: "listed", first_mention: day(0), source },
+    { id: "y", name: "Y", kind: "private", first_mention: day(0), source },
+    { id: "z", name: "Z", kind: "listed", first_mention: day(10), ended: day(30), source },
+  ];
+  const endingValues: ValuePoint[] = [
+    { company: "x", date: day(0), value_usd_bn: 100, what: "start", source },
+    { company: "x", date: day(63), value_usd_bn: 180, what: "end", source },
+    { company: "y", date: day(0), value_usd_bn: 60, what: "start", source },
+    { company: "y", date: day(63), value_usd_bn: 90, what: "end", source },
+    { company: "z", date: day(10), value_usd_bn: 25, what: "start", source },
+    // Its last point is its ended day; the line stops there.
+    { company: "z", date: day(30), value_usd_bn: 25, what: "end", source },
+  ];
+  const endingDeals: Deal[] = [
+    {
+      id: "e1",
+      date: day(12),
+      from: "z",
+      to: "x",
+      kind: "investment",
+      amount_usd_bn: 1,
+      amount_type: "paid",
+      title: "one",
+      source,
+    },
+  ];
+  const ending = dayLayouts(endingCompanies, endingValues, endingDeals, LAST);
+  const ids = (date: string) =>
+    bubblesOn(date, endingCompanies, endingValues, endingDeals, ending).map((bubble) => bubble.id);
+
+  // On its ended day it is still there, with the money line it has.
+  assert.deepEqual(ids(day(30)), ["x", "y", "z"]);
+  assert.equal(
+    arrowsOn(day(30), endingCompanies, endingValues, endingDeals, ending).some(
+      (arrow) => arrow.from === "z" || arrow.to === "z",
+    ),
+    true,
+  );
+
+  // The next day it is gone: no bubble, no money line, not in the count or the total.
+  assert.deepEqual(ids(day(31)), ["x", "y"]);
+  assert.equal(
+    arrowsOn(day(31), endingCompanies, endingValues, endingDeals, ending).some(
+      (arrow) => arrow.from === "z" || arrow.to === "z",
+    ),
+    false,
+  );
+  const expected = 100 + (80 * 31) / 63 + 60 + (30 * 31) / 63;
+  assert.ok(
+    Math.abs(totalOn(day(31), endingCompanies, endingValues, endingDeals, ending) - expected) < 1e-9,
+    "the ended company is still in the day's total",
+  );
+
+  // The others close the hole by gliding: nobody moves more than the day-to-day limit.
+  const dates = [...ending.days.keys()];
+  for (let index = 1; index < dates.length; index += 1) {
+    const before = ending.days.get(dates[index - 1])!;
+    const after = ending.days.get(dates[index])!;
+    for (const [id, placed] of after) {
+      const was = before.get(id);
+      if (!was) continue;
+      const moved = Math.hypot(placed.x - was.x, placed.y - was.y);
+      assert.ok(moved <= 3, `${id} jumped ${moved} on ${dates[index]}`);
+    }
+  }
+});
+
 test("an arrow is absent when one end is not shown", () => {
   assert.equal(arrowsOn(day(9), companies, values, deals, layout).length, 0);
   const after = arrowsOn(day(12), companies, values, deals, layout);

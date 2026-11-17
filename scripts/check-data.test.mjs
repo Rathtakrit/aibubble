@@ -256,6 +256,47 @@ test("rejects a deal dated before a company's first_mention", () => {
   expectFail(dir, "deals.json");
 });
 
+test("rejects an ended of the wrong type", () => {
+  const dir = copyData();
+  const companies = read(dir, "companies.json");
+  companies.items[0].ended = 2021;
+  write(dir, "companies.json", companies);
+  expectFail(dir, "companies.json");
+});
+
+test("rejects an ended that is not a real calendar date", () => {
+  const dir = copyData();
+  const companies = read(dir, "companies.json");
+  companies.items[0].ended = "2021-02-30";
+  write(dir, "companies.json", companies);
+  expectFail(dir, "companies.json");
+});
+
+test("rejects an ended before the company's first_mention", () => {
+  const dir = copyData();
+  const companies = read(dir, "companies.json");
+  companies.items[0].ended = "2018-12-31";
+  write(dir, "companies.json", companies);
+  expectFail(dir, "companies.json");
+});
+
+test("rejects a value point after the company's ended day", () => {
+  const dir = copyData();
+  const companies = read(dir, "companies.json");
+  companies.items[0].ended = "2019-06-01";
+  write(dir, "companies.json", companies);
+  // samplenet still has points on 2020-01-01 and 2021-01-01.
+  expectFail(dir, "values.json");
+});
+
+test("an ended on the last value point passes, and so does a company with no ended", () => {
+  const dir = copyData();
+  const companies = read(dir, "companies.json");
+  companies.items[0].ended = "2021-01-01";
+  write(dir, "companies.json", companies);
+  expectOk(dir);
+});
+
 test("rejects example.com sources when the status is not sample", () => {
   const dir = copyData();
   for (const file of ["companies.json", "values.json", "deals.json", "news.json"]) {

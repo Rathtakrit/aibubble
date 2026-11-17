@@ -31,29 +31,29 @@
       "kind": "money",
       "key_date": true,
       "label": "Telecoms Act signed",
-      "source": "https://en.wikipedia.org/wiki/Telecommunications_Act_of_1996"
+      "source": "https://www.govinfo.gov/content/pkg/PLAW-104publ104/html/PLAW-104publ104.htm"
     },
     {
       "id": "1996-04-12-yahoo-ipo",
       "date": "1996-04-12",
       "title": "Yahoo sells shares at $13 each",
-      "summary": "Yahoo raised $33.8m on 12 April 1996, selling 2.6 million shares at $13; the stock closed its first day at $33.",
+      "summary": "Yahoo sold 2.6 million shares at $13 each on 12 April 1996; the stock closed its first day at $33.",
       "players": [],
       "kind": "money",
       "key_date": false,
-      "source": "https://en.wikipedia.org/wiki/History_of_Yahoo"
+      "source": "https://web.archive.org/web/20080821151527/http://news.cnet.com/2100-1033-209413.html"
     },
     {
       "id": "1996-09-30-lucent-spinoff",
       "date": "1996-09-30",
       "title": "Lucent becomes a separate company",
-      "summary": "AT&T split off its equipment arm, which included Bell Labs, on 30 September 1996 as Lucent Technologies.",
+      "summary": "AT&T distributed all of its Lucent Technologies shares to its shareholders on 30 September 1996, making Lucent an independent company.",
       "players": [
         "lucent"
       ],
       "kind": "money",
       "key_date": false,
-      "source": "https://en.wikipedia.org/wiki/Lucent_Technologies"
+      "source": "https://www.sec.gov/Archives/edgar/data/1006240/0000950123-98-010816.txt"
     },
     {
       "id": "1996-12-05-irrational-exuberance",
@@ -92,41 +92,41 @@
       "key_date": false,
       "small_date": true,
       "label": "Microsoft buys Apple stake",
-      "source": "https://en.wikipedia.org/wiki/List_of_mergers_and_acquisitions_by_Microsoft"
+      "source": "https://news.microsoft.com/1997/08/06/microsoft-and-apple-affirm-commitment-to-build-next-generation-software-for-macintosh/"
     },
     {
-      "id": "1998-09-15-worldcom-mci-close",
-      "date": "1998-09-15",
-      "title": "WorldCom closes its $34.7bn MCI purchase",
-      "summary": "WorldCom agreed in November 1997 to buy MCI for $34.7bn in stock, and the deal closed on 15 September 1998.",
+      "id": "1998-09-14-worldcom-mci-close",
+      "date": "1998-09-14",
+      "title": "WorldCom closes its MCI purchase",
+      "summary": "WorldCom agreed in November 1997 to buy MCI, and the acquisition closed on 14 September 1998; WorldCom put the price at about $40bn.",
       "players": [
         "worldcom"
       ],
       "kind": "money",
       "key_date": false,
-      "source": "https://en.wikipedia.org/wiki/MCI_Communications"
+      "source": "https://www.sec.gov/Archives/edgar/data/723527/0000950134-99-002242.txt"
     },
     {
       "id": "1998-09-23-ltcm-rescue",
       "date": "1998-09-23",
       "title": "Banks rescue Long-Term Capital",
-      "summary": "On 23 September 1998, 14 banks put in $3.65bn to rescue Long-Term Capital Management, supervised by the Federal Reserve.",
+      "summary": "On 23 September 1998, 14 banks put in $3.6bn to rescue Long-Term Capital Management, supervised by the Federal Reserve.",
       "players": [],
       "kind": "money",
       "key_date": false,
       "small_date": true,
       "label": "LTCM rescue",
-      "source": "https://en.wikipedia.org/wiki/Long-Term_Capital_Management"
+      "source": "https://www.federalreservehistory.org/essays/ltcm-near-failure"
     },
     {
       "id": "1998-11-13-theglobe-first-day",
       "date": "1998-11-13",
       "title": "theGlobe.com posts the biggest first day",
-      "summary": "theGlobe.com listed on 13 November 1998 and posted the largest first-day gain of any IPO up to that date.",
+      "summary": "theGlobe.com listed on 13 November 1998; the shares closed at $63.50, up 606% from the $9 offer price, the best first day for a company raising more than $5m.",
       "players": [],
       "kind": "money",
       "key_date": false,
-      "source": "https://en.wikipedia.org/wiki/TheGlobe.com"
+      "source": "https://web.archive.org/web/20011210001758/http://money.cnn.com:80/1998/11/13/technology/theglobe/"
     },
     {
       "id": "1998-11-17-fed-cut",
@@ -136,7 +136,7 @@
       "players": [],
       "kind": "money",
       "key_date": false,
-      "source": "https://en.wikipedia.org/wiki/Federal_funds_rate"
+      "source": "https://www.federalreserve.gov/boarddocs/press/general/1998/19981117/"
     },
     {
       "id": "1998-11-24-aol-netscape",
@@ -148,7 +148,7 @@
       "key_date": false,
       "small_date": true,
       "label": "AOL buys Netscape",
-      "source": "https://en.wikipedia.org/wiki/Netscape"
+      "source": "https://web.archive.org/web/20150327080317/http://news.cnet.com/2100-1023-218360.html"
     },
     {
       "id": "1999-01-28-yahoo-geocities",
@@ -160,7 +160,7 @@
       ],
       "kind": "money",
       "key_date": false,
-      "source": "https://en.wikipedia.org/wiki/GeoCities"
+      "source": "https://web.archive.org/web/20020206205510/http://money.cnn.com:80/1999/01/28/technology/yahoo_a/"
     },
     {
       "id": "1999-06-19-microsoft-att",
@@ -191,14 +191,14 @@
       "id": "1999-10-05-worldcom-sprint",
       "date": "1999-10-05",
       "title": "WorldCom agrees to buy Sprint",
-      "summary": "On 5 October 1999 Sprint and MCI WorldCom announced a $129bn merger, which later collapsed.",
+      "summary": "On 5 October 1999 MCI WorldCom agreed to buy Sprint for $115bn in shares, or $129bn including debt and preferred shares.",
       "players": [
         "worldcom",
         "sprint"
       ],
       "kind": "money",
       "key_date": false,
-      "source": "https://en.wikipedia.org/wiki/WorldCom"
+      "source": "https://www.theguardian.com/business/1999/oct/06/3"
     },
     {
       "id": "1999-11-30-buffett-fortune",
@@ -295,7 +295,7 @@
       "kind": "money",
       "key_date": true,
       "label": "Nasdaq peak",
-      "source": "https://en.wikipedia.org/wiki/Dot-com_bubble"
+      "source": "https://www.wired.com/2010/03/0310nasdaq-bust/"
     },
     {
       "id": "2000-03-13-japan-recession",
@@ -305,7 +305,7 @@
       "players": [],
       "kind": "money",
       "key_date": false,
-      "source": "https://en.wikipedia.org/wiki/Dot-com_bubble"
+      "source": "https://web.archive.org/web/20011220233827/http://money.cnn.com:80/2000/03/13/markets/markets_newyork/"
     },
     {
       "id": "2000-03-20-barrons-burning-up",
@@ -317,7 +317,7 @@
       "key_date": false,
       "small_date": true,
       "label": "Barron's: Burning Up",
-      "source": "https://en.wikipedia.org/wiki/Dot-com_bubble"
+      "source": "https://web.archive.org/web/20150925181750/http://www.barrons.com/articles/SB953335580704470544"
     },
     {
       "id": "2000-03-20-microstrategy-restatement",
@@ -327,7 +327,7 @@
       "players": [],
       "kind": "money",
       "key_date": false,
-      "source": "https://en.wikipedia.org/wiki/Dot-com_bubble"
+      "source": "https://web.archive.org/web/20020130230812/http://money.cnn.com:80/2000/03/20/companies/microstrategy/"
     },
     {
       "id": "2000-03-27-cisco-tops-microsoft",
@@ -342,6 +342,18 @@
       "source": "https://heritage.cisco.com/2000_marketcap/"
     },
     {
+      "id": "2000-03-30-tiger-closes",
+      "date": "2000-03-30",
+      "title": "Julian Robertson closes Tiger",
+      "summary": "Julian Robertson said on 30 March 2000 that he would close his Tiger Management fund and return outside investors' money.",
+      "players": [],
+      "kind": "money",
+      "key_date": false,
+      "small_date": true,
+      "label": "Tiger fund closes",
+      "source": "https://web.archive.org/web/20011116123339/http://money.cnn.com:80/2000/03/30/mutualfunds/q_funds_tiger/"
+    },
+    {
       "id": "2000-03-31-shiller-book",
       "date": "2000-03-31",
       "title": "Shiller's book warns of a bubble",
@@ -352,18 +364,6 @@
       "small_date": true,
       "label": "Shiller's bubble book",
       "source": "https://en.wikipedia.org/wiki/Irrational_Exuberance_(book)"
-    },
-    {
-      "id": "2000-03-31-tiger-closes",
-      "date": "2000-03-31",
-      "title": "Julian Robertson closes Tiger",
-      "summary": "Julian Robertson closed his Tiger Management fund in March 2000 and returned outside investors' money.",
-      "players": [],
-      "kind": "money",
-      "key_date": false,
-      "small_date": true,
-      "label": "Tiger fund closes",
-      "source": "https://en.wikipedia.org/wiki/Julian_Robertson"
     },
     {
       "id": "2000-04-03-microsoft-ruling",
@@ -377,7 +377,7 @@
       "key_date": false,
       "small_date": true,
       "label": "Microsoft loses case",
-      "source": "https://en.wikipedia.org/wiki/United_States_v._Microsoft_Corp."
+      "source": "https://www.justice.gov/atr/cases/ms_conclusions.htm"
     },
     {
       "id": "2000-04-14-nasdaq-falls-9pc",
@@ -388,7 +388,7 @@
       "kind": "money",
       "key_date": true,
       "label": "Nasdaq falls 9%",
-      "source": "https://en.wikipedia.org/wiki/Dot-com_bubble"
+      "source": "https://web.archive.org/web/20011116123049/http://money.cnn.com/2000/04/14/markets/markets_newyork/"
     },
     {
       "id": "2000-05-16-fed-rises",
@@ -398,7 +398,7 @@
       "players": [],
       "kind": "money",
       "key_date": false,
-      "source": "https://en.wikipedia.org/wiki/History_of_Federal_Open_Market_Committee_actions"
+      "source": "https://www.federalreserve.gov/boarddocs/press/general/2000/20000516/"
     },
     {
       "id": "2000-06-30-qwest-us-west",
@@ -450,16 +450,16 @@
       "source": "https://companiesmarketcap.com/sun-microsystems/marketcap/"
     },
     {
-      "id": "2000-11-09-pets-com-closes",
-      "date": "2000-11-09",
+      "id": "2000-11-07-pets-com-closes",
+      "date": "2000-11-07",
       "title": "Pets.com goes out of business",
-      "summary": "Pets.com, backed by Amazon and known for its sock puppet ads, stopped taking orders on 9 November 2000.",
+      "summary": "Pets.com, backed by Amazon and known for its sock puppet ads, said on 7 November 2000 that it would shut down and stop taking orders.",
       "players": [
         "amazon"
       ],
       "kind": "money",
       "key_date": false,
-      "source": "https://en.wikipedia.org/wiki/Pets.com"
+      "source": "https://web.archive.org/web/20030205153857/http://money.cnn.com:80/2000/11/07/technology/pets/"
     },
     {
       "id": "2000-12-21-lucent-warning",
@@ -477,11 +477,11 @@
       "id": "2001-01-03-fed-cut",
       "date": "2001-01-03",
       "title": "Fed cuts rates between meetings",
-      "summary": "On 3 January 2001 the Federal Reserve cut its target rate to 5.75% at a conference call, before its next meeting.",
+      "summary": "On 3 January 2001 the Federal Reserve cut its target rate to 6.00% at a conference call, before its next meeting.",
       "players": [],
       "kind": "money",
       "key_date": false,
-      "source": "https://en.wikipedia.org/wiki/History_of_Federal_Open_Market_Committee_actions"
+      "source": "https://www.federalreserve.gov/boarddocs/press/general/2001/20010103/"
     },
     {
       "id": "2001-01-11-aol-time-warner-close",
@@ -496,19 +496,19 @@
       "key_date": false,
       "small_date": true,
       "label": "AOL Time Warner formed",
-      "source": "https://en.wikipedia.org/wiki/Merger_of_AOL_and_Time_Warner"
+      "source": "https://web.archive.org/web/20011209190818/http://money.cnn.com:80/2001/01/12/markets/markets_newyork/"
     },
     {
-      "id": "2001-04-01-etoys-bankrupt",
-      "date": "2001-04-01",
+      "id": "2001-02-26-etoys-bankrupt",
+      "date": "2001-02-26",
       "title": "eToys goes bankrupt",
-      "summary": "The online toy seller eToys went bankrupt on 1 April 2001, two years after its share sale.",
+      "summary": "The online toy seller eToys said on 26 February 2001 that it would file for bankruptcy protection and close its site on 8 March.",
       "players": [],
       "kind": "money",
       "key_date": false,
       "small_date": true,
       "label": "eToys bankrupt",
-      "source": "https://en.wikipedia.org/wiki/EToys.com"
+      "source": "https://web.archive.org/web/20011125050603/http://money.cnn.com:80/2001/02/26/companies/etoys/"
     },
     {
       "id": "2001-04-17-cisco-warning",
@@ -541,7 +541,7 @@
       "kind": "money",
       "key_date": true,
       "label": "9/11 closes markets",
-      "source": "https://en.wikipedia.org/wiki/September_11_attacks"
+      "source": "https://www.theguardian.com/business/2001/sep/17/globalrecession.september112001"
     },
     {
       "id": "2001-10-03-nortel-cuts",
@@ -566,7 +566,7 @@
       "kind": "money",
       "key_date": true,
       "label": "Enron bankrupt",
-      "source": "https://en.wikipedia.org/wiki/Enron"
+      "source": "https://www.theguardian.com/business/2001/dec/03/corporatefraud.enron"
     },
     {
       "id": "2002-01-28-global-crossing-bankruptcy",
@@ -615,7 +615,7 @@
       "key_date": false,
       "small_date": true,
       "label": "Sarbanes-Oxley signed",
-      "source": "https://en.wikipedia.org/wiki/Sarbanes-Oxley_Act"
+      "source": "https://web.archive.org/web/20191227104453/https://www.sec.gov/answers/about-lawsshtml.html"
     },
     {
       "id": "2002-10-09-nasdaq-low",

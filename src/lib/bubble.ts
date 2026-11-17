@@ -108,6 +108,39 @@ type Drawing = {
 };
 
 const drawings = new WeakMap<SVGSVGElement, Drawing>();
+// The drawings still on the page, so they can be painted once more when the font arrives.
+const liveDrawings = new Set<Drawing>();
+
+// The width of a company name at a 100px font, measured once per piece of text. The bubble's name
+// font and weight never change, so its width at the size drawn is this times size / 100.
+const textWidths = new Map<string, number>();
+
+function nameWidth(name: SVGTextElement, text: string): number {
+  const known = textWidths.get(text);
+  if (known !== undefined) return known;
+  const previousText = name.textContent;
+  const previousSize = name.style.fontSize;
+  const previousDisplay = name.style.display;
+  name.style.display = "";
+  name.style.fontSize = "100px";
+  name.textContent = text;
+  const measured = name.getComputedTextLength();
+  name.textContent = previousText;
+  name.style.fontSize = previousSize;
+  name.style.display = previousDisplay;
+  // A hidden SVG reports no length; the rough count then keeps the label from being drawn wide.
+  const width = measured > 0 ? measured : [...text].length * 55;
+  textWidths.set(text, width);
+  return width;
+}
+
+// Before the font has loaded, a name is measured in the fallback font. Once the real one is ready
+// every width is measured again, and each drawing is painted once more, so a long name is split or
+// hidden on the width it is really drawn at.
+document.fonts.ready.then(() => {
+  textWidths.clear();
+  for (const drawing of liveDrawings) paintAll(drawing);
+});
 
 // The clip, the scene group the camera will transform, and the frame ring on top.
 function ensureScene(
@@ -298,9 +331,6 @@ function paintBubble(live: LiveBubble, drawing: Drawing): void {
   const showLogo = !isGroup && onScreen >= 6.5;
   const showName = onScreen >= 3.4;
   const showValue = onScreen >= 7;
-  logo.style.display = showLogo ? "" : "none";
-  name.style.display = showName ? "" : "none";
-  value.style.display = showValue ? "" : "none";
 
   // Font sizes are chosen for the screen and then divided by the zoom, so the text stays the same
   // size on screen however far the camera moves.
@@ -309,22 +339,68 @@ function paintBubble(live: LiveBubble, drawing: Drawing): void {
   const logoSize = clamp(2.2, r * 0.22 * zoom, 5) / zoom;
   const gap = 0.5 / zoom;
 
-  const stack = (showLogo ? logoSize + gap : 0) + (showName ? nameSize : 0) + (showValue ? gap + valueSize : 0);
-  let cursor = y - stack / 2;
-  let logoCenter = 0;
-  let nameCenter = 0;
-  let valueCenter = 0;
-  if (showLogo) {
-    logoCenter = cursor + logoSize / 2;
-    cursor += logoSize + gap;
-  }
+  // Where the logo, the name and the value sit for a name of one, two or no lines: the stack is
+  // centred on the middle of the bubble.
+  const centres = (nameLines: number) => {
+    const stack =
+      (showLogo ? logoSize + gap : 0) +
+      nameSize * nameLines +
+      (showValue ? gap + valueSize : 0);
+    let cursor = y - stack / 2;
+    let logoCenter = 0;
+    let nameCenter = 0;
+    let valueCenter = 0;
+    if (showLogo) {
+      logoCenter = cursor + logoSize / 2;
+      cursor += logoSize + gap;
+    }
+    if (nameLines > 0) {
+      nameCenter = cursor + (nameSize * nameLines) / 2;
+      cursor += nameSize * nameLines;
+    }
+    if (showValue) {
+      valueCenter = cursor + gap + valueSize / 2;
+    }
+    return { logoCenter, nameCenter, valueCenter };
+  };
+  // The room across the bubble at a line's height: the chord of the circle through the line's
+  // furthest edge, so text that fits here stays inside the bubble.
+  const roomAt = (centre: number): number => {
+    const far = Math.max(Math.abs(centre - nameSize / 2 - y), Math.abs(centre + nameSize / 2 - y));
+    return 2 * Math.sqrt(Math.max(0, r * r - far * far));
+  };
+  const fits = (text: string, centre: number): boolean =>
+    (nameWidth(name, text) * nameSize) / 100 <= roomAt(centre) * 0.98;
+
+  // A name wider than its bubble goes on two lines when both fit; otherwise it is hidden, as the
+  // smallest bubbles already were. The full name stays in the group's aria-label and the panel.
+  const lineHeight = nameSize * 1.05;
+  let nameLines: string[] = [];
   if (showName) {
-    nameCenter = cursor + nameSize / 2;
-    cursor += nameSize;
+    const one = centres(1);
+    if (fits(bubble.name, one.nameCenter)) {
+      nameLines = [bubble.name];
+    } else {
+      const words = bubble.name.split(" ");
+      const two = centres(2);
+      const lineCentres = [two.nameCenter - lineHeight / 2, two.nameCenter + lineHeight / 2];
+      let bestWidth = Infinity;
+      for (let at = 1; at < words.length; at += 1) {
+        const lines = [words.slice(0, at).join(" "), words.slice(at).join(" ")];
+        if (!lines.every((line, index) => fits(line, lineCentres[index]))) continue;
+        const width = Math.max(...lines.map((line) => (nameWidth(name, line) * nameSize) / 100));
+        if (width < bestWidth) {
+          bestWidth = width;
+          nameLines = lines;
+        }
+      }
+    }
   }
-  if (showValue) {
-    valueCenter = cursor + gap + valueSize / 2;
-  }
+  name.style.display = nameLines.length > 0 ? "" : "none";
+
+  logo.style.display = showLogo ? "" : "none";
+  value.style.display = showValue ? "" : "none";
+  const { logoCenter, nameCenter, valueCenter } = centres(nameLines.length);
 
   if (showLogo) {
     logoRect.setAttribute("x", fixed(x - logoSize / 2));
@@ -337,11 +413,23 @@ function paintBubble(live: LiveBubble, drawing: Drawing): void {
     logoText.style.fontSize = `${fixed(logoSize * 0.5)}px`;
     logoText.textContent = bubble.name.charAt(0);
   }
-  if (showName) {
-    name.setAttribute("x", fixed(x));
-    name.setAttribute("y", fixed(nameCenter));
+  if (nameLines.length > 0) {
     name.style.fontSize = `${fixed(nameSize)}px`;
-    name.textContent = bubble.name;
+    if (nameLines.length === 1) {
+      name.setAttribute("x", fixed(x));
+      name.setAttribute("y", fixed(nameCenter));
+      name.textContent = nameLines[0];
+    } else {
+      // Two lines in the same text element, so the rule that hides a name stays one rule.
+      name.textContent = "";
+      for (const [index, line] of nameLines.entries()) {
+        const tspan = el<SVGTSpanElement>("tspan");
+        tspan.setAttribute("x", fixed(x));
+        tspan.setAttribute("y", fixed(index === 0 ? nameCenter - lineHeight / 2 : nameCenter + lineHeight / 2));
+        tspan.textContent = line;
+        name.appendChild(tspan);
+      }
+    }
   }
   if (showValue) {
     value.setAttribute("x", fixed(x));
@@ -649,6 +737,7 @@ export function renderBubble(
       reduced: window.matchMedia("(prefers-reduced-motion: reduce)").matches,
     };
     drawings.set(svg, drawing);
+    liveDrawings.add(drawing);
   }
   drawing.zoom = view.z;
   drawing.players = players;

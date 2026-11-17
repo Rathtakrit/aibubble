@@ -93,8 +93,8 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6px 20px;
-  font-size: 13px;
+  gap: 6px 10px;
+  font-size: 12px;
   color: var(--ink-2);
 }
 
@@ -1102,12 +1102,12 @@ body[data-mode="story"] .sheet .sheet-timeline {
 
   .timeline {
     border-top: 1px solid var(--ink);
-    padding: 12px 40px 14px;
+    padding: 8px 40px;
   }
 
   .timeline-inner {
     position: relative;
-    height: 152px;
+    height: 132px;
     max-width: 1360px;
     margin: 0 auto;
   }
@@ -1115,18 +1115,19 @@ body[data-mode="story"] .sheet .sheet-timeline {
   /* The one line: two heights of titles above it, dots on it, day ticks and years below it.
      Each height is 28px, a two-line title, and the next one starts 32px above it, so no title
      can sit on the one above it however it wraps. The nearest height ends 6px above the slider's
-     44px hit area, so no title is drawn over the slider or cut by it. */
+     44px hit area, so no title is drawn over the slider or cut by it. Two label heights, the
+     slider, the year names and the end labels are all the box needs; it keeps no spare rows. */
   .timeline-inner .timeline-axis {
-    top: 110px;
+    top: 92px;
   }
 
   .timeline-inner .day-range {
-    top: 88px;
+    top: 70px;
     z-index: 1;
   }
 
   .timeline-inner .timeline-dot {
-    top: 88px;
+    top: 70px;
   }
 
   .timeline-label {
@@ -1140,11 +1141,11 @@ body[data-mode="story"] .sheet .sheet-timeline {
   }
 
   .timeline-label[data-row="0"] {
-    bottom: 70px;
+    bottom: 68px;
   }
 
   .timeline-label[data-row="1"] {
-    bottom: 102px;
+    bottom: 100px;
   }
 
   /* A blue dot's text waits until the dot is hovered or focused. It keeps its box while hidden,
@@ -1174,19 +1175,19 @@ body[data-mode="story"] .sheet .sheet-timeline {
   }
 
   .timeline-tick-year {
-    top: 110px;
+    top: 92px;
     height: 9px;
   }
 
   .timeline-tick-quarter {
-    top: 110px;
+    top: 92px;
     height: 5px;
     border-left-color: var(--ink-2);
   }
 
   .timeline-year {
     position: absolute;
-    top: 120px;
+    top: 102px;
     transform: translateX(-50%);
     font-size: 12px;
     line-height: 14px;
@@ -1197,14 +1198,15 @@ body[data-mode="story"] .sheet .sheet-timeline {
     position: absolute;
     left: 0;
     right: 0;
-    top: 135px;
+    top: 117px;
     line-height: 14px;
   }
 
   .status {
     max-width: 1360px;
-    margin: 4px auto 0;
+    margin: 2px auto 0;
     font-size: 12px;
+    line-height: 14px;
     color: var(--ink-2);
   }
 }
@@ -1296,6 +1298,47 @@ body[data-mode="story"] .sheet .sheet-timeline {
   body[data-mode="story"] .story-column .chapter-list-items {
     flex: 1 1 auto;
     min-height: 0;
+  }
+}
+
+/* --- a short window: the same page, with less air between its lines --- */
+
+/* At 1280 x 720 the header, the page's padding, the story column and the timeline have to fit
+   720px. A past page's switch between the two past bubbles sits above the date, which makes its
+   column taller than the front page's, so below 800px the gaps between the lines give up the
+   difference: the text keeps its size and every button its 44px, and nothing moves or is cut. */
+@media (min-width: 900px) and (max-height: 800px) {
+  .explore-main {
+    padding-top: 12px;
+    padding-bottom: 8px;
+  }
+
+  .kicker {
+    margin-bottom: 8px;
+  }
+
+  .past-switch {
+    margin-bottom: 4px;
+  }
+
+  .story-column .pill {
+    margin-top: 10px;
+  }
+
+  .headline {
+    margin: 6px 0;
+  }
+
+  .story-column .source {
+    margin-top: 4px;
+  }
+
+  .story-column .players-line {
+    margin: 10px 0 0;
+  }
+
+  .story-column .button-row {
+    margin-top: 12px;
   }
 }
 

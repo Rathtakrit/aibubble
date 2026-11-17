@@ -23,6 +23,9 @@ export type Company = {
   ticker?: string;
   members?: string[];
   first_mention: string;
+  // The last day the company is in the picture: the day it was bought, failed or was taken over.
+  // It is gone from the next day. Absent when it is still there at the end of the set.
+  ended?: string;
   source: string;
 };
 
@@ -250,7 +253,8 @@ export function valuePointOn(points: ValuePoint[], companyId: string, date: stri
   return latest ?? first;
 }
 
-// A company is shown only from its first_mention on.
+// A company is shown from its first_mention to its ended day, both included.
 export function isShown(company: Company, date: string): boolean {
-  return date >= company.first_mention;
+  if (date < company.first_mention) return false;
+  return company.ended === undefined || date <= company.ended;
 }

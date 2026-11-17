@@ -83,9 +83,9 @@ test("the days of the scale always move forward", () => {
   }
 });
 
-test("a busy month is nearly as wide as a whole year with no dots, and four red dots pass it", () => {
-  // Four red dots in one month weigh 0.3 + 4 x 1.5 = 6.3; a year of empty months weighs
-  // 12 x 0.3 = 3.6. Two red dots weigh 3.3, eleven twelfths of a year, so they do not pass it.
+test("a busy month is far wider than a whole year with no dots, and two red dots already pass it", () => {
+  // Four red dots in one month weigh 0.15 + 4 x 1.5 = 6.15; a year of empty months weighs
+  // 12 x 0.15 = 1.8. Two red dots weigh 3.15, which already passes the empty year.
   const scale = timelineScale(last, { red: busyDots, blue: [] });
   const year = scale.percentOf("2025-01-01") - scale.percentOf("2024-01-01");
   const month = scale.percentOf("2025-04-01") - scale.percentOf("2025-03-01");
@@ -100,17 +100,34 @@ test("a busy month is nearly as wide as a whole year with no dots, and four red 
     blue: [],
   });
   const twoRedMonth = two.percentOf("2025-04-01") - two.percentOf("2025-03-01");
-  assert.ok(twoRedMonth > year * 0.9, `two red dots give ${twoRedMonth}% of an ${year}% year`);
+  assert.ok(twoRedMonth > year, `two red dots give ${twoRedMonth}% of an ${year}% year`);
 });
 
-test("a month with four red dots is 21 times as wide as a month with none", () => {
+test("a year with no dots is narrower than one month with two red dots", () => {
+  const scale = timelineScale(last, {
+    red: [
+      { id: "r1", date: "2025-03-03" },
+      { id: "r2", date: "2025-03-10" },
+    ],
+    blue: [],
+  });
+  const year = scale.percentOf("2025-01-01") - scale.percentOf("2024-01-01");
+  const twoRedMonth = scale.percentOf("2025-04-01") - scale.percentOf("2025-03-01");
+  assert.ok(year > 0 && twoRedMonth > 0);
+  assert.ok(
+    year < twoRedMonth,
+    `the empty year is ${year}% wide and the month with two red dots ${twoRedMonth}%`,
+  );
+});
+
+test("a month with four red dots is 41 times as wide as a month with none", () => {
   const scale = timelineScale(last, dots);
   // A month's width on the line: the place of the next month's first day less this month's.
   const widthOf = (first: string, next: string) => scale.percentOf(next) - scale.percentOf(first);
   const busy = widthOf("2025-03-01", "2025-04-01");
   const empty = widthOf("2025-04-01", "2025-05-01");
   assert.ok(busy > 0 && empty > 0);
-  assert.ok(Math.abs(busy / empty - 21) < 0.01, `busy is ${busy / empty} times the empty month`);
+  assert.ok(Math.abs(busy / empty - 41) < 0.01, `busy is ${busy / empty} times the empty month`);
 });
 
 test("a blue dot earns half the room a red one does", () => {
@@ -119,7 +136,7 @@ test("a blue dot earns half the room a red one does", () => {
   const blue = widthOf("2025-06-01", "2025-07-01");
   const empty = widthOf("2025-07-01", "2025-08-01");
   assert.ok(blue > 0 && empty > 0);
-  assert.ok(Math.abs(blue / empty - 6) < 0.01, `the two-blue month is ${blue / empty} times an empty one`);
+  assert.ok(Math.abs(blue / empty - 11) < 0.01, `the two-blue month is ${blue / empty} times an empty one`);
 });
 
 test("percent to date and back gives the same day for every day in the range", () => {

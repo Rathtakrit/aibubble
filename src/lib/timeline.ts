@@ -42,9 +42,10 @@ type ScaleDots = { red: readonly Dated[]; blue: readonly Dated[] };
 // the weight of every month before it, so a weight can be turned into a place on the line.
 type MonthSpan = { first: number; days: number; start: number; weight: number };
 
-// A month with no dots still takes a little room (0.3), a red dot adds 1.5 and a blue one 0.75,
-// and no month passes 7. An empty year is then only a little wider than a month with two red dots.
-const EMPTY_MONTH_WEIGHT = 0.3;
+// A month with no dots still takes a little room (0.15), a red dot adds 1.5 and a blue one 0.75,
+// and no month passes 7. An empty year (twelve months of 0.15) is then narrower than one month
+// with two red dots (0.15 + 3).
+const EMPTY_MONTH_WEIGHT = 0.15;
 const RED_DOT_WEIGHT = 1.5;
 const BLUE_DOT_WEIGHT = 0.75;
 const MAX_MONTH_WEIGHT = 7;
