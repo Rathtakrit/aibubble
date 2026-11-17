@@ -896,6 +896,11 @@ export function dayLayouts(
   return { first, last, days, edgeGap: edgeGap * fit.scale, dealGap: dealGap * fit.scale };
 }
 
+// Workers send Maps directly through structured clone; no rounding or reconstruction needed.
+export function installLayouts(id: DatasetId, layout: DayLayouts): void {
+  realLayouts.set(id, layout);
+}
+
 // A date before the first day uses the first day's layout; after the last day, the last day's.
 function clampDate(date: string, layout: DayLayouts): string {
   if (date < layout.first) return layout.first;
@@ -1193,6 +1198,7 @@ const realLayouts = new Map<DatasetId, DayLayouts>();
 function realLayoutsFor(): DayLayouts {
   let layout = realLayouts.get(datasetId);
   if (layout === undefined) {
+    if (typeof window !== "undefined") throw new Error("Bubble layouts have not loaded");
     layout = dayLayouts(companies, values, deals, defaultDate());
     realLayouts.set(datasetId, layout);
   }
@@ -1208,5 +1214,7 @@ export function arrowsForDate(date: string): Arrow[] {
 }
 
 export function totalForDate(date: string): number {
-  return totalOn(date, companies, values, deals, realLayoutsFor());
+  const day = date < FIRST_DAY ? FIRST_DAY : date > LAST_DAY ? LAST_DAY : date;
+  return companies.reduce((sum, company) =>
+    sum + (isShown(company, day) ? (valueOn(values, company.id, day) ?? 0) : 0), 0);
 }

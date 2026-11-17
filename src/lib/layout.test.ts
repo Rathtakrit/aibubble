@@ -18,6 +18,9 @@ import {
   LONGEST_LINE,
   straightDistance,
   totalOn,
+  totalForDate,
+  installLayouts,
+  bubblesForDate,
 } from "./layout.ts";
 import type { DayLayouts, Placed } from "./layout.ts";
 import { companies as realCompanies, deals as realDeals, useDataset, values as realValues } from "./data.ts";
@@ -661,6 +664,59 @@ test("a past set's day layouts hold no AI company, and the AI layout none of the
     for (const id of placed.keys()) {
       assert.ok(aiIds.has(id), `${id} is placed on ${date} but is not in the AI companies`);
       assert.ok(!dotcomOnly.includes(id), `${id} is a dot-com company placed on ${date} in the AI layout`);
+    }
+  }
+});
+
+test("worker layouts match the original on sampled days in every data set", async () => {
+  // @ts-expect-error node:worker_threads has no types in this repo
+  const { Worker } = await import("node:worker_threads");
+  const workerUrl = new URL("../scripts/layout.worker.ts", import.meta.url).href;
+  for (const id of ["ai", "dotcom", "housing"] as DatasetId[]) {
+    useDataset(id);
+    // Compare fresh module instances, as on a page load, independently of earlier tests.
+    const baseline = new Worker(`
+      const { parentPort } = require("node:worker_threads");
+      Promise.all([
+        import(${JSON.stringify(new URL("./data.ts", import.meta.url).href)}),
+        import(${JSON.stringify(new URL("./layout.ts", import.meta.url).href)})
+      ]).then(([data, layout]) => {
+        data.useDataset(${JSON.stringify(id)});
+        parentPort.postMessage(layout.dayLayouts(data.companies, data.values, data.deals, data.LAST_DAY));
+      });
+    `, { eval: true });
+    const expected = await new Promise<DayLayouts>((resolve, reject) => {
+      baseline.once("message", resolve);
+      baseline.once("error", reject);
+    }).finally(() => baseline.terminate());
+    const worker = new Worker(`
+      const { parentPort } = require("node:worker_threads");
+      globalThis.self = { postMessage: (layout) => parentPort.postMessage(layout) };
+      import(${JSON.stringify(workerUrl)}).then(() => self.onmessage({ data: ${JSON.stringify(id)} }));
+    `, { eval: true });
+    try {
+      const actual = await new Promise<DayLayouts>((resolve, reject) => {
+        worker.once("message", resolve);
+        worker.once("error", reject);
+      });
+      installLayouts(id, actual);
+      const dates = [...expected.days.keys()];
+      assert.equal(actual.first, expected.first);
+      assert.equal(actual.last, expected.last);
+      assert.equal(actual.days.size, expected.days.size);
+      for (const index of [0, 1, 30, Math.floor(dates.length / 2), dates.length - 2, dates.length - 1]) {
+        const date = dates[index];
+        assert.deepStrictEqual(actual.days.get(date), expected.days.get(date), `${id}: ${date}`);
+        assert.deepStrictEqual(bubblesForDate(date), bubblesOn(date, realCompanies, realValues, realDeals, expected));
+        assert.equal(totalForDate(date), totalOn(date, realCompanies, realValues, realDeals, expected));
+        assert.deepStrictEqual(arrowsOn(date, realCompanies, realValues, realDeals, actual),
+          arrowsOn(date, realCompanies, realValues, realDeals, expected));
+        assert.equal(totalOn(date, realCompanies, realValues, realDeals, actual),
+          totalOn(date, realCompanies, realValues, realDeals, expected));
+      }
+    } finally {
+      await worker.terminate();
+      useDataset("ai");
     }
   }
 });

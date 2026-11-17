@@ -317,13 +317,6 @@
       "source": "https://companiesmarketcap.com/enron/marketcap/"
     },
     {
-      "company": "enron",
-      "date": "2001-12-31",
-      "value_usd_bn": 0.44,
-      "what": "year end",
-      "source": "https://companiesmarketcap.com/enron/marketcap/"
-    },
-    {
       "company": "global-crossing",
       "date": "1998-12-31",
       "value_usd_bn": 9.25,
@@ -355,13 +348,6 @@
       "company": "global-crossing",
       "date": "2001-12-31",
       "value_usd_bn": 0.76,
-      "what": "year end",
-      "source": "https://companiesmarketcap.com/global-crossing/marketcap/"
-    },
-    {
-      "company": "global-crossing",
-      "date": "2002-12-31",
-      "value_usd_bn": 0.01637,
       "what": "year end",
       "source": "https://companiesmarketcap.com/global-crossing/marketcap/"
     },
@@ -1048,13 +1034,6 @@
       "company": "worldcom",
       "date": "2001-12-31",
       "value_usd_bn": 43.33,
-      "what": "year end",
-      "source": "https://companiesmarketcap.com/worldcom/marketcap/"
-    },
-    {
-      "company": "worldcom",
-      "date": "2002-12-31",
-      "value_usd_bn": 0.41,
       "what": "year end",
       "source": "https://companiesmarketcap.com/worldcom/marketcap/"
     },

@@ -8,6 +8,7 @@ import {
   datasetTitle,
   deals,
   news,
+  LAST_DAY,
   pillClass,
   pillLabel,
   useDataset,
@@ -16,7 +17,10 @@ import {
   valuePointOn,
 } from "../lib/data.ts";
 import type { Company, NewsItem } from "../lib/data.ts";
-import { arrowsForDate, bubblesForDate, defaultDate, formatValue, totalForDate } from "../lib/layout.ts";
+import { arrowsForDate, bubblesForDate, defaultDate, formatValue, installLayouts, totalForDate } from "../lib/layout.ts";
+import type { DayLayouts } from "../lib/layout.ts";
+import workerUrl from "./layout.worker.ts?worker&url";
+import { layoutCacheKey, layoutStore, loadLayouts } from "./layout-cache.ts";
 import { renderBubble } from "../lib/bubble.ts";
 import { ZOOMS } from "../lib/camera.ts";
 import type { Chapter } from "../lib/story.ts";
@@ -39,6 +43,39 @@ const requested = document.body.dataset.dataset;
 useDataset(requested === "dotcom" || requested === "housing" ? requested : "ai");
 // A past page has no Story mode: no chapters, and ?chapter= is ignored.
 const isPast = datasetId !== "ai";
+let layoutsReady = false;
+function computeLayouts(): Promise<DayLayouts> {
+  return new Promise((resolve, reject) => {
+    const worker = new Worker(workerUrl, { type: "module" });
+    worker.onmessage = (event: MessageEvent<DayLayouts>) => {
+      worker.terminate();
+      resolve(event.data);
+    };
+    worker.onerror = () => {
+      worker.terminate();
+      reject(new Error("Bubble layouts could not load. Reload the page to try again."));
+    };
+    worker.postMessage(datasetId);
+  });
+}
+
+async function prepareLayouts(): Promise<void> {
+  const install = (layouts: DayLayouts) => {
+    installLayouts(datasetId, layouts);
+    layoutsReady = true;
+    render();
+  };
+  let key: string;
+  try {
+    key = await layoutCacheKey(datasetId, workerUrl, { companies, values, deals, news, last: LAST_DAY });
+  } catch {
+    // A browser without a working digest can still use the worker, without caching.
+    install(await computeLayouts());
+    return;
+  }
+  await loadLayouts(layoutStore, datasetId, key, computeLayouts, install);
+}
+const STORY_ENABLED = document.body.dataset.storyEnabled === "true";
 
 // Explore walks money news only, from the set's first day on; the other news waits for its own tab.
 const ordered = inDateOrder(news.filter((item) => item.kind === "money" && item.date >= FIRST_DAY));
@@ -104,6 +141,11 @@ function partnersOf(id: string, date: string): string[] {
 }
 
 function isCompanyShown(id: string, date: string): boolean {
+  if (!layoutsReady) {
+    const company = companyById.get(id);
+    return !!company && company.first_mention <= date && (!company.ended || date <= company.ended)
+      && valueOn(values, id, date) !== null;
+  }
   return bubblesForDate(date).some((bubble) => bubble.id === id);
 }
 
@@ -307,15 +349,17 @@ function render(soon = false): void {
   // The bubble follows the day; a chapter frames its players as a news item does, a chosen item
   // frames its players, a chosen company frames itself and the companies it has money lines
   // with, and a plain day shows the whole frame.
-  const players = storyChapter
-    ? storyChapter.players
-    : item
-      ? item.players
-      : company
-        ? [company.id, ...partnersOf(company.id, day)]
-        : [];
-  for (const svg of document.querySelectorAll<SVGSVGElement>("[data-bubble]")) {
-    renderBubble(svg, day, { players, focus: company?.id, manual: ZOOMS[zoomIndex] });
+  if (layoutsReady) {
+    const players = storyChapter
+      ? storyChapter.players
+      : item
+        ? item.players
+        : company
+          ? [company.id, ...partnersOf(company.id, day)]
+          : [];
+    for (const svg of document.querySelectorAll<SVGSVGElement>("[data-bubble]")) {
+      renderBubble(svg, day, { players, focus: company?.id, manual: ZOOMS[zoomIndex] });
+    }
   }
 
   if (soon) writeAddressSoon();
@@ -357,6 +401,7 @@ function focusVisible(selector: string): void {
 }
 
 function goToChapter(index: number): void {
+  if (!STORY_ENABLED) return;
   const chapter = chapters[index];
   if (!chapter) return;
   chapterIndex = index;
@@ -557,7 +602,7 @@ for (const svg of document.querySelectorAll<SVGSVGElement>("[data-bubble]")) {
 function readAddress(): void {
   const params = new URLSearchParams(window.location.search);
   // ?chapter=3 opens chapter 3; a number that is not a chapter opens the first.
-  if (!isPast && params.has("chapter") && chapters.length > 0) {
+  if (STORY_ENABLED && !isPast && params.has("chapter") && chapters.length > 0) {
     const wanted = Number(params.get("chapter"));
     const at = Number.isInteger(wanted) && wanted >= 1 && wanted <= chapters.length ? wanted - 1 : 0;
     chapterIndex = at;
@@ -608,6 +653,7 @@ function readAddress(): void {
 
 readAddress();
 render();
+void prepareLayouts().catch((error: unknown) => console.error(error));
 
 // The titles above the timeline are placed from their real widths after wrapping, on the first
 // of the two heights that has room, with a gap between neighbours; one that fits on neither is

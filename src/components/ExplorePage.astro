@@ -36,6 +36,8 @@ const { id } = Astro.props;
 // data modules hold one set at a time, so the set is chosen before anything is read from them.
 useDataset(id);
 const isPast = id !== "ai";
+// Story is off for now because it is too close to Explore.
+const STORY_ENABLED = false;
 // Everything below is taken now, while this set is the active one.
 const title = datasetTitle;
 const setStatus = status;
@@ -164,12 +166,12 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>AI Bubble</title>
   </head>
-  <body data-mode="explore" data-dataset={id}>
+  <body data-mode="explore" data-dataset={id} data-story-enabled={isPast ? undefined : STORY_ENABLED}>
     <div class="layout-desktop">
       <header class="site-header">
         <a class="wordmark" href="/">AI Bubble</a>
         <nav class="site-nav" aria-label="Sections">
-          <a class="nav-item" data-mode="story" href="/?chapter=1">Story</a>
+          {STORY_ENABLED && <a class="nav-item" data-mode="story" href="/?chapter=1">Story</a>}
           <a
             class:list={["nav-item", !isPast && "nav-current"]}
             data-mode={isPast ? undefined : "explore"}
@@ -190,7 +192,7 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
         <div class="story-column">
           <p class="kicker explore-only" data-bind="kicker-desktop">{title} · news {position} of {count}</p>
           {
-            !isPast && (
+            STORY_ENABLED && !isPast && (
               <p class="kicker story-only" data-bind="story-kicker">
                 Chapter 1 of {chapters.length}
               </p>
@@ -261,7 +263,7 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
           </div>
 
           {
-            !isPast && (
+            STORY_ENABLED && !isPast && (
               <div data-block="story" hidden>
                 <h1 class="headline" data-bind="story-title" tabindex="-1">
                   {firstChapter.title}
@@ -292,7 +294,7 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
           }
 
           {
-            !isPast && (
+            STORY_ENABLED && !isPast && (
               <div data-block="story-list" hidden>
                 <div class="chapter-list">
                   <div class="chapter-list-head">
@@ -436,7 +438,7 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
             ))
           }
           {
-            !isPast &&
+            STORY_ENABLED && !isPast &&
               chapters.map((chapter) => {
                 const left = scale.percentOf(chapter.date);
                 return (
@@ -511,7 +513,7 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
       <section class="sheet" aria-label="News item" data-sheet>
         <div class="grabber" aria-hidden="true"></div>
         {
-          !isPast && (
+          STORY_ENABLED && !isPast && (
             <div class="mode-switch" role="group" aria-label="Mode">
               <a class="mode-button" data-mode="story" href="/?chapter=1">
                 Story
@@ -590,7 +592,7 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
         </div>
 
         {
-          !isPast && (
+          STORY_ENABLED && !isPast && (
             <div data-block="story" hidden>
               <p class="sheet-kicker" data-bind="story-kicker">
                 Chapter 1 of {chapters.length}
@@ -623,7 +625,7 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
         }
 
         {
-          !isPast && (
+          STORY_ENABLED && !isPast && (
             <div data-block="story-list" hidden>
               <div class="chapter-list chapter-list-sheet">
                 <div class="chapter-list-head">
@@ -707,7 +709,7 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
             ))
           }
           {
-            !isPast &&
+            STORY_ENABLED && !isPast &&
               chapters.map((chapter) => (
                 <button
                   type="button"
@@ -733,7 +735,7 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
       </section>
     </div>
 
-    {!isPast && <script type="application/json" data-story-chapters set:html={chaptersJson}></script>}
+    {STORY_ENABLED && !isPast && <script type="application/json" data-story-chapters set:html={chaptersJson}></script>}
     <script>
       import "../scripts/explore.ts";
     </script>

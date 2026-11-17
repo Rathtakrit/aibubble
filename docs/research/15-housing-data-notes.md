@@ -1,7 +1,8 @@
 # Housing and credit boom: data notes
 
 The set covers 1 January 2003 to 31 December 2009 in `data/past/housing/`. On 16 November 2026 it holds
-20 companies, 125 value points, 7 money lines and 70 news items, all with `"status": "draft"`.
+20 companies, 123 value points, 7 money lines and 70 news items, all with `"status": "draft"`. The third pass of
+17 November 2026 replaced the last three Wikipedia news sources; the counts did not change.
 
 The first pass had 50 news items, 39 of them citing Wikipedia, 19 red dates and no blue ones. This pass
 replaces almost every news source with a first-hand or news page, adds 20 items, gives the timeline 9 red
@@ -12,7 +13,7 @@ Federal Reserve pages.
 
 - **2003 to 2006, the boom.** The Fed holds its rate at 1 percent, then raises it 17 times to 5.25 percent.
   Greenspan suggests more mortgage choices, Buffett calls derivatives a time bomb, Rajan and Shiller warn,
-  the homeownership rate reaches 69 percent, and the Case-Shiller index peaks at 206.52 in July 2006.
+  the homeownership rate reaches 69 percent, and the Case-Shiller 20-city index peaks at 206.52 in July 2006.
 - **2007, the mortgage market breaks.** HSBC warns, New Century fails, two Bear Stearns funds collapse,
   BNP Paribas freezes three funds on 9 August, Northern Rock has a run, and the banks start writing down
   subprime debt. The Dow peaks on 9 October.
@@ -24,10 +25,14 @@ Federal Reserve pages.
 
 ## Pages opened
 
-The set now cites 80 different pages. 62 of them were opened in this run: 22 BBC News pages, 18 Federal
-Reserve pages, 10 Guardian pages, 2 Federal Reserve History essays, 1 IMF page, 1 Harvard Business Review
-page, 1 FDIC page, 1 CNN Money page read through the Wayback Machine, 1 HBR page, and 3 Wikipedia pages.
-The other 18 are the CompaniesMarketCap year-end pages, unchanged from the first pass.
+The second pass left the set citing 80 different pages. 62 of them were opened in that run: 22 BBC News pages, 18
+Federal Reserve pages, 10 Guardian pages, 2 Federal Reserve History essays, 1 IMF page, 1 Harvard Business Review
+page, 1 FDIC page, 1 CNN Money page read through the Wayback Machine, 1 HBR page, and 3 Wikipedia pages. The other
+18 are the CompaniesMarketCap year-end pages, unchanged from the first pass. The end-date work of 17 November 2026
+added six more: a BBC page, the FDIC's WaMu page, a Federal Reserve testimony, the Guardian on Bear Stearns, and two
+Bank of America 8-K exhibits on the company's own investor site. The third pass replaced the 3 Wikipedia pages and
+added five: S&P Dow Jones's release, Princeton's second-edition page through the Wayback Machine, the New York Times
+DealBook on Whitney, and the two New York Times DealBook AIG stories.
 
 With the news index pages used to find stories (35 Guardian daily business indexes, 3 BBC timelines, the
 Fed essays and a few search pages), this run opened about 100 pages that returned content.
@@ -38,7 +43,7 @@ A red dot is a turning point a reader has to see.
 
 | Date | Label | Why it is red |
 | --- | --- | --- |
-| 2006-07-31 | House prices peak | The Case-Shiller index reaches 206.52, its high, and the housing market turns. |
+| 2006-07-31 | House prices peak | The Case-Shiller 20-city index reaches 206.52, its high, and the housing market turns. |
 | 2007-08-09 | Credit markets freeze | BNP Paribas cannot value three funds and the market for mortgage debt stops. |
 | 2007-10-09 | Dow peak | The Dow closes at 14,164.53, the top before the fall. |
 | 2008-03-16 | Bear Stearns rescue | A whole investment bank is sold for $2 a share with central bank support. |
@@ -66,7 +71,7 @@ A blue dot marks a smaller event, including every public warning that this was a
 | 2007-05-17 | Bernanke on subprime | Bernanke sets out the foreclosure and delinquency worries in a full speech. |
 | 2007-07-09 | Prince: 'still dancing' | Citigroup's chief says the bank must keep dancing while the music plays. |
 | 2007-09-14 | Run on Northern Rock | Savers queue to take out about £1bn a day, the biggest British bank run in a century. |
-| 2007-10-31 | Whitney warns on Citi | Whitney's note says Citigroup's dividend is bigger than its profits. |
+| 2007-10-31 | Whitney warns on Citi | Whitney's note says Citigroup faces a $30bn capital shortfall and may have to cut its dividend. |
 | 2008-09-16 | Money funds break | A money fund cannot repay $1 a share after Lehman's debt is written down. |
 | 2008-09-21 | Goldman, Morgan become banks | The last two stand-alone investment banks take bank holding status. |
 
@@ -75,9 +80,9 @@ lines readers remember from the boom; they are not warnings but they set up the 
 
 ## Judgement calls
 
-- **Wikipedia kept for three items only.** The Case-Shiller peak, Shiller's 2005 book and Whitney's note
-  still cite Wikipedia; each page states the fact and no first-hand page that states the same thing could
-  be opened. They are listed under "Not found / doubts".
+- **No item on Wikipedia.** The Case-Shiller peak, Shiller's 2005 book and Whitney's note were the last three
+  news rows on Wikipedia. The third pass replaced all three with pages that state the same facts (below), so the
+  news and deal files for both past sets hold no `wikipedia.org` URL.
 - **Year-only facts are dated at the year end.** Homeownership (69 percent in 2006) is dated 31 December
   2006, Shiller's second edition (2005) 31 December 2005, and the end of the recession (June 2009) 30 June
   2009. The source gives a year or a month, not a day; the notes say so and the summaries do not invent one.
@@ -88,8 +93,9 @@ lines readers remember from the boom; they are not warnings but they set up the 
 - **The $100bn fund is dated 15 October 2007.** The Guardian's report calls it a $100bn fund; the first
   pass said $80bn, which no page opened here states.
 - **No third deal kind.** The AIG payments to its trading partners and JPMorgan's collateral calls on Lehman
-  were the two cases for a "payout" kind, and neither could be sourced (see gaps). `meta.json` therefore
-  keeps the two kinds it had, and `src/lib/data.test.ts` is unchanged.
+  were the two cases for a "payout" kind. Their figures are now sourced (see gaps), but `meta.json` has only
+  `investment` and `takeover`, and a payout is neither: AIG bought no stake and took over no firm by paying
+  collateral. `src/lib/data.test.ts` checks that list, so neither row was written.
 - **Lloyds and HBOS are news only.** Neither is a company bubble, so the £12bn takeover is a blue-free news
   item and not a money line.
 - **Wells Fargo and Wachovia are a money line, Citigroup's rival bid is not.** Citigroup's bid was backed by
@@ -98,14 +104,47 @@ lines readers remember from the boom; they are not warnings but they set up the 
 - **The deal sources are the day's news pages.** BBC News for Bear Stearns, Merrill Lynch, WaMu, Wachovia and
   MUFG; the Guardian for Countrywide and Berkshire's Goldman stake.
 
+## End dates
+
+`ended` is the last day a company is in the picture: the day its takeover closed, or the day it failed. The
+company is absent from the next day. Each date below was written only after opening a page that states it.
+
+| Company | Old `ended` | New `ended` | What happened | Source |
+| --- | --- | --- | --- | --- |
+| Lehman Brothers | 2008-12-31 | 2008-09-15 | Filed for Chapter 11 bankruptcy protection in the early hours of 15 September 2008. | `news.bbc.co.uk/2/mobile/business/8256010.stm` |
+| Washington Mutual | 2008-12-31 | 2008-09-25 | The FDIC sold its banking operations to JPMorgan Chase on 25 September 2008. | `fdic.gov/resources/resolutions/bank-failures/failed-bank-list/wamu.html` |
+| Wachovia | 2008-10-03 | 2008-12-31 | Wells Fargo's purchase completed effective 31 December 2008. | `federalreserve.gov/newsevents/testimony/alvarez20100901a.htm` |
+| Merrill Lynch | 2008-09-15 | 2009-01-01 | Bank of America completed its purchase on 1 January 2009. | Bank of America 8-K exhibit, `investor.bankofamerica.com/regulatory-and-other-filings/select-sec-filings/content/0000950123-09-000010/y73597exv99w1.htm` |
+| Bear Stearns | 2008-03-24 | 2008-05-30 | JPMorgan's takeover closed on 30 May 2008. | `theguardian.com/business/2008/may/30/bearstearns.jpmorgan` |
+| Countrywide Financial | 2008-01-11 | 2008-07-01 | Bank of America completed its purchase on 1 July 2008. | Bank of America 8-K exhibit, `investor.bankofamerica.com/regulatory-and-other-filings/select-sec-filings/content/0000950144-08-005220/g14113kexv99w1.htm` |
+
+The old dates were the end of 2008 for Lehman and WaMu, the announcement day for Countrywide (11
+January), Merrill Lynch (15 September) and Wachovia (3 October), and the day of the revised Bear Stearns
+agreement (24 March). A company now leaves the picture on the day its takeover closed or it failed, not when
+the deal was announced. Washington Mutual, Inc., the holding company whose shares are the `WM` row, filed for
+Chapter 11 on 26 September 2008, the day after its bank was taken over; the picture drops it on the 25th, the
+day the bank was sold and its shares stopped meaning anything.
+
+Value points removed because they fell after the new `ended` day (`check-data` rejects them):
+
+| Company | Point removed | Value | What the point was |
+| --- | --- | --- | --- |
+| Lehman Brothers | 2008-12-31 | $0.02083bn | last recorded trade, after the bankruptcy |
+| Washington Mutual | 2008-12-31 | $0.008bn | last recorded trade, holding company after the seizure |
+
+Lehman and WaMu therefore hold their 31 December 2007 value (Lehman $34.68bn, WaMu $11.82bn) from that day
+until they disappear, far above what they were worth in September 2008. No opened page gives a value for either
+in the week it failed. Wachovia keeps its 3 October 2008 point (the day Wells Fargo's rival bid was announced)
+until 31 December, and Merrill Lynch's only point is 15 September 2008, the day it agreed to be bought.
+
 ## Source swaps and corrections
 
-All 39 Wikipedia news items were opened again. 36 now cite a first-hand or news page; the 3 that remain are
-the Case-Shiller peak, Shiller's book and Whitney's note.
+All 39 Wikipedia news items were opened again. 36 now cite a first-hand or news page; the last 3, the Case-Shiller
+peak, Shiller's book and Whitney's note, were replaced in the third pass below.
 
 | Item | First pass | Now | Why |
 | --- | --- | --- | --- |
-| House prices peak | "national home price index ... 206.52" | "S&P Case-Shiller index ... 206.52" | 206.52 is the S&P index; the national index peaked at 198.01 in 2006 Q1. |
+| House prices peak | "national home price index ... 206.52" | "S&P Case-Shiller 20-city index ... 206.52" | 206.52 is the 20-city index; the national index peaked at 184.62 in July 2006, as S&P's release says. |
 | HSBC warning | Wikipedia | BBC, 8 February 2007 | BBC states the $10.5bn charge and the 20 percent overshoot. |
 | New Century | Wikipedia | BBC, 2 April 2007 | BBC states the Chapter 11 filing and 3,200 job cuts. |
 | Bear Stearns funds | "$20 billion of subprime-linked CDO" | "$3.2bn loan to one fund" | The fund was lent $3.2bn; $20bn was not the rescue. |
@@ -144,19 +183,23 @@ Citigroup split and the March 2009 Treasury purchases were added.
 - **No new companies.** Barclays and Lloyds are the only candidates with CompaniesMarketCap pages, and
   both start in 2008, so neither has three in-range yearly values. Northern Rock, IndyMac, New Century,
   National City, Ambac and MBIA have no open page with three dated market values. The set stays at 20.
-- **Companies still cite Wikipedia.** 18 of the 20 company rows cite Wikipedia; only Merrill Lynch's source
-  was changed, to the Guardian page that reports O'Neal's departure. The brief asked for news items and
-  deals, so the company rows were left alone.
-- **Values are year ends only** for most companies. Peak days and low days are not filled except where a
-  sale price doubles as the last value (Countrywide, Merrill).
+- **A few company and value rows still cite Wikipedia.** One of the 20 company rows, Countrywide, uses the
+  Wikipedia article as its `first_mention` source, and three value points (Bear Stearns, Citigroup, Wells Fargo)
+  do too. The brief asked for news items and deals, so those rows were left alone.
+- **Values are year ends only** for most companies. Peak days and low days are not filled except where the
+  last day doubles as the last value (Countrywide, Merrill, Wachovia), so Lehman and WaMu are held at their
+  2007 year-end values until they disappear (see End dates).
 - **Bank of America's $2bn in Countrywide, August 2007.** No page opened states the amount and date, so the
   investment is not a money line; the January 2008 takeover is.
-- **AIG's payments to its trading partners.** No opened page lists them. The New York Times page of
-  15 March 2009 is paywalled and its Wayback copies are login pages; the Global Policy Forum reprint no
-  longer resolves. Goldman, Merrill, Bank of America, Citigroup, Wachovia and UBS are named in the brief,
-  but no money line was written without a page.
-- **JPMorgan's collateral calls on Lehman.** The FCIC court filing and report PDFs could not be read here
-  (no PDF tool) and sec.gov refuses this machine.
+- **AIG's payments to its trading partners.** The figures are now known but no money line was written. The New
+  York Times DealBook on 15 and 16 March 2009 reports that AIG paid $22.4bn of collateral to its trading partners
+  between 16 September and 31 December 2008 and had disclosed more than $94bn in total; its list gives Goldman
+  Sachs $12.9bn, Merrill Lynch $6.8bn, Bank of America $5.2bn, Citigroup $2.3bn, Wachovia $1.5bn and UBS $5bn.
+  `meta.json` has only `investment` and `takeover`, and a collateral payment is neither. Writing these as deals
+  would mean adding a third kind to `meta.json` and changing `src/lib/data.test.ts`, which the task did not allow.
+- **JPMorgan's collateral calls on Lehman.** The reported $8.6bn figure was not sourced from a page that opened:
+  the FCIC filing is a PDF, and CNBC and Bloomberg refused this machine. With no opened page stating who paid
+  whom, how much and when, no row was written.
 - **Ownit Mortgage (December 2006), Michael Burry, John Paulson and the ABX index.** No first-hand or news
   page was opened that states a date and figure, so none was added.
 - **Roubini's warning at the IMF on 7 September 2006.** No page opened gives the day; the Wikipedia article
@@ -171,13 +214,15 @@ Citigroup split and the March 2009 Treasury purchases were added.
 
 ## Not found / doubts
 
-- **Case-Shiller peak.** The 206.52 July 2006 figure is on Wikipedia's Case-Shiller page, which does not
-  cite a source for it, and no S&P page opened here states it. The red date rests on that one page.
-- **Shiller's second edition.** The same Wikipedia page says the second edition came out in 2005 and doubted
-  home prices; the exact publication day was not found, so the item is dated 31 December 2005.
-- **Whitney's note.** Wikipedia states the 31 October 2007 note and its dividend point; the CIBC report
-  itself is a PDF and the Guardian's report of the downgrade does not name her. The blue date rests on
-  Wikipedia.
+- **Case-Shiller peak (resolved).** The 206.52 July 2006 figure is on S&P Dow Jones's release of 29 November 2016,
+  which says the 20-city index reached that level in July 2006 and the national index 184.62. The item now cites
+  that page; Wikipedia's unsourced 206.52 is gone.
+- **Shiller's second edition (resolved).** Princeton's page for the second edition, read through the Wayback
+  Machine, lists the cloth edition as 2005 and describes the housing chapter. The exact day is still not given, so
+  the item stays dated 31 December 2005.
+- **Whitney's note (resolved).** The New York Times DealBook of 1 November 2007 reports the note made "late
+  Wednesday night" and the $30bn capital shortfall that might force a dividend cut. The item now cites it; the
+  unsourced "dividend bigger than profits" line was dropped.
 - **BNP Paribas fund count.** The BBC global timeline says two funds, the BBC subprime timeline says three
   funds worth €2bn. The item follows the more detailed timeline (three).
 - **Bear Stearns date.** The Fed essay says Sunday 16 March, BBC says 17 March. The item uses 16 March.
@@ -189,3 +234,81 @@ Citigroup split and the March 2009 Treasury purchases were added.
   dated 30 June 2009 and the summary says "in June 2009".
 - **The number of pages opened** is counted from the fetch log for this run (about 100 that returned
   content), not from the first pass.
+
+## Third pass on sources (17 Nov 2026)
+
+This pass replaced the last three housing news rows that cited Wikipedia and tried once more to source a money line
+for AIG's collateral payments and JPMorgan's calls on Lehman. Each replacement was made only after opening a page
+that states the same fact.
+
+Counts before and after, from `grep -c wikipedia.org`:
+
+| File | Wikipedia rows before | After |
+| --- | --- | --- |
+| `data/past/housing/news.json` | 3 | 0 |
+| `data/past/housing/deals.json` | 0 | 0 |
+
+### Sources swapped
+
+| Item | Was | Now | What the opened page states |
+| --- | --- | --- | --- |
+| `2006-07-31-house-prices-peak` | `en.wikipedia.org/wiki/Case–Shiller_index` | S&P Dow Jones Indices release, 29 November 2016 (`press.spglobal.com/2016-11-29-The-S-P-CoreLogic-Case-Shiller-National-Index-Reaches-New-High-As-Home-Price-Gains-Continue`) | The 20-city index reached 206.52 in July 2006, its high; the national index reached 184.62, also in July 2006, and passed that high only in 2016. |
+| `2005-12-31-shiller-second-edition` | `en.wikipedia.org/wiki/Irrational_Exuberance_(book)` | Princeton University Press page for the second edition, Wayback copy of 6 December 2006 (`web.archive.org/web/20061206023618/http://press.princeton.edu/titles/7922.html`) | The book is listed as "Cloth, 2005"; the page says the housing boom "may eventually be followed by declining home prices for years to come". |
+| `2007-10-31-whitney-citi-note` | `en.wikipedia.org/wiki/Meredith_Whitney` | New York Times DealBook, 1 November 2007 (`archive.nytimes.com/dealbook.nytimes.com/2007/11/01/citi-may-be-forced-to-cut-dividend-report-says`) | The note was published "late Wednesday night"; it said Citigroup faced a $30bn capital shortfall and might have to cut its dividend. |
+
+### Corrections made to rows
+
+- **House prices peak: which index.** The old summary called 206.52 "the S&P Case-Shiller index" high. S&P's release
+  says 206.52 is the 20-city index and that the national index peaked at 184.62. The summary now names the 20-city
+  index, so it does not mix the two series.
+- **Shiller's second edition: what the page supports.** The old summary said the book argued prices "might fall for
+  years". Princeton's page says the boom "may eventually be followed by declining home prices for years to come",
+  which is the wording the summary now follows. The item remains dated 31 December 2005 because the page gives the
+  year only.
+- **Whitney's note: the claim about the dividend.** The old summary said the dividend was larger than profits, which
+  the opened page does not state. The DealBook page states the $30bn shortfall and that the dividend might be cut;
+  the summary now gives those two facts and drops the comparison.
+
+### New money lines
+
+None. The task allowed up to six new lines between companies already in `housing/companies.json`, each only with an
+opened page stating who paid whom, how much and when. Two candidates were checked and neither could be written:
+
+- **AIG's collateral payments.** The figures are sourced: the New York Times DealBook of 15 March 2009
+  (`archive.nytimes.com/dealbook.nytimes.com/2009/03/15/aig-discloses-counterparties-who-received-224-billion`)
+  says AIG paid $22.4bn of collateral between 16 September and 31 December 2008 and had disclosed more than $94bn
+  in total. The list it reports gives Goldman Sachs $12.9bn, Merrill Lynch $6.8bn, Bank of America $5.2bn,
+  Citigroup $2.3bn, Wachovia $1.5bn and UBS $5bn; the follow-up of 16 March
+  (`.../2009/03/16/as-aig-lists-firms-it-paid-anger-boils-over`) covers the reaction. But `meta.json` allows only
+  `investment` and `takeover`, and `src/lib/data.test.ts` checks that list. A collateral payment is neither: AIG
+  received no stake and took over no company by paying it. Writing these rows would mean changing `meta.json` and
+  the test, which the task did not allow, so no rows were added.
+- **JPMorgan's collateral calls on Lehman.** The reported $8.6bn was not confirmed by a page that opened: the FCIC
+  filing is a PDF with no reader here, CNBC returned 403, and the New York Times DealBook story on Lehman's later
+  lawsuit answered 404. No row was written without a page stating the payer, the payee, the amount and the date.
+
+### Still on Wikipedia
+
+None of the housing news or deal rows. Four sources outside these two files still cite Wikipedia and were left
+alone because the task named only `news.json` and `deals.json`:
+
+- `data/past/housing/companies.json`: Countrywide Financial (`Countrywide_Financial`), its `first_mention` source.
+- `data/past/housing/values.json`: Bear Stearns, Citigroup and Wells Fargo, one value point each.
+
+The dot-com set has the same situation for Lucent and AOL Time Warner in its `companies.json`; the dot-com notes
+list them.
+
+### Pages opened
+
+At least 25 pages were opened across both sets for this pass. The housing rows and the money-line attempt used:
+
+- **S&P Dow Jones Indices**, 29 November 2016, for the 20-city and national peaks.
+- **Princeton University Press**, second edition, through the Wayback Machine, for the 2005 date and the housing
+  chapter.
+- **New York Times DealBook**, 1 November 2007, for Whitney's note.
+- **New York Times DealBook**, 15 and 16 March 2009, for AIG's counterparty list and the reaction to it.
+- Pages tried and refused for the Lehman collateral figure: the FCIC PDF (no reader), CNBC (403), Bloomberg (403),
+  MarketWatch (401), Reuters (401) and the New York Times DealBook lawsuit story (404). NPR timed out and
+  BusinessWire returned 403.
+
+Searches were used to find some of these addresses; a search result was never used as a source.
