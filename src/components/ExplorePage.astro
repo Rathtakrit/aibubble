@@ -178,13 +178,18 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
             href="/"
             aria-current={isPast ? undefined : "page"}>Explore</a
           >
+          <a
+            class:list={["nav-item", id === "dotcom" && "nav-current"]}
+            href="/past/dotcom/"
+            aria-current={id === "dotcom" ? "page" : undefined}>Dot-com</a
+          >
+          <a
+            class:list={["nav-item", id === "housing" && "nav-current"]}
+            href="/past/housing/"
+            aria-current={id === "housing" ? "page" : undefined}>Housing</a
+          >
           <span class="nav-item">Science<span class="nav-tag">soon</span></span>
           <span class="nav-item">News<span class="nav-tag">soon</span></span>
-          <a
-            class:list={["nav-item", isPast && "nav-current"]}
-            href="/past/dotcom/"
-            aria-current={isPast ? "page" : undefined}>Past bubbles</a
-          >
         </nav>
       </header>
 
@@ -196,26 +201,6 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
               <p class="kicker story-only" data-bind="story-kicker">
                 Chapter 1 of {chapters.length}
               </p>
-            )
-          }
-          {
-            isPast && (
-              <div class="mode-switch past-switch" role="group" aria-label="Past bubble">
-                <a
-                  class:list={["mode-button", id === "dotcom" && "nav-current"]}
-                  href="/past/dotcom/"
-                  aria-current={id === "dotcom" ? "page" : undefined}
-                >
-                  Dot-com, 1995 to 2002
-                </a>
-                <a
-                  class:list={["mode-button", id === "housing" && "nav-current"]}
-                  href="/past/housing/"
-                  aria-current={id === "housing" ? "page" : undefined}
-                >
-                  Housing, 2003 to 2009
-                </a>
-              </div>
             )
           }
           <p class="big-date" data-bind="date">{dayLabel(current.date)}</p>
@@ -529,6 +514,23 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
 
       <section class="sheet" aria-label="News item" data-sheet>
         <div class="grabber" aria-hidden="true"></div>
+        <nav class="mode-switch" aria-label="Bubbles">
+          <a
+            class:list={["mode-button", !isPast && "nav-current"]}
+            href="/"
+            aria-current={isPast ? undefined : "page"}>Explore</a
+          >
+          <a
+            class:list={["mode-button", id === "dotcom" && "nav-current"]}
+            href="/past/dotcom/"
+            aria-current={id === "dotcom" ? "page" : undefined}>Dot-com</a
+          >
+          <a
+            class:list={["mode-button", id === "housing" && "nav-current"]}
+            href="/past/housing/"
+            aria-current={id === "housing" ? "page" : undefined}>Housing</a
+          >
+        </nav>
         {
           STORY_ENABLED && !isPast && (
             <div class="mode-switch" role="group" aria-label="Mode">
@@ -537,26 +539,6 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
               </a>
               <a class="mode-button nav-current" data-mode="explore" href="/" aria-current="page">
                 Explore
-              </a>
-            </div>
-          )
-        }
-        {
-          isPast && (
-            <div class="mode-switch past-switch" role="group" aria-label="Past bubble">
-              <a
-                class:list={["mode-button", id === "dotcom" && "nav-current"]}
-                href="/past/dotcom/"
-                aria-current={id === "dotcom" ? "page" : undefined}
-              >
-                Dot-com, 1995 to 2002
-              </a>
-              <a
-                class:list={["mode-button", id === "housing" && "nav-current"]}
-                href="/past/housing/"
-                aria-current={id === "housing" ? "page" : undefined}
-              >
-                Housing, 2003 to 2009
               </a>
             </div>
           )
