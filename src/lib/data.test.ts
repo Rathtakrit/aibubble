@@ -120,9 +120,11 @@ test("a set's ended companies are the ones that were bought or failed", () => {
   assert.deepEqual(
     [...ended.entries()].sort(),
     [
-      ["enron", "2001-12-31"],
+      ["enron", "2001-12-02"],
+      ["global-crossing", "2002-01-28"],
       ["time-warner", "2001-01-11"],
       ["us-west", "2000-06-30"],
+      ["worldcom", "2002-07-21"],
     ],
   );
   // AOL Time Warner merely has no 2002 year-end point in the sources: it did not end.

@@ -8,14 +8,14 @@ the page printed another currency.
 Files (all `"status": "draft"`):
 
 - `companies.json` — 23 companies, each with a ticker, a `first_mention` date and a source.
-- `values.json` — 158 market value points.
+- `values.json` — 155 market value points.
 - `deals.json` — 9 deals in three kinds: 2 investment, 3 takeover, 4 supplier.
 - `news.json` — 53 news items: 9 red key dates, 13 blue smaller dates, each with a `label`; every other item has
   `key_date: false` and no `small_date`.
 - `meta.json` — three deal kinds: `investment` ("Investment deal"), `takeover` ("Takeover deal"), `supplier`
   ("Supplier loan or swap").
 
-`node scripts/check-data.mjs data/past/dotcom` prints `data ok: 23 companies, 158 values, 9 deals, 53 news (status:
+`node scripts/check-data.mjs data/past/dotcom` prints `data ok: 23 companies, 155 values, 9 deals, 53 news (status:
 draft)`, and `node --test src/lib/data.test.ts` passes (the one dot-com expectation in that file now lists the three
 kinds).
 
@@ -47,19 +47,13 @@ kinds).
    and Qualcomm's highest point is their 1999 year end, and Intel, Oracle, IBM, Nokia, Apple, AT&T, eBay, Amazon and
    Sprint are dated on the last day of the month their series peaks in. Yahoo and Nortel have daily series, so their
    peak dates are exact.
-3. **A company that fails or is bought stops** at its last value point, and there are no points after it:
-   - Time Warner's last point is 11 January 2001 at $94.50bn, the "last known market cap" the page prints for the
-     day the merger closed; there is no Time Warner point after that. The merged company carries the line from then
-     on under `aol` ("AOL Time Warner"), with the 2002 values above. Those later values come from the Fortune and
-     Post pages, not from the TWX page, whose history stops at the close.
-   - US West's last point is 30 June 2000 at $54.79bn, the day Qwest absorbed it.
-   - Enron's last point is 31 December 2001 at $0.44bn; Global Crossing and WorldCom keep a 31 December 2002 point
-     because the pages report one and 2002 is the last year of the range.
-   - **The renderer does not hide a company after its last point.** It draws the last value flat for the rest of the
-     set, so "Time Warner" and "US West" still appear on screen after their takeovers at their last value. The data
-     does what the brief asks (a last point just before the close, none after; one merged record for AOL Time
-     Warner), but removing the leftover circle needs a code change in `src/lib/layout.ts` or `src/lib/data.ts`,
-     which this worker may not touch. This is the one part of "Done means" the data files alone cannot deliver.
+3. **A company that fails or is bought stops on its `ended` day.** A row in `companies.json` with an `ended`
+   date is on screen up to and including that day and gone the next one (`isShown` in `src/lib/data.ts`), and
+   `check-data` refuses any value point dated after it. The dates are: Time Warner 11 January 2001, the day the
+   AOL merger closed; US West 30 June 2000, the day Qwest absorbed it; Enron 2 December 2001, the day it filed
+   for Chapter 11; Global Crossing 28 January 2002 and WorldCom 21 July 2002, the days their Chapter 11 petitions
+   were filed. The table in "End dates" below gives the source for each. AOL Time Warner has no `ended`, because
+   it kept trading; its series only lacks a 2002 year-end point.
 4. **AOL Time Warner is one record, `aol`, named "AOL Time Warner".** Its first point is the two companies added
    together on 10 January 2000 ($290bn, Fortune), because that is the size of the thing being announced; the
    Guardian's $164bn is AOL alone on the same day and is used in the news summary instead. There are no sourced
@@ -92,6 +86,38 @@ kinds).
     summary says the month: Warren Buffett's Fortune article (November 1999), Robert Shiller's book and Julian
     Robertson closing Tiger (both March 2000). They are marked as that convention so the dots do not claim a day
     the source does not give.
+
+## End dates
+
+`ended` is the last day a company is in the picture: the day its takeover closed, or the day it filed for
+bankruptcy protection. The company is absent from the next day. Every company that already carried an `ended`
+date was checked, and WorldCom and Global Crossing were given one because both failed inside the range. Each
+date below was written only after opening a page that states it; the two "unchanged" rows were checked again
+and left alone.
+
+| Company | Old `ended` | New `ended` | What happened | Source |
+| --- | --- | --- | --- | --- |
+| Enron | 2001-12-31 | 2001-12-02 | Filed for Chapter 11 bankruptcy protection on 2 December 2001. | `news.bbc.co.uk/hi/english/static/in_depth/business/2002/enron/timeline/12.stm` |
+| WorldCom | none | 2002-07-21 | Filed voluntary Chapter 11 petitions on 21 July 2002, then the largest bankruptcy in US history. | `sec.gov/Archives/edgar/data/723527/000090951802000544/mv7-22_8k.txt` (8-K, "On July 21, 2002 … filed voluntary petitions") |
+| Global Crossing | none | 2002-01-28 | Filed for Chapter 11 bankruptcy protection on 28 January 2002. | `news.bbc.co.uk/2/hi/business/1787203.stm` |
+| Time Warner | 2001-01-11 | 2001-01-11 (unchanged) | The AOL–Time Warner merger closed on 11 January 2001. | `investors.att.com/stockholder-services/time-warner-stockholders/frequently-asked-questions/stock-history` |
+| US West | 2000-06-30 | 2000-06-30 (unchanged) | Qwest's purchase of US West completed on 30 June 2000. | Qwest's 10-K for 2000, `sec.gov/Archives/edgar/data/1037949/000103570401000204/`, already cited above |
+
+WorldCom filed late on Sunday 21 July, New York time; BBC, the New York Times and the Los Angeles Times reported
+it on Monday 22 July ("late Sunday", "last night"). The filing date on the court docket and in the company's own
+8-K is 21 July, and that is the date used.
+
+Value points that fell after the new `ended` day were removed, because `check-data` rejects a point dated after
+`ended`:
+
+| Company | Point removed | Value | What the point was |
+| --- | --- | --- | --- |
+| Enron | 2001-12-31 | $0.44bn | year end, after the bankruptcy |
+| WorldCom | 2002-12-31 | $0.41bn | year end, after the bankruptcy |
+| Global Crossing | 2002-12-31 | $0.01637bn | year end, after the bankruptcy |
+
+The cost is that Enron, WorldCom and Global Crossing now have no value point between their last year end and
+their end date, so the line is drawn flat from that year end to the failure (see Gaps).
 
 ## The red dates (9)
 
@@ -167,7 +193,9 @@ kinds).
   (£30bn), without days, so they are left out.
 - **Analyst research scandals:** no page with a date for Spitzer's 2002 inquiry or the Merrill fine was opened, so
   the set stops at Sarbanes-Oxley.
-- **The Time Warner and US West circles** stay on screen after their takeovers (judgement call 3).
+- **No value near the end date** for Enron (last point 31 December 2000), WorldCom (31 December 2001) or Global
+  Crossing (31 December 2001): the only later points were year ends after the failure and were removed, so the
+  line runs flat from the last year end to the failure. No opened page gives a value for the week each one filed.
 
 ## Pages opened
 
@@ -185,9 +213,11 @@ to find article titles. No search page is used as a source anywhere.
 
 ## Not found / doubts
 
-- **The leftover circles after a takeover.** The data ends the bought company's series at the takeover, but the
-  renderer draws the last value flat forever, so "Time Warner" still sits beside "AOL Time Warner" after January
-  2001 and "US West" beside "Qwest" after June 2000. Closing that needs a code change outside this worker's files.
+- **The last value before a failure.** The end dates are firm, but the picture holds a company at its last year
+  end until it disappears, and no opened page gives its value on the day it failed. For Enron and WorldCom that
+  gap is wide, because both were worth far less at the end than at the previous year end.
+- **WorldCom's date.** The 8-K and the court docket give 21 July 2002; the newspapers of 22 July say "late
+  Sunday" or "last night" and date the story Monday. The data follows the filing.
 - **Peaks.** Only Nortel and WorldCom were checked against a second page; the others have the market-cap page as
   their only source, so a different page might give a different peak value.
 - **Comcast's market value.** Its page gives about $1bn in 1997 and $0.89bn in 2001, far below Comcast's reported
@@ -222,7 +252,7 @@ already changed 22 news items and one deal, and five of those were opened again 
 say: Amazon's 1997 offer at $18, Microsoft's $150m of Apple stock, Greenspan's 5 December 1996 speech, Wired on
 Netscape's $75 first day, and the Guardian on Enron).
 
-`node scripts/check-data.mjs data/past/dotcom` prints `data ok: 23 companies, 158 values, 9 deals, 53 news
+`node scripts/check-data.mjs data/past/dotcom` prints `data ok: 23 companies, 155 values, 9 deals, 53 news
 (status: draft)` and no problems.
 
 ### Sources swapped

@@ -1,7 +1,7 @@
 # Housing and credit boom: data notes
 
 The set covers 1 January 2003 to 31 December 2009 in `data/past/housing/`. On 16 November 2026 it holds
-20 companies, 125 value points, 7 money lines and 70 news items, all with `"status": "draft"`.
+20 companies, 123 value points, 7 money lines and 70 news items, all with `"status": "draft"`.
 
 The first pass had 50 news items, 39 of them citing Wikipedia, 19 red dates and no blue ones. This pass
 replaces almost every news source with a first-hand or news page, adds 20 items, gives the timeline 9 red
@@ -27,7 +27,9 @@ Federal Reserve pages.
 The set now cites 80 different pages. 62 of them were opened in this run: 22 BBC News pages, 18 Federal
 Reserve pages, 10 Guardian pages, 2 Federal Reserve History essays, 1 IMF page, 1 Harvard Business Review
 page, 1 FDIC page, 1 CNN Money page read through the Wayback Machine, 1 HBR page, and 3 Wikipedia pages.
-The other 18 are the CompaniesMarketCap year-end pages, unchanged from the first pass.
+The other 18 are the CompaniesMarketCap year-end pages, unchanged from the first pass. The end-date work of
+17 November 2026 added six more: a BBC page, the FDIC's WaMu page, a Federal Reserve testimony, the Guardian
+on Bear Stearns, and two Bank of America 8-K exhibits on the company's own investor site.
 
 With the news index pages used to find stories (35 Guardian daily business indexes, 3 BBC timelines, the
 Fed essays and a few search pages), this run opened about 100 pages that returned content.
@@ -98,6 +100,39 @@ lines readers remember from the boom; they are not warnings but they set up the 
 - **The deal sources are the day's news pages.** BBC News for Bear Stearns, Merrill Lynch, WaMu, Wachovia and
   MUFG; the Guardian for Countrywide and Berkshire's Goldman stake.
 
+## End dates
+
+`ended` is the last day a company is in the picture: the day its takeover closed, or the day it failed. The
+company is absent from the next day. Each date below was written only after opening a page that states it.
+
+| Company | Old `ended` | New `ended` | What happened | Source |
+| --- | --- | --- | --- | --- |
+| Lehman Brothers | 2008-12-31 | 2008-09-15 | Filed for Chapter 11 bankruptcy protection in the early hours of 15 September 2008. | `news.bbc.co.uk/2/mobile/business/8256010.stm` |
+| Washington Mutual | 2008-12-31 | 2008-09-25 | The FDIC sold its banking operations to JPMorgan Chase on 25 September 2008. | `fdic.gov/resources/resolutions/bank-failures/failed-bank-list/wamu.html` |
+| Wachovia | 2008-10-03 | 2008-12-31 | Wells Fargo's purchase completed effective 31 December 2008. | `federalreserve.gov/newsevents/testimony/alvarez20100901a.htm` |
+| Merrill Lynch | 2008-09-15 | 2009-01-01 | Bank of America completed its purchase on 1 January 2009. | Bank of America 8-K exhibit, `investor.bankofamerica.com/regulatory-and-other-filings/select-sec-filings/content/0000950123-09-000010/y73597exv99w1.htm` |
+| Bear Stearns | 2008-03-24 | 2008-05-30 | JPMorgan's takeover closed on 30 May 2008. | `theguardian.com/business/2008/may/30/bearstearns.jpmorgan` |
+| Countrywide Financial | 2008-01-11 | 2008-07-01 | Bank of America completed its purchase on 1 July 2008. | Bank of America 8-K exhibit, `investor.bankofamerica.com/regulatory-and-other-filings/select-sec-filings/content/0000950144-08-005220/g14113kexv99w1.htm` |
+
+The old dates were the end of 2008 for Lehman and WaMu, the announcement day for Countrywide (11
+January), Merrill Lynch (15 September) and Wachovia (3 October), and the day of the revised Bear Stearns
+agreement (24 March). A company now leaves the picture on the day its takeover closed or it failed, not when
+the deal was announced. Washington Mutual, Inc., the holding company whose shares are the `WM` row, filed for
+Chapter 11 on 26 September 2008, the day after its bank was taken over; the picture drops it on the 25th, the
+day the bank was sold and its shares stopped meaning anything.
+
+Value points removed because they fell after the new `ended` day (`check-data` rejects them):
+
+| Company | Point removed | Value | What the point was |
+| --- | --- | --- | --- |
+| Lehman Brothers | 2008-12-31 | $0.02083bn | last recorded trade, after the bankruptcy |
+| Washington Mutual | 2008-12-31 | $0.008bn | last recorded trade, holding company after the seizure |
+
+Lehman and WaMu therefore hold their 31 December 2007 value (Lehman $34.68bn, WaMu $11.82bn) from that day
+until they disappear, far above what they were worth in September 2008. No opened page gives a value for either
+in the week it failed. Wachovia keeps its 3 October 2008 point (the day Wells Fargo's rival bid was announced)
+until 31 December, and Merrill Lynch's only point is 15 September 2008, the day it agreed to be bought.
+
 ## Source swaps and corrections
 
 All 39 Wikipedia news items were opened again. 36 now cite a first-hand or news page; the 3 that remain are
@@ -147,8 +182,9 @@ Citigroup split and the March 2009 Treasury purchases were added.
 - **Companies still cite Wikipedia.** 18 of the 20 company rows cite Wikipedia; only Merrill Lynch's source
   was changed, to the Guardian page that reports O'Neal's departure. The brief asked for news items and
   deals, so the company rows were left alone.
-- **Values are year ends only** for most companies. Peak days and low days are not filled except where a
-  sale price doubles as the last value (Countrywide, Merrill).
+- **Values are year ends only** for most companies. Peak days and low days are not filled except where the
+  last day doubles as the last value (Countrywide, Merrill, Wachovia), so Lehman and WaMu are held at their
+  2007 year-end values until they disappear (see End dates).
 - **Bank of America's $2bn in Countrywide, August 2007.** No page opened states the amount and date, so the
   investment is not a money line; the January 2008 takeover is.
 - **AIG's payments to its trading partners.** No opened page lists them. The New York Times page of

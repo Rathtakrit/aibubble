@@ -119,6 +119,7 @@
       "kind": "listed",
       "ticker": "WCOM",
       "first_mention": "1997-12-31",
+      "ended": "2002-07-21",
       "source": "https://companiesmarketcap.com/worldcom/marketcap/"
     },
     {
@@ -127,6 +128,7 @@
       "kind": "listed",
       "ticker": "GLBC",
       "first_mention": "1998-12-31",
+      "ended": "2002-01-28",
       "source": "https://companiesmarketcap.com/global-crossing/marketcap/"
     },
     {
@@ -143,7 +145,7 @@
       "kind": "listed",
       "ticker": "ENE",
       "first_mention": "1997-12-31",
-      "ended": "2001-12-31",
+      "ended": "2001-12-02",
       "source": "https://companiesmarketcap.com/enron/marketcap/"
     },
     {

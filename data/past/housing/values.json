@@ -555,13 +555,6 @@
       "source": "https://companiesmarketcap.com/lehman-brothers/marketcap/"
     },
     {
-      "company": "lehman-brothers",
-      "date": "2008-12-31",
-      "value_usd_bn": 0.02083,
-      "what": "last recorded trade, after bankruptcy",
-      "source": "https://companiesmarketcap.com/lehman-brothers/marketcap/"
-    },
-    {
       "company": "merrill-lynch",
       "date": "2008-09-15",
       "value_usd_bn": 50,
@@ -818,13 +811,6 @@
       "date": "2007-12-31",
       "value_usd_bn": 11.82,
       "what": "year end",
-      "source": "https://companiesmarketcap.com/washington-mutual/marketcap/"
-    },
-    {
-      "company": "washington-mutual",
-      "date": "2008-12-31",
-      "value_usd_bn": 0.008,
-      "what": "last recorded trade, holding company after seizure",
       "source": "https://companiesmarketcap.com/washington-mutual/marketcap/"
     },
     {
