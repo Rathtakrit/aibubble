@@ -3,7 +3,11 @@
 How the AI bubble formed: company bubbles sized by value, the money flowing between them, and the news behind it,
 day by day since June 2017. Planned for https://aibubble.rathtakrit.com.
 
-Plan stage: no code yet. The plan is in [`docs/briefs/2026-11-15-aibubble.md`](docs/briefs/2026-11-15-aibubble.md).
+The site is being built and is not live yet. The plan is in
+[`docs/briefs/2026-11-15-aibubble.md`](docs/briefs/2026-11-15-aibubble.md).
+
+Run it locally with `npm ci` to install, then `npm run dev` and open the address it prints. `npm run check` runs
+the data checks, the tests and a production build. It needs Node 22 (see `.nvmrc`).
 
 ## The daily news job
 `scripts/news-job.mjs` reads the feeds in `scripts/news-feeds.json` for one day, asks a model to draft
