@@ -13,6 +13,7 @@ export const FRAME = { cx: 50, cy: 50, radius: 48, fitRadius: 46 } as const;
 export type Bubble = {
   id: string;
   name: string;
+  ticker?: string;
   kind: Company["kind"];
   x: number;
   y: number;
@@ -929,6 +930,7 @@ export function bubblesOn(
     out.push({
       id: company.id,
       name: company.name,
+      ticker: company.ticker,
       kind: company.kind,
       x: spot.x,
       y: spot.y,

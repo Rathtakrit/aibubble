@@ -402,16 +402,21 @@ function paintBubble(live: LiveBubble, drawing: Drawing): void {
   value.style.display = showValue ? "" : "none";
   const { logoCenter, nameCenter, valueCenter } = centres(nameLines.length);
 
-  if (showLogo) {
+  if (showLogo && bubble.ticker) {
+    logo.style.display = "";
+    logoText.textContent = bubble.ticker;
+    logoText.style.fontSize = `${fixed(logoSize * 0.5)}px`;
     logoRect.setAttribute("x", fixed(x - logoSize / 2));
     logoRect.setAttribute("y", fixed(logoCenter - logoSize / 2));
-    logoRect.setAttribute("width", fixed(logoSize));
+    const tickerWidth = logoText.getComputedTextLength();
+    const boxWidth = Math.max(logoSize, tickerWidth + logoSize * 0.2);
+    logoRect.setAttribute("x", fixed(x - boxWidth / 2));
+    logoRect.setAttribute("width", fixed(boxWidth));
     logoRect.setAttribute("height", fixed(logoSize));
     logoRect.setAttribute("rx", fixed(logoSize * 0.25));
     logoText.setAttribute("x", fixed(x));
     logoText.setAttribute("y", fixed(logoCenter));
     logoText.style.fontSize = `${fixed(logoSize * 0.5)}px`;
-    logoText.textContent = bubble.name.charAt(0);
   }
   if (nameLines.length > 0) {
     name.style.fontSize = `${fixed(nameSize)}px`;

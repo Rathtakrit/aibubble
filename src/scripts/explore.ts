@@ -120,6 +120,7 @@ let chapterIndex: number | null = null;
 let storyListOpen = false;
 // The reader's own zoom on top of the camera; index 1 = follow the players exactly.
 let zoomIndex = 1;
+let fitPlayers = false;
 // The mode whose titles over the timeline were placed last: Explore's news titles or Story's
 // chapter titles, one set at a time.
 let labelsPlacedFor: string | null = null;
@@ -427,6 +428,14 @@ function render(soon = false): void {
     button.disabled = at === 0;
   }
 
+  for (const button of document.querySelectorAll<HTMLButtonElement>('[data-zoom="fit"]')) {
+    button.setAttribute("aria-pressed", String(fitPlayers));
+    button.setAttribute("aria-label", fitPlayers ? "Show the whole bubble" : "Zoom in to the players");
+    button.querySelector("path")?.setAttribute("d", fitPlayers
+      ? "M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"
+      : "M9 4H4v5M15 4h5v5M4 15v5h5M20 15h-5v5");
+  }
+
   // The zoom buttons step through the reader's own zoom, and stop at the ends.
   for (const button of document.querySelectorAll<HTMLButtonElement>('[data-zoom="in"]')) {
     button.disabled = zoomIndex >= ZOOMS.length - 1;
@@ -440,8 +449,8 @@ function render(soon = false): void {
   // with, and a plain day shows the whole frame.
   if (layoutsReady) {
     const players = storyChapter
-      ? storyChapter.players
-      : item
+      ? (fitPlayers ? storyChapter.players : [])
+      : item && fitPlayers
         ? item.players
         : company
           ? [company.id, ...partnersOf(company.id, day)]
@@ -494,6 +503,7 @@ function goToChapter(index: number): void {
   const chapter = chapters[index];
   if (!chapter) return;
   chapterIndex = index;
+  fitPlayers = true;
   storyListOpen = false;
   itemId = null;
   companyId = null;
@@ -525,6 +535,7 @@ function openStoryList(open: boolean): void {
 function selectItem(id: string): void {
   const item = byId.get(id);
   if (!item) return;
+  fitPlayers = true;
   itemId = item.id;
   companyId = null;
   day = item.date;
@@ -536,6 +547,7 @@ function selectItem(id: string): void {
 // also leaves the chapter, as Explore's own company panel does.
 function chooseCompany(id: string): void {
   if (!companyById.has(id)) return;
+  fitPlayers = true;
   chapterIndex = null;
   storyListOpen = false;
   companyId = companyId === id ? null : id;
@@ -560,6 +572,7 @@ function step(direction: -1 | 1): void {
 
 function moveTo(date: string): void {
   day = date;
+  fitPlayers = true;
   itemId = null;
   zoomIndex = 1;
   render(true);
@@ -627,6 +640,7 @@ document.addEventListener("click", (event) => {
     zoomIndex = Math.max(0, zoomIndex - 1);
     render();
   } else if (zoom === "fit") {
+    fitPlayers = !fitPlayers;
     zoomIndex = 1;
     render();
   }
