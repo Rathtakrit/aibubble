@@ -66,13 +66,15 @@ const dayLabel = (date: string) => new Intl.DateTimeFormat("en-GB", { day: "nume
             </section>
           ))}
           <div class="drawing">
+            <div class="drawing-legend" data-size-legend aria-label="Drawing sides">
+              {frames.map((frame, index) => <span data-drawing-label={index}>{index === 0 ? "A" : "B"} · {names[frame.dataset.id]}, {choices[frame.moment].toLowerCase()}</span>)}
+            </div>
             <svg data-size viewBox="0 0 620 500" role="img" aria-label="A in blue and B in orange, sharing one area scale and bottom point">
               {frames.map((frame, index) => {
                 const r = 225 * Math.sqrt(frame.total / maximum);
                 return <g data-exposure={index}>
                   <circle data-shape={`${index}-frame`} cx="300" cy={485-r} r={r} class="outline" />
                   {frame.circles.map((circle) => <circle data-shape={`${index}-${circle.company.id}`} cx={300+(circle.x-50)*r/48} cy={485-r+(circle.y-50)*r/48} r={circle.r*r/48} class="company"><title>{circle.company.name}: {formatTotal(circle.value)}</title></circle>)}
-                  <text data-svg-label={index} x="300" y={Math.max(18, 485-r*2-12)} text-anchor="middle">{index === 0 ? "A" : "B"} · {names[frame.dataset.id]}, {choices[frame.moment].toLowerCase()}</text>
                 </g>;
               })}
               <line x1="300" y1="485" x2="300" y2="495" stroke="currentColor" />

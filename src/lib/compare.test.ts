@@ -2,7 +2,7 @@
 import test from "node:test";
 // @ts-expect-error node:assert has no types in this repo
 import assert from "node:assert/strict";
-import { datasets, comparisonLine, percentDifference, formatTotal, moments, momentOptions, packedOn, top5, totalOn } from "./compare.ts";
+import { datasets, comparisonLine, percentDifference, formatTotal, labelsOverlap, moments, momentOptions, packedOn, top5, totalOn } from "./compare.ts";
 import type { CompareDataset } from "./compare.ts";
 
 const source = "https://example.com/sample";
@@ -34,6 +34,16 @@ test("moments finds the highest carried total, and AI uses latest for peak", () 
   assert.deepEqual(moments(sample), { start: "2000-01-01", lowest: "2000-01-03", peak: "2000-01-02", latest: "2000-01-03" });
   assert.equal(moments({ ...sample, id: "ai" }).peak, "2000-01-03");
   assert.deepEqual(moments({ ...sample, values: [] }), { start: null, lowest: null, peak: null, latest: null });
+});
+
+test("label collisions include padding but allow separated and touching padded boxes", () => {
+  const box = { x: 10, y: 20, width: 40, height: 12 };
+  assert.equal(labelsOverlap(box, box), true);
+  assert.equal(labelsOverlap(box, { ...box, x: 52 }), true);
+  assert.equal(labelsOverlap(box, { ...box, x: 54 }), false);
+  assert.equal(labelsOverlap(box, { ...box, y: 36 }), false);
+  assert.equal(labelsOverlap(box, { ...box, y: 34 }), true);
+  assert.equal(labelsOverlap(box, { ...box, x: 50 }, 0), false);
 });
 
 test("AI moment pills use Current for latest without a duplicate Peak", () => {

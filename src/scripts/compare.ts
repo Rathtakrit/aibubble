@@ -1,5 +1,5 @@
-import { datasets, comparisonLine, formatTotal, moments, momentOptions, packedOn, percentDifference, totalOn } from "../lib/compare.ts";
-import type { CompareDataset, Moment } from "../lib/compare.ts";
+import { datasets, comparisonLine, formatTotal, labelsOverlap, moments, momentOptions, packedOn, percentDifference, totalOn } from "../lib/compare.ts";
+import type { CompareDataset, LabelBox, Moment } from "../lib/compare.ts";
 
 type Side = { dataset: CompareDataset; moment: Moment | "date"; date: string; players: Set<string> | null };
 const root = document.querySelector<HTMLElement>(".compare-page");
@@ -54,6 +54,7 @@ if (root) {
       return { ...snapshot, selected, baseline, start, circles: packedOn(selected, side.date), change: percentDifference(snapshot.total, baseline.total) };
     });
     query("[data-size]").toggleAttribute("hidden", measure !== "size");
+    query("[data-size-legend]").toggleAttribute("hidden", measure !== "size");
     query("[data-change]").toggleAttribute("hidden", measure !== "change");
     for (const button of root!.querySelectorAll<HTMLButtonElement>("[data-measure]")) button.setAttribute("aria-pressed", String(button.dataset.measure === measure));
     query("[data-result]").textContent = comparisonLine(frames[0].total, frames[1].total);
@@ -147,12 +148,22 @@ if (root) {
         group.append(name);
         nameLabels.push({ label: name, circle, width: textContext.measureText(entry.company.name).width });
       }
-      const label = query<SVGTextElement>(`[data-svg-label="${index}"]`);
-      label.style.fontSize = `${fontSize}px`;
-      label.textContent = `${index === 0 ? "A" : "B"} · ${names[side.dataset.id]}, ${momentLabel.toLowerCase()}`;
-      tween(label, "y", Math.max(18, 485-r*2-12));
+      query(`[data-drawing-label="${index}"]`).textContent = `${index === 0 ? "A" : "B"} · ${names[side.dataset.id]}, ${side.moment === "date" ? dayLabel(side.date) : momentLabel.toLowerCase()}`;
       const barLabel = query<SVGTextElement>(`[data-bar-label="${index}"]`);
-      barLabel.textContent = `${index === 0 ? "A" : "B"} · ${names[side.dataset.id]}: ${signed(frame.change)}`;
+      const barText = `${index === 0 ? "A" : "B"} · ${names[side.dataset.id]}: ${signed(frame.change)}`;
+      const lines: string[] = [];
+      for (const word of barText.split(" ")) {
+        const last = lines.length - 1;
+        if (last < 0 || textContext.measureText(`${lines[last]} ${word}`).width > 240) lines.push(word);
+        else lines[last] += ` ${word}`;
+      }
+      barLabel.replaceChildren();
+      for (const [lineIndex, line] of lines.entries()) {
+        const span = document.createElementNS(svgNS, "tspan");
+        span.textContent = line;
+        span.setAttribute("dy", lineIndex === 0 ? String(-(lines.length - 1) * fontSize * .6) : String(fontSize * 1.2));
+        barLabel.append(span);
+      }
       barLabel.style.fontSize = `${fontSize}px`;
       const falling = (frame.change ?? 0) < 0;
       barLabel.setAttribute("text-anchor", falling ? "end" : "start");
@@ -162,7 +173,7 @@ if (root) {
       const canvas = document.createElement("canvas");
       const context = canvas.getContext("2d")!;
       context.font = `${fontSize}px ${getComputedStyle(barLabel).fontFamily}`;
-      const labelWidth = Math.max(...frames.map((f, i) => context.measureText(`${i === 0 ? "A" : "B"} · ${names[sides[i].dataset.id]}: ${signed(f.change)}`).width));
+      const labelWidth = Math.min(240, Math.max(...frames.map((f, i) => context.measureText(`${i === 0 ? "A" : "B"} · ${names[sides[i].dataset.id]}: ${signed(f.change)}`).width)));
       const reach = Math.max(3 * unitsPerPixel, 290 - labelWidth - 8 * unitsPerPixel);
       const width = frame.change === null || frame.change === 0 ? 0 : Math.max(3 * unitsPerPixel, Math.abs(frame.change) / changeMaximum * reach);
       const length = falling ? -width : width;
@@ -236,18 +247,27 @@ if (root) {
       const progress = !animate || reducedMotion.matches ? 1 : Math.min((now-start)/400, 1);
       const eased = 1-Math.pow(1-progress, 3);
       for (const t of tweens) t.element.setAttribute(t.attribute, String(t.from+(t.to-t.from)*eased));
+      const placedNames: LabelBox[] = [];
       for (const { label, circle, width } of nameLabels) {
         const radius = Number(circle.getAttribute("r"));
-        label.setAttribute("x", circle.getAttribute("cx")!);
-        label.setAttribute("y", circle.getAttribute("cy")!);
-        label.style.visibility = Math.hypot(width / 2, fontSize / 2) <= radius * .85 ? "visible" : "hidden";
+        const x = Number(circle.getAttribute("cx"));
+        const y = Number(circle.getAttribute("cy"));
+        label.setAttribute("x", String(x));
+        label.setAttribute("y", String(y));
+        const box = { x: x - width / 2, y: y - fontSize / 2, width, height: fontSize };
+        const fits = Math.hypot(width / 2, fontSize / 2) <= radius * .85;
+        const visible = fits && !placedNames.some((placed) => labelsOverlap(box, placed, 4 * unitsPerPixel));
+        label.style.visibility = visible ? "visible" : "hidden";
+        if (visible) placedNames.push(box);
       }
       for (const index of [0, 1]) {
         const bar = query<SVGRectElement>(`[data-bar="${index}"]`);
         const label = query<SVGTextElement>(`[data-bar-label="${index}"]`);
         const falling = (frames[index].change ?? 0) < 0;
         const end = falling ? Number(bar.getAttribute("x")) : 300 + Number(bar.getAttribute("width"));
-        label.setAttribute("x", String(end + (falling ? -8 : 8) * unitsPerPixel));
+        const x = String(end + (falling ? -8 : 8) * unitsPerPixel);
+        label.setAttribute("x", x);
+        for (const span of label.querySelectorAll("tspan")) span.setAttribute("x", x);
       }
       if (progress < 1) animation = requestAnimationFrame(tick);
       else for (const element of root!.querySelectorAll("[data-exiting]")) element.remove();
