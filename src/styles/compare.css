@@ -31,7 +31,6 @@ button:disabled { cursor: default; color: var(--ink-2); }
 .picker { border-top: 4px solid var(--exposure); padding-top: 12px; }
 .picker summary { list-style: none; }
 .picker summary::-webkit-details-marker { display: none; }
-.exposure-label { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--label); }
 [data-tile] { display: none; }
 .picker-fields { display: flex; flex-direction: column; gap: 8px; padding-top: 8px; }
 .picker label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--ink-2); }
@@ -70,7 +69,14 @@ dialog legend { font-weight: 600; }
 dialog label { display: flex; gap: 8px; align-items: center; min-height: 44px; cursor: pointer; font-size: 14px; }
 dialog input { accent-color: var(--accent); width: 20px; height: 20px; flex-shrink: 0; }
 .amount { margin-left: auto; color: var(--ink-2); }
-[data-dialog="sources"] { width: min(1200px, calc(100% - 32px)); max-height: calc(100dvh - 32px); }
+[data-dialog="sources"], [data-dialog="players"] { width: min(1200px, calc(100% - 32px)); max-height: calc(100dvh - 32px); }
+.player-side-switch { display: none; margin-bottom: 8px; }
+[data-player-groups] { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+[data-player-panel] legend { font: 500 14px var(--font-sans); }
+.player-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 12px; }
+.player-grid label { min-height: 32px; gap: 6px; font-size: 13px; line-height: 16px; padding: 4px 0; }
+.player-grid label > span:not(.amount) { overflow-wrap: anywhere; min-width: 0; }
+.player-grid .amount { font-size: 12px; white-space: nowrap; }
 .source-controls { display: flex; gap: 8px; margin-bottom: 8px; }
 .source-side-switch { display: none; }
 [data-sources] { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
@@ -80,7 +86,7 @@ dialog input { accent-color: var(--accent); width: 20px; height: 20px; flex-shri
 .source-grid .source { display: flex; align-items: center; min-width: 0; min-height: 28px; padding: 4px 0; font-size: 13px; line-height: 20px; color: var(--ink-2); text-decoration: none; overflow-wrap: anywhere; }
 .source-grid .source:hover, .source-grid .source:focus-visible { color: var(--ink); text-decoration: underline; }
 @media (min-width: 1200px) {
-  .source-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .source-grid, .player-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 @media (min-width: 900px) {
   .picker summary { pointer-events: none; }
@@ -101,14 +107,18 @@ dialog input { accent-color: var(--accent); width: 20px; height: 20px; flex-shri
   .picker { grid-column: 1; grid-row: 1; background: #FBF7EF; padding: 0; }
   .exposure-1 .picker { grid-column: 2; }
   .picker summary { min-height: 52px; padding: 6px 10px; cursor: pointer; }
-  .exposure-label { display: block; font-size: 11px; }
-  .exposure-label::after { content: " ▾"; }
   [data-tile] { display: block; font-size: 14px; }
   .picker-fields { padding: 8px 6px 12px; }
   .bubble-pills { gap: 0; padding: 2px; }
   .bubble-pills button { font-size: 11px; padding: 0 3px; }
-  [data-dialog="sources"] { padding: 12px; }
-  [data-dialog="sources"] form { margin-bottom: 8px; }
+  [data-dialog="sources"], [data-dialog="players"] { padding: 12px; }
+  [data-dialog="sources"] form, [data-dialog="players"] form { margin-bottom: 8px; }
+  .player-side-switch { display: flex; width: fit-content; }
+  .player-side-switch button { min-width: 44px; }
+  [data-player-groups] { display: block; }
+  .player-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 8px; }
+  .player-grid label { min-height: 44px; }
+  .player-grid .amount { display: none; }
   .source-side-switch { display: flex; }
   [data-sources] { display: block; }
   .source-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 8px; }

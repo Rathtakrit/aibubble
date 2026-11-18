@@ -3,7 +3,7 @@ import "@fontsource/instrument-serif/400.css";
 import "@fontsource-variable/instrument-sans/index.css";
 import "../styles/tokens.css";
 import "../styles/compare.css";
-import { datasets, comparisonLine, formatTotal, moments, packedOn, totalOn } from "../lib/compare.ts";
+import { datasets, comparisonLine, formatTotal, moments, momentOptions, packedOn, totalOn } from "../lib/compare.ts";
 const names = { ai: "AI", dotcom: "Dot-com", housing: "Housing" };
 const choices = { start: "Start", lowest: "Lowest recorded", peak: "Peak recorded", latest: "Latest", date: "Pick a date" };
 const defaults = [
@@ -47,18 +47,18 @@ const dayLabel = (date: string) => new Intl.DateTimeFormat("en-GB", { day: "nume
         <div class="quick-questions" role="group" aria-label="Quick questions">
           <span>Try</span>
           <button type="button" data-quick="lowest">AI lowest vs Dot-com peak</button>
-          <button type="button" data-quick="peaks">Peaks side by side</button>
+          <button type="button" data-quick="peaks">AI current vs Dot-com peak</button>
           <button type="button" data-quick="biggest">Biggest company of each</button>
           <button type="button" data-quick="then">AI then vs AI now</button>
         </div>
         <div class="workbench">
           {frames.map((frame, index) => (
-            <section class={`exposure exposure-${index}`} data-side={index}>
+            <section class={`exposure exposure-${index}`} data-side={index} aria-label={`Side ${index === 0 ? "A" : "B"}`}>
               <details class="picker" open>
-                <summary><span class="exposure-label">Exposure {index === 0 ? "A" : "B"}</span><span data-tile>{names[frame.dataset.id]} · {frame.moment}</span></summary>
+                <summary aria-label={`Side ${index === 0 ? "A" : "B"} pickers`}><span data-tile>{names[frame.dataset.id]} · {frame.moment}</span></summary>
                 <div class="picker-fields">
                   <div class="picker-group"><span>Bubble</span><div class="segments bubble-pills" role="group" aria-label={`Exposure ${index === 0 ? "A" : "B"} bubble`}>{datasets.map((dataset) => <button type="button" data-bubble={dataset.id} aria-pressed={dataset.id === frame.dataset.id}>{names[dataset.id]}</button>)}</div></div>
-                  <div class="picker-group"><span>Moment</span><div class="moment-pills" role="group" aria-label={`Exposure ${index === 0 ? "A" : "B"} moment`}>{Object.entries({ start: "Start", lowest: "Lowest", peak: "Peak", latest: "Latest", date: "Date…" }).map(([value, label]) => <button type="button" data-moment={value} aria-pressed={value === frame.moment}>{label}</button>)}</div></div>
+                  <div class="picker-group"><span>Moment</span><div class="moment-pills" role="group" aria-label={`Exposure ${index === 0 ? "A" : "B"} moment`}>{momentOptions(frame.dataset.id).map((option) => <button type="button" data-moment={option.id} aria-pressed={option.id === frame.moment}>{option.label}</button>)}</div></div>
                   <label data-date-label hidden>Pick a date<input type="date" data-date min={moments(frame.dataset).start!} max={moments(frame.dataset).latest!} value={frame.date} /></label>
                 </div>
               </details>
@@ -97,10 +97,10 @@ const dayLabel = (date: string) => new Intl.DateTimeFormat("en-GB", { day: "nume
         </div>
         <div class="foot">
           <p>Circle area = total value of the chosen companies, same area scale for both. Total value means what the companies are worth together. Values are US dollars, not adjusted for inflation. B = billion. T = trillion.</p>
-          <p>Values are mostly year-end records, so lowest/highest recorded do not mean an all-time low or high. Records are carried forward between dates. AI uses its latest date for peak and includes private-company valuations (estimates of what companies without publicly traded shares are worth).</p>
+          <p>Values are mostly year-end records, so lowest/highest recorded do not mean an all-time low or high. Records are carried forward between dates. AI Current uses its latest recorded date and includes private-company valuations (estimates of what companies without publicly traded shares are worth).</p>
           <p data-missing></p>
         </div>
-        <dialog data-dialog="players" aria-labelledby="players-title"><form method="dialog"><h2 id="players-title">Players</h2><button>Close</button></form><div data-player-groups></div></dialog>
+        <dialog data-dialog="players" aria-labelledby="players-title"><form method="dialog"><h2 id="players-title">Players</h2><button>Close</button></form><div class="segments player-side-switch" role="group" aria-label="Players side"><button type="button" data-player-side="0" aria-pressed="true">A</button><button type="button" data-player-side="1" aria-pressed="false">B</button></div><div data-player-groups></div></dialog>
         <dialog data-dialog="sources" aria-labelledby="sources-title"><form method="dialog"><h2 id="sources-title">Sources</h2><button>Close</button></form><div class="source-controls"><div class="segments source-side-switch" role="group" aria-label="Source side"><button type="button" data-source-side="0" aria-pressed="true">A</button><button type="button" data-source-side="1" aria-pressed="false">B</button></div><div class="segments" data-source-period-control hidden role="group" aria-label="Source moment"><button type="button" data-source-period="chosen" aria-pressed="true">Chosen</button><button type="button" data-source-period="start" aria-pressed="false">Start</button></div></div><div data-sources></div></dialog>
       </main>
     </div>

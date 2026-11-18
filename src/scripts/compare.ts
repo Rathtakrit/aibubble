@@ -1,4 +1,4 @@
-import { datasets, comparisonLine, formatTotal, moments, packedOn, percentDifference, totalOn } from "../lib/compare.ts";
+import { datasets, comparisonLine, formatTotal, moments, momentOptions, packedOn, percentDifference, totalOn } from "../lib/compare.ts";
 import type { CompareDataset, Moment } from "../lib/compare.ts";
 
 type Side = { dataset: CompareDataset; moment: Moment | "date"; date: string; players: Set<string> | null };
@@ -17,6 +17,11 @@ if (root) {
   phone.addEventListener("change", syncPickers);
   syncPickers();
   let measure = "size";
+  let playerSide = "0";
+  const syncPlayers = () => {
+    for (const panel of root.querySelectorAll<HTMLElement>("[data-player-panel]")) panel.hidden = phone.matches && panel.dataset.playerPanel !== playerSide;
+    for (const button of root.querySelectorAll<HTMLButtonElement>("[data-player-side]")) button.setAttribute("aria-pressed", String(button.dataset.playerSide === playerSide));
+  };
   let sourceSide = "0";
   let sourcePeriod = "chosen";
   const syncSources = () => {
@@ -72,13 +77,30 @@ if (root) {
       const panel = query<HTMLElement>(`[data-side="${index}"]`);
       const frame = frames[index];
       for (const button of panel.querySelectorAll<HTMLButtonElement>("[data-bubble]")) button.setAttribute("aria-pressed", String(button.dataset.bubble === side.dataset.id));
-      for (const button of panel.querySelectorAll<HTMLButtonElement>("[data-moment]")) button.setAttribute("aria-pressed", String(button.dataset.moment === side.moment));
+      const options = momentOptions(side.dataset.id);
+      const pillRow = panel.querySelector(".moment-pills")!;
+      const existing = Array.from(pillRow.querySelectorAll<HTMLButtonElement>("[data-moment]"));
+      if (existing.map((button) => button.dataset.moment).join() !== options.map((option) => option.id).join()) {
+        pillRow.replaceChildren();
+        for (const option of options) {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.dataset.moment = option.id;
+          pillRow.append(button);
+        }
+      }
+      for (const button of pillRow.querySelectorAll<HTMLButtonElement>("[data-moment]")) {
+        button.setAttribute("aria-pressed", String(button.dataset.moment === side.moment));
+        button.textContent = button.dataset.moment === "date" && side.moment === "date"
+          ? dayLabel(side.date) : options.find((option) => option.id === button.dataset.moment)!.label;
+      }
+      const momentLabel = side.dataset.id === "ai" && (side.moment === "latest" || side.moment === "peak") ? "Current" : labels[side.moment];
       const input = panel.querySelector<HTMLInputElement>("[data-date]")!;
       input.min = moments(side.dataset).start!;
       input.max = moments(side.dataset).latest!;
       input.value = side.date;
       panel.querySelector("[data-date-label]")!.toggleAttribute("hidden", side.moment !== "date");
-      panel.querySelector("[data-tile]")!.textContent = `${names[side.dataset.id]} · ${side.moment === "date" ? dayLabel(side.date) : labels[side.moment].toLowerCase()}`;
+      panel.querySelector("[data-tile]")!.textContent = `${names[side.dataset.id]} · ${side.moment === "date" ? dayLabel(side.date) : momentLabel.toLowerCase()}`;
       panel.querySelector("[data-total]")!.textContent = formatTotal(frame.total);
       panel.querySelector("[data-caption]")!.textContent = frame.values.length === 1
         ? `${frame.values[0].company.name} · on ${dayLabel(side.date)} · 1 company`
@@ -127,7 +149,7 @@ if (root) {
       }
       const label = query<SVGTextElement>(`[data-svg-label="${index}"]`);
       label.style.fontSize = `${fontSize}px`;
-      label.textContent = `${index === 0 ? "A" : "B"} · ${names[side.dataset.id]}, ${labels[side.moment].toLowerCase()}`;
+      label.textContent = `${index === 0 ? "A" : "B"} · ${names[side.dataset.id]}, ${momentLabel.toLowerCase()}`;
       tween(label, "y", Math.max(18, 485-r*2-12));
       const barLabel = query<SVGTextElement>(`[data-bar-label="${index}"]`);
       barLabel.textContent = `${index === 0 ? "A" : "B"} · ${names[side.dataset.id]}: ${signed(frame.change)}`;
@@ -155,7 +177,10 @@ if (root) {
     let checked = 0;
     sides.forEach((side, index) => {
       const fieldset = document.createElement("fieldset");
-      addText(fieldset, "legend", `${index === 0 ? "A" : "B"} · ${names[side.dataset.id]}`);
+      fieldset.dataset.playerPanel = String(index);
+      addText(fieldset, "legend", `${index === 0 ? "A" : "B"} · ${names[side.dataset.id]} · ${dayLabel(side.date)}`);
+      const grid = document.createElement("div");
+      grid.className = "player-grid";
       const entries = totalOn(side.dataset, side.date).values;
       for (const entry of entries) {
         const label = document.createElement("label");
@@ -169,10 +194,12 @@ if (root) {
         label.append(input);
         addText(label, "span", entry.company.name);
         addText(label, "span", formatTotal(entry.value)).className = "amount";
-        fieldset.append(label);
+        grid.append(label);
       }
+      fieldset.append(grid);
       groups.append(fieldset);
     });
+    syncPlayers();
     query('[data-open="players"]').textContent = phone.matches ? `Players ${checked}/${available}` : `Players: ${checked} of ${available}`;
     const sources = query("[data-sources]");
     sources.replaceChildren();
@@ -253,6 +280,11 @@ if (root) {
     const button = (event.target as Element).closest<HTMLButtonElement>("button");
     if (!button) return;
     if (button.dataset.open) { dialog(button.dataset.open).showModal(); return; }
+    if (button.dataset.playerSide !== undefined) {
+      playerSide = button.dataset.playerSide;
+      syncPlayers();
+      return;
+    }
     if (button.dataset.sourceSide !== undefined) {
       sourceSide = button.dataset.sourceSide;
       syncSources();
@@ -271,6 +303,7 @@ if (root) {
         side.players = null;
       }
       if (button.dataset.moment) side.moment = button.dataset.moment as Side["moment"];
+      if (side.dataset.id === "ai" && side.moment === "peak") side.moment = "latest";
       const dates = moments(side.dataset);
       side.date = side.moment === "date"
         ? (side.date < dates.start! ? dates.start! : side.date > dates.latest! ? dates.latest! : side.date)
@@ -286,7 +319,7 @@ if (root) {
           side.players = new Set(top ? [top.company.id] : []);
         }
       } else {
-        sides[0] = { dataset: datasets[0], moment: quick === "then" ? "start" : quick === "peaks" ? "peak" : "lowest", date: "", players: null };
+        sides[0] = { dataset: datasets[0], moment: quick === "then" ? "start" : quick === "peaks" ? "latest" : "lowest", date: "", players: null };
         sides[1] = { dataset: datasets[quick === "then" ? 0 : 1], moment: quick === "then" ? "latest" : "peak", date: "", players: null };
         for (const side of sides) side.date = moments(side.dataset)[side.moment as Moment]!;
       }

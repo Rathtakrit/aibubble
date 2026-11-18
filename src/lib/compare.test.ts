@@ -2,7 +2,7 @@
 import test from "node:test";
 // @ts-expect-error node:assert has no types in this repo
 import assert from "node:assert/strict";
-import { datasets, comparisonLine, percentDifference, formatTotal, moments, packedOn, top5, totalOn } from "./compare.ts";
+import { datasets, comparisonLine, percentDifference, formatTotal, moments, momentOptions, packedOn, top5, totalOn } from "./compare.ts";
 import type { CompareDataset } from "./compare.ts";
 
 const source = "https://example.com/sample";
@@ -34,6 +34,19 @@ test("moments finds the highest carried total, and AI uses latest for peak", () 
   assert.deepEqual(moments(sample), { start: "2000-01-01", lowest: "2000-01-03", peak: "2000-01-02", latest: "2000-01-03" });
   assert.equal(moments({ ...sample, id: "ai" }).peak, "2000-01-03");
   assert.deepEqual(moments({ ...sample, values: [] }), { start: null, lowest: null, peak: null, latest: null });
+});
+
+test("AI moment pills use Current for latest without a duplicate Peak", () => {
+  assert.deepEqual(momentOptions("ai"), [
+    { id: "start", label: "Start" },
+    { id: "lowest", label: "Lowest" },
+    { id: "latest", label: "Current" },
+    { id: "date", label: "Date…" },
+  ]);
+  assert.equal(moments(datasets[0]).latest, moments(datasets[0]).peak);
+  for (const id of ["dotcom", "housing"] as const) {
+    assert.deepEqual(momentOptions(id).map((option) => option.label), ["Start", "Lowest", "Peak", "Latest", "Date…"]);
+  }
 });
 
 test("lowest excludes Start, uses carried totals, and keeps the earliest tied record", () => {
