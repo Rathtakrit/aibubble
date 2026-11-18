@@ -26,6 +26,8 @@ import { renderBubble } from "../lib/bubble.ts";
 import { clampPan, dayView, peakDay } from "../lib/camera.ts";
 import type { CameraView } from "../lib/camera.ts";
 import type { Chapter } from "../lib/story.ts";
+import { SHEET_TAP_PX, snapSheet } from "../lib/sheet.ts";
+import type { SheetState } from "../lib/sheet.ts";
 import {
   dateAt,
   dayIndex,
@@ -429,6 +431,8 @@ function render(soon = false): void {
     const number = storyAt + 1;
     setText("story-kicker", `Chapter ${number} of ${chapters.length}`);
     setText("story-title", storyChapter.title);
+    // The docked sheet's one line: the chapter being read.
+    setText("dock-title", storyChapter.title);
     setText("story-names", namesOf(storyChapter.players));
     for (const line of document.querySelectorAll<HTMLElement>('[data-players-line="story"]')) {
       line.hidden = storyChapter.players.length === 0;
@@ -466,6 +470,8 @@ function render(soon = false): void {
     setText("kicker-desktop", `${datasetTitle} · news ${place.get(item.id)} of ${count}`);
     setText("kicker-phone", `News ${place.get(item.id)} of ${count} · ${dayLabel(item.date)}`);
     setText("title", item.title);
+    // The docked sheet's one line: the news title, ellipsed to the width it has.
+    setText("dock-title", item.title);
     setText("summary", item.summary);
     setText("names-desktop", namesOf(item.players));
     setText("names-phone", namesOf(item.players));
@@ -487,10 +493,12 @@ function render(soon = false): void {
     setText("kicker-desktop", `${datasetTitle} · ${dayLabel(day)}`);
     setText("kicker-phone", `${datasetTitle} · ${dayLabel(day)}`);
     renderCompany(company);
+    setText("dock-title", company.name);
   } else {
     setText("kicker-desktop", `${datasetTitle} · ${dayLabel(day)}`);
     setText("kicker-phone", `${datasetTitle} · ${dayLabel(day)}`);
     setText("latest-title", anchor ? anchor.title : "");
+    setText("dock-title", anchor ? anchor.title : "");
   }
 
   setText("date", dayLabel(day));
@@ -1071,3 +1079,192 @@ sizeMapBubble();
 const mapSheet = document.querySelector<HTMLElement>("[data-sheet]");
 if (mapSheet) new ResizeObserver(sizeMapBubble).observe(mapSheet);
 window.addEventListener("resize", sizeMapBubble);
+
+// The phone's bottom sheet rests in one of two states: open, today's panel at most 40% of the
+// screen, or docked, a small panel with the handle, the tab pill and one title line with Earlier
+// and Later. The handle's row drags between them and a tap on it switches; the choice is kept on
+// this device. The map above the sheet is measured again by the observer above, so docking gives
+// the bubble the room the panel gives up.
+const SHEET_KEY = "aibubble.sheet";
+const SHEET_SNAP_MS = 200;
+const sheetMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+function readSheetState(): SheetState {
+  try {
+    return localStorage.getItem(SHEET_KEY) === "docked" ? "docked" : "open";
+  } catch {
+    // Storage can be blocked (a private window); the sheet then starts open, as on a first visit.
+    return "open";
+  }
+}
+
+function writeSheetState(state: SheetState): void {
+  try {
+    localStorage.setItem(SHEET_KEY, state);
+  } catch {
+    // Nothing to do: the choice is simply not remembered.
+  }
+}
+
+// The sheet's own height in one of the two states, from the stylesheet's layout. A height set by
+// a drag or a snap is put aside for the measurement and put back afterwards, so a second drag can
+// start while the first is still settling.
+function sheetHeight(sheet: HTMLElement, state: SheetState): number {
+  const before = sheet.dataset.sheetState;
+  const height = sheet.style.height;
+  const maxHeight = sheet.style.maxHeight;
+  sheet.style.removeProperty("height");
+  sheet.style.removeProperty("max-height");
+  sheet.dataset.sheetState = state;
+  const measured = sheet.getBoundingClientRect().height;
+  if (before === undefined) delete sheet.dataset.sheetState;
+  else sheet.dataset.sheetState = before;
+  if (height !== "") sheet.style.height = height;
+  if (maxHeight !== "") sheet.style.maxHeight = maxHeight;
+  return measured;
+}
+
+function clearSheetHeight(sheet: HTMLElement): void {
+  sheet.style.removeProperty("height");
+  sheet.style.removeProperty("max-height");
+  sheet.classList.remove("is-dragging", "is-snapping");
+}
+
+// What the page shows: the sheet in its state, and the handle saying what a press would do.
+function showSheetState(sheet: HTMLElement, state: SheetState): void {
+  sheet.dataset.sheetState = state;
+  const handle = sheet.querySelector<HTMLButtonElement>("[data-sheet-handle]");
+  handle?.setAttribute("aria-expanded", String(state === "open"));
+  handle?.setAttribute("aria-label", state === "open" ? "Show less" : "Show more");
+}
+
+for (const sheet of document.querySelectorAll<HTMLElement>("[data-sheet]")) {
+  const handle = sheet.querySelector<HTMLButtonElement>("[data-sheet-handle]");
+  if (!handle) continue;
+  showSheetState(sheet, readSheetState());
+
+  let snapTimer: ReturnType<typeof setTimeout> | null = null;
+  let drag: {
+    id: number;
+    startState: SheetState;
+    startX: number;
+    startY: number;
+    startHeight: number;
+    height: number;
+    time: number;
+    velocity: number;
+    moved: number;
+    docked: number;
+    open: number;
+  } | null = null;
+
+  const stopSnap = (): void => {
+    if (snapTimer === null) return;
+    clearTimeout(snapTimer);
+    snapTimer = null;
+  };
+
+  // From the height the pointer left the sheet at to the state's own height: about 200ms, or at
+  // once when the device asks for reduced motion. Opening puts the panel's content in place first,
+  // so it is uncovered as the sheet grows; closing leaves it in place until the sheet arrives, so
+  // the panel never slides down empty.
+  const settle = (state: SheetState, from: number, to: number): void => {
+    stopSnap();
+    sheet.classList.remove("is-dragging");
+    writeSheetState(state);
+    if (sheetMotion.matches || Math.abs(to - from) < 1) {
+      showSheetState(sheet, state);
+      clearSheetHeight(sheet);
+      return;
+    }
+    if (state === "open") showSheetState(sheet, state);
+    sheet.style.maxHeight = "none";
+    sheet.style.height = `${from}px`;
+    // The browser has to take in the starting height before the transition can move it.
+    void sheet.offsetHeight;
+    sheet.classList.add("is-snapping");
+    sheet.style.height = `${to}px`;
+    snapTimer = setTimeout(() => {
+      snapTimer = null;
+      showSheetState(sheet, state);
+      clearSheetHeight(sheet);
+    }, SHEET_SNAP_MS + 50);
+  };
+
+  const toggle = (): void => {
+    const docked = sheetHeight(sheet, "docked");
+    const open = sheetHeight(sheet, "open");
+    const state: SheetState = sheet.dataset.sheetState === "docked" ? "open" : "docked";
+    settle(state, sheet.getBoundingClientRect().height, state === "open" ? open : docked);
+  };
+
+  // A press with a pointer is handled below, so only a click with no pointer behind it (Enter,
+  // Space, a screen reader) toggles here.
+  handle.addEventListener("click", (event) => {
+    if (event.detail !== 0) return;
+    toggle();
+  });
+
+  handle.addEventListener("pointerdown", (event) => {
+    if (drag !== null) return;
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+    const docked = sheetHeight(sheet, "docked");
+    const open = sheetHeight(sheet, "open");
+    // A layout that is not showing (desktop) has no height to drag.
+    if (open <= 1) return;
+    stopSnap();
+    // A sheet caught mid-snap keeps the height it had reached and follows the pointer from there.
+    sheet.classList.remove("is-snapping");
+    const startState: SheetState = sheet.dataset.sheetState === "docked" ? "docked" : "open";
+    const startHeight = sheet.getBoundingClientRect().height;
+    // Dragging a docked sheet shows what it is uncovering from the first pixel.
+    if (startState === "docked") showSheetState(sheet, "open");
+    sheet.style.maxHeight = "none";
+    sheet.style.height = `${startHeight}px`;
+    sheet.classList.add("is-dragging");
+    drag = {
+      id: event.pointerId,
+      startState,
+      startX: event.clientX,
+      startY: event.clientY,
+      startHeight,
+      height: startHeight,
+      time: event.timeStamp,
+      velocity: 0,
+      moved: 0,
+      docked,
+      open,
+    };
+    handle.setPointerCapture(event.pointerId);
+  });
+
+  handle.addEventListener("pointermove", (event) => {
+    if (drag === null || drag.id !== event.pointerId) return;
+    // The panel's edge follows the finger between the two heights, never past them.
+    const travel = drag.startY - event.clientY;
+    const height = Math.min(drag.open, Math.max(drag.docked, drag.startHeight + travel));
+    const elapsed = Math.max(1, event.timeStamp - drag.time);
+    drag.velocity = (height - drag.height) / elapsed;
+    drag.time = event.timeStamp;
+    drag.height = height;
+    drag.moved = Math.max(drag.moved, Math.hypot(event.clientX - drag.startX, travel));
+    sheet.style.height = `${height}px`;
+  });
+
+  const endDrag = (event: PointerEvent): void => {
+    if (drag === null || drag.id !== event.pointerId) return;
+    const { startState, height, docked, open, velocity, moved } = drag;
+    drag = null;
+    if (handle.hasPointerCapture(event.pointerId)) handle.releasePointerCapture(event.pointerId);
+    // A press that barely moved is a tap: the handle switches the sheet.
+    const state: SheetState =
+      moved < SHEET_TAP_PX
+        ? startState === "docked"
+          ? "open"
+          : "docked"
+        : snapSheet(height, docked, open, velocity);
+    settle(state, height, state === "open" ? open : docked);
+  };
+  handle.addEventListener("pointerup", endDrag);
+  handle.addEventListener("pointercancel", endDrag);
+}
