@@ -2,7 +2,7 @@
 import test from "node:test";
 // @ts-expect-error node:assert has no types in this repo
 import assert from "node:assert/strict";
-import { datasets, formatTotal, moments, packedOn, top5, totalOn } from "./compare.ts";
+import { datasets, comparisonLine, percentDifference, formatTotal, labelsOverlap, moments, momentOptions, packedOn, top5, totalOn } from "./compare.ts";
 import type { CompareDataset } from "./compare.ts";
 
 const source = "https://example.com/sample";
@@ -31,9 +31,63 @@ test("totalOn carries records forward without borrowing future records", () => {
 });
 
 test("moments finds the highest carried total, and AI uses latest for peak", () => {
-  assert.deepEqual(moments(sample), { start: "2000-01-01", peak: "2000-01-02", latest: "2000-01-03" });
+  assert.deepEqual(moments(sample), { start: "2000-01-01", lowest: "2000-01-03", peak: "2000-01-02", latest: "2000-01-03" });
   assert.equal(moments({ ...sample, id: "ai" }).peak, "2000-01-03");
-  assert.deepEqual(moments({ ...sample, values: [] }), { start: null, peak: null, latest: null });
+  assert.deepEqual(moments({ ...sample, values: [] }), { start: null, lowest: null, peak: null, latest: null });
+});
+
+test("label collisions include padding but allow separated and touching padded boxes", () => {
+  const box = { x: 10, y: 20, width: 40, height: 12 };
+  assert.equal(labelsOverlap(box, box), true);
+  assert.equal(labelsOverlap(box, { ...box, x: 52 }), true);
+  assert.equal(labelsOverlap(box, { ...box, x: 54 }), false);
+  assert.equal(labelsOverlap(box, { ...box, y: 36 }), false);
+  assert.equal(labelsOverlap(box, { ...box, y: 34 }), true);
+  assert.equal(labelsOverlap(box, { ...box, x: 50 }, 0), false);
+});
+
+test("AI moment pills use Current for latest without a duplicate Peak", () => {
+  assert.deepEqual(momentOptions("ai"), [
+    { id: "start", label: "Start" },
+    { id: "lowest", label: "Lowest" },
+    { id: "latest", label: "Current" },
+  ]);
+  assert.equal(moments(datasets[0]).latest, moments(datasets[0]).peak);
+  for (const id of ["dotcom", "housing"] as const) {
+    assert.deepEqual(momentOptions(id).map((option) => option.label), ["Start", "Lowest", "Peak", "Latest"]);
+  }
+});
+
+test("lowest excludes Start, uses carried totals, and keeps the earliest tied record", () => {
+  const tied = { ...sample, values: [...sample.values, { ...sample.values[0], date: "2000-01-04" }] };
+  assert.equal(moments(tied).lowest, "2000-01-03");
+  assert.equal(moments({ ...sample, values: sample.values.filter((p) => p.date === "2000-01-01") }).lowest, null);
+  for (const dataset of datasets) {
+    const dates = moments(dataset);
+    assert.ok(dates.lowest! > dates.start!);
+    const minimum = totalOn(dataset, dates.lowest!).total;
+    for (const date of new Set(dataset.values.map((p) => p.date))) {
+      if (date > dates.start!) assert.ok(totalOn(dataset, date).total >= minimum);
+    }
+  }
+});
+
+test("percentage differences use B as baseline and handle falls and zero", () => {
+  assert.equal(percentDifference(150, 100), 50);
+  assert.equal(percentDifference(50, 100), -50);
+  assert.equal(percentDifference(0, 100), -100);
+  assert.equal(percentDifference(0, 0), 0);
+  assert.equal(percentDifference(10, 0), null);
+  assert.equal(comparisonLine(150.6, 100), "A is 51% bigger than B");
+  assert.equal(comparisonLine(49.4, 100), "A is 51% smaller than B");
+  for (const value of [99, 100, 101]) assert.equal(comparisonLine(value, 100), "A and B are about the same size");
+});
+
+test("empty sides prompt for players instead of a percentage", () => {
+  assert.equal(comparisonLine(0, 100), "Pick at least one company for A");
+  assert.equal(comparisonLine(10, 0), "Pick at least one company for B");
+  assert.equal(comparisonLine(0, 0), "Pick at least one company for A");
+  assert.equal(formatTotal(0), "$0");
 });
 
 test("top5 sorts by value and excludes groups and missing companies", () => {

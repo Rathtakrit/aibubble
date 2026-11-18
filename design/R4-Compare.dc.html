@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Compare, double exposure</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&amp;family=Instrument+Serif&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#1E3A8A}a:hover{color:#1B1A17}
+</style>
+</helmet>
+<div style="background: #F5EFE3; color: #1B1A17; font-family: 'Instrument Sans', sans-serif; min-height: 1000px">
+  <div style="max-width: 1360px; margin: 0 auto; padding: 32px 40px 40px; display: flex; flex-direction: column; gap: 22px">
+
+    <div style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px">
+      <div>
+        <h1 style="margin: 0; font-family: 'Instrument Serif', serif; font-weight: 400; font-size: 48px; line-height: 1.05">Compare the bubbles</h1>
+        <p style="margin: 6px 0 0; font-size: 17px; color: #57534B">Pick two moments. Both circles share one scale, laid over each other like a double exposure.</p>
+      </div>
+      <div role="group" aria-label="Measure" style="display: flex; border: 1px solid #1B1A17; border-radius: 999px; padding: 3px; gap: 2px">
+        <button style="min-height: 44px; padding: 0 18px; border: 0; border-radius: 999px; background: #1B1A17; color: #F5EFE3; font: 600 14px 'Instrument Sans', sans-serif">Size</button>
+        <button style="min-height: 44px; padding: 0 18px; border: 0; border-radius: 999px; background: transparent; color: #1B1A17; font: 500 14px 'Instrument Sans', sans-serif">Change %</button>
+        <button style="min-height: 44px; padding: 0 18px; border: 0; border-radius: 999px; background: transparent; color: #1B1A17; font: 500 14px 'Instrument Sans', sans-serif">Growth</button>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center">
+      <span style="font-size: 13px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #57534B; margin-right: 6px">Try</span>
+      <button style="min-height: 44px; padding: 0 14px; border: 1px solid #CFC5B2; border-radius: 999px; background: #FBF7EF; font: 500 14px 'Instrument Sans', sans-serif; color: #1B1A17">AI lowest vs Dot-com peak</button>
+      <button style="min-height: 44px; padding: 0 14px; border: 1px solid #CFC5B2; border-radius: 999px; background: #FBF7EF; font: 500 14px 'Instrument Sans', sans-serif; color: #1B1A17">Peaks side by side</button>
+      <button style="min-height: 44px; padding: 0 14px; border: 1px solid #CFC5B2; border-radius: 999px; background: #FBF7EF; font: 500 14px 'Instrument Sans', sans-serif; color: #1B1A17">Biggest company of each</button>
+      <button style="min-height: 44px; padding: 0 14px; border: 1px solid #CFC5B2; border-radius: 999px; background: #FBF7EF; font: 500 14px 'Instrument Sans', sans-serif; color: #1B1A17">AI then vs AI now</button>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 32px; align-items: center">
+      <div style="flex: 1 1 260px; display: flex; flex-direction: column; gap: 14px; max-width: 300px">
+        <div style="border-top: 4px solid #1E3A8A; padding-top: 12px; display: flex; flex-direction: column; gap: 8px">
+          <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #1E3A8A">Exposure A</span>
+          <label style="display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: #57534B">Bubble
+            <select style="min-height: 44px; font: 500 16px 'Instrument Sans', sans-serif; border: 1px solid #1B1A17; background: transparent; padding: 0 10px"><option>AI</option><option>Dot-com</option><option>Housing</option></select></label>
+          <label style="display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: #57534B">Moment
+            <select style="min-height: 44px; font: 500 16px 'Instrument Sans', sans-serif; border: 1px solid #1B1A17; background: transparent; padding: 0 10px"><option>Lowest recorded</option><option>Peak recorded</option><option>Start</option><option>Latest</option><option>Pick a date…</option></select></label>
+          <span style="font-family: 'Instrument Serif', serif; font-size: 34px; line-height: 1">[$X.XT]</span>
+          <span style="font-size: 13px; color: #57534B">on [date] · [N] companies</span>
+        </div>
+      </div>
+
+      <div style="flex: 2 1 520px; display: flex; justify-content: center">
+        <svg width="620" height="500" viewBox="0 0 620 500" role="img" aria-label="Two translucent circles laid over each other on one scale: A in blue, larger; B in orange, smaller, sharing the same bottom point">
+          <g style="mix-blend-mode: multiply">
+            <circle cx="300" cy="260" r="225" fill="#1E3A8A" fill-opacity="0.13" stroke="#1E3A8A" stroke-width="2"></circle>
+            <circle cx="215" cy="190" r="62" fill="#1E3A8A" fill-opacity="0.10" stroke="#1E3A8A" stroke-opacity="0.5"></circle>
+            <circle cx="355" cy="170" r="70" fill="#1E3A8A" fill-opacity="0.10" stroke="#1E3A8A" stroke-opacity="0.5"></circle>
+            <circle cx="250" cy="320" r="58" fill="#1E3A8A" fill-opacity="0.10" stroke="#1E3A8A" stroke-opacity="0.5"></circle>
+            <circle cx="390" cy="320" r="52" fill="#1E3A8A" fill-opacity="0.10" stroke="#1E3A8A" stroke-opacity="0.5"></circle>
+            <circle cx="160" cy="300" r="30" fill="#1E3A8A" fill-opacity="0.10" stroke="#1E3A8A" stroke-opacity="0.5"></circle>
+            <circle cx="300" cy="400" r="34" fill="#1E3A8A" fill-opacity="0.10" stroke="#1E3A8A" stroke-opacity="0.5"></circle>
+          </g>
+          <g style="mix-blend-mode: multiply">
+            <circle cx="300" cy="345" r="140" fill="#C2410C" fill-opacity="0.16" stroke="#C2410C" stroke-width="2"></circle>
+            <circle cx="255" cy="310" r="40" fill="#C2410C" fill-opacity="0.12" stroke="#C2410C" stroke-opacity="0.55"></circle>
+            <circle cx="340" cy="300" r="34" fill="#C2410C" fill-opacity="0.12" stroke="#C2410C" stroke-opacity="0.55"></circle>
+            <circle cx="290" cy="395" r="36" fill="#C2410C" fill-opacity="0.12" stroke="#C2410C" stroke-opacity="0.55"></circle>
+            <circle cx="365" cy="375" r="24" fill="#C2410C" fill-opacity="0.12" stroke="#C2410C" stroke-opacity="0.55"></circle>
+            <circle cx="215" cy="375" r="20" fill="#C2410C" fill-opacity="0.12" stroke="#C2410C" stroke-opacity="0.55"></circle>
+          </g>
+          <line x1="300" y1="485" x2="300" y2="495" stroke="#1B1A17"></line>
+          <text x="300" y="28" text-anchor="middle" font-family="Instrument Sans, sans-serif" font-size="13" fill="#1E3A8A">A · AI, lowest recorded</text>
+          <text x="300" y="196" text-anchor="middle" font-family="Instrument Sans, sans-serif" font-size="13" fill="#9A3412">B · Dot-com, peak recorded</text>
+        </svg>
+      </div>
+
+      <div style="flex: 1 1 260px; display: flex; flex-direction: column; gap: 14px; max-width: 300px">
+        <div style="border-top: 4px solid #C2410C; padding-top: 12px; display: flex; flex-direction: column; gap: 8px">
+          <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #9A3412">Exposure B</span>
+          <label style="display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: #57534B">Bubble
+            <select style="min-height: 44px; font: 500 16px 'Instrument Sans', sans-serif; border: 1px solid #1B1A17; background: transparent; padding: 0 10px"><option>Dot-com</option><option>AI</option><option>Housing</option></select></label>
+          <label style="display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: #57534B">Moment
+            <select style="min-height: 44px; font: 500 16px 'Instrument Sans', sans-serif; border: 1px solid #1B1A17; background: transparent; padding: 0 10px"><option>Peak recorded</option><option>Lowest recorded</option><option>Start</option><option>Latest</option><option>Pick a date…</option></select></label>
+          <span style="font-family: 'Instrument Serif', serif; font-size: 34px; line-height: 1">[$X.XT]</span>
+          <span style="font-size: 13px; color: #57534B">on [date] · [N] companies</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; border-top: 1px solid #1B1A17; border-bottom: 1px solid #CFC5B2; padding: 18px 0">
+      <p style="margin: 0; font-family: 'Instrument Serif', serif; font-size: 30px">A is <span style="color: #1E3A8A">[N]%</span> bigger than B</p>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap">
+        <button style="min-height: 44px; padding: 0 16px; border: 1px solid #1B1A17; border-radius: 999px; background: transparent; font: 500 14px 'Instrument Sans', sans-serif; color: #1B1A17">Swap A and B</button>
+        <button style="min-height: 44px; padding: 0 16px; border: 1px solid #1B1A17; border-radius: 999px; background: transparent; font: 500 14px 'Instrument Sans', sans-serif; color: #1B1A17">Players: all 8 + 5 ▾</button>
+        <button style="min-height: 44px; padding: 0 16px; border: 1px solid #1B1A17; border-radius: 999px; background: transparent; font: 500 14px 'Instrument Sans', sans-serif; color: #1B1A17">Sources</button>
+      </div>
+    </div>
+
+    <p style="margin: 0; font-size: 13px; color: #57534B; max-width: 860px">Circle area = total value of the chosen companies, same scale for both. Values are US dollars, not adjusted for inflation, mostly year-end records, so "lowest" and "highest" mean recorded. Animation: on any change the circles grow or shrink into place; with reduced motion they switch at once. Numbers in [brackets] are placeholders.</p>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>
