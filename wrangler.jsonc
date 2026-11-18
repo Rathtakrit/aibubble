@@ -1,0 +1,9 @@
+// Cloudflare Worker preview and deployment settings.
+{
+  "name": "will-it-pop",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": "./dist"
+  },
+  "previews": {}
+}
