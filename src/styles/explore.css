@@ -508,13 +508,13 @@ body:not([data-timeline-zoomed="true"]) [data-zoom-only="true"],
   position: absolute;
   left: 50%;
   top: 0;
-  width: 560px;
-  margin-left: -280px;
+  width: min(560px, calc(100vw - 24px));
+  margin-left: max(-280px, calc((24px - 100vw) / 2));
 }
 
 .map-bubble .bubble-svg {
-  width: 560px;
-  height: 560px;
+  width: 100%;
+  height: auto;
 }
 
 .map-top {
