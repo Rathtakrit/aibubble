@@ -189,6 +189,7 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
             href="/past/housing/"
             aria-current={id === "housing" ? "page" : undefined}>Housing</a
           >
+          <a class="nav-item" href="/compare/">Compare</a>
         </nav>
       </header>
 
@@ -540,6 +541,7 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
             href="/past/housing/"
             aria-current={id === "housing" ? "page" : undefined}>Housing</a
           >
+          <a class="mode-button" href="/compare/">Compare</a>
         </nav>
         {
           STORY_ENABLED && !isPast && (

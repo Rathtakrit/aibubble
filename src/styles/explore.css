@@ -870,6 +870,12 @@ body[data-mode="story"] .story-dot {
   text-decoration: none;
 }
 
+@media (max-width: 430px) {
+  .mode-button {
+    font-size: 13px;
+  }
+}
+
 .mode-switch .nav-current {
   background: var(--ink);
   color: var(--paper);
