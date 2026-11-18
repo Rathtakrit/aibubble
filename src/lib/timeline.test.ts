@@ -326,11 +326,11 @@ test("an end-aligned label at the right edge is measured from its own left edge"
   assert.equal(placed.get("edge")?.row, 0);
 });
 
-test("timeline zoom centres unequal neighbours and excludes other events", () => {
+test("timeline zoom centres the selected item in a seven-item window", () => {
   const events = inDateOrder([...busyDots, ...smallDots]);
   const scale = timelineScale(last, dots);
   const window = timelineWindow(events, "m4", scale);
-  assert.deepEqual(window.ids, ["m3", "m4", "s1"]);
+  assert.deepEqual(window.ids, events.map((item) => item.id));
   assert.equal(windowPercent(scale.percentOf("2025-03-24"), window), 50);
   for (const id of window.ids) {
     const event = events.find((item) => item.id === id)!;
@@ -341,17 +341,17 @@ test("timeline zoom centres unequal neighbours and excludes other events", () =>
   }
 });
 
-test("timeline zoom keeps the nearest three at both ends", () => {
-  const events = inDateOrder([...busyDots, ...smallDots]);
-  const scale = timelineScale(last, dots);
-  for (const id of ["m1", "s2"]) {
-    const window = timelineWindow(events, id, scale);
-    assert.equal(window.ids.length, 3);
-    assert.ok(window.ids.includes(id));
-    const selected = events.find((item) => item.id === id)!;
-    assert.ok(windowPercent(scale.percentOf(selected.date), window) > 0);
-    assert.ok(windowPercent(scale.percentOf(selected.date), window) < 100);
-  }
+test("timeline zoom fills a seven-item window from the other side at either end", () => {
+  const events = inDateOrder(Array.from({ length: 10 }, (_, index) => ({
+    id: `e${index}`, date: dateAt(index * 30),
+  })));
+  const scale = timelineScale(dateAt(300), { red: events, blue: [] });
+  const first = timelineWindow(events, "e0", scale);
+  const last = timelineWindow(events, "e9", scale);
+  assert.deepEqual(first.ids, events.slice(0, 7).map((item) => item.id));
+  assert.deepEqual(last.ids, events.slice(3).map((item) => item.id));
+  assert.equal(windowPercent(scale.percentOf(events[0].date), first), 50);
+  assert.equal(windowPercent(scale.percentOf(events[9].date), last), 50);
 });
 
 test("timeline zoom handles coincident dates and short or empty lists", () => {

@@ -123,7 +123,7 @@ let zoomIndex = 1;
 // The mode whose titles over the timeline were placed last: Explore's news titles or Story's
 // chapter titles, one set at a time.
 let labelsPlacedFor: string | null = null;
-let timelineZoomed = false;
+let timelineZoomed = true;
 const fullTimeline: TimelineWindow = { start: 0, middle: 50, end: 100, ids: [] };
 let visibleTimeline = fullTimeline;
 let timelineTarget = fullTimeline;
@@ -423,6 +423,9 @@ function render(soon = false): void {
   for (const button of document.querySelectorAll<HTMLButtonElement>('[data-action="later"]')) {
     button.disabled = at < 0 || at >= count - 1;
   }
+  for (const button of document.querySelectorAll<HTMLButtonElement>('[data-action="timeline-start"]')) {
+    button.disabled = at === 0;
+  }
 
   // The zoom buttons step through the reader's own zoom, and stop at the ends.
   for (const button of document.querySelectorAll<HTMLButtonElement>('[data-zoom="in"]')) {
@@ -584,6 +587,9 @@ document.addEventListener("click", (event) => {
     timelineZoomed = !timelineZoomed;
     updateTimeline();
     return;
+  } else if (action === "timeline-start") {
+    const first = timelineEvents[0];
+    if (first) selectItem(first.id);
   } else if (action === "earlier") {
     step(-1);
   } else if (action === "later") {
