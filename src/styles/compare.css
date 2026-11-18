@@ -35,7 +35,13 @@ button:disabled { cursor: default; color: var(--ink-2); }
 [data-tile] { display: none; }
 .picker-fields { display: flex; flex-direction: column; gap: 8px; padding-top: 8px; }
 .picker label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--ink-2); }
-select, input[type=date] { width: 100%; min-width: 0; min-height: 44px; border: 1px solid var(--ink); background: transparent; padding: 0 10px; font-size: 16px; color: var(--ink); font-weight: 500; border-radius: 0; }
+.picker-group > span { display: block; font-size: 13px; color: var(--ink-2); margin-bottom: 4px; }
+.bubble-pills { width: 100%; }
+.bubble-pills button { flex: 1; padding: 0 6px; font-size: 13px; }
+.moment-pills { display: flex; flex-wrap: wrap; gap: 4px; }
+.moment-pills button { border: 1px solid var(--rule); border-radius: 999px; padding: 0 10px; font-size: 13px; background: transparent; }
+.moment-pills button[aria-pressed=true] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+input[type=date] { width: 100%; min-width: 0; min-height: 44px; border: 1px solid var(--ink); background: transparent; padding: 0 10px; font-size: 16px; color: var(--ink); font-weight: 500; border-radius: 0; }
 .caption { margin-top: 8px; }
 .total { font-family: var(--font-serif); font-size: 34px; line-height: 1; }
 .caption p { margin-top: 6px; font-size: 13px; color: var(--ink-2); }
@@ -64,8 +70,18 @@ dialog legend { font-weight: 600; }
 dialog label { display: flex; gap: 8px; align-items: center; min-height: 44px; cursor: pointer; font-size: 14px; }
 dialog input { accent-color: var(--accent); width: 20px; height: 20px; flex-shrink: 0; }
 .amount { margin-left: auto; color: var(--ink-2); }
-dialog li { padding: 6px 0; overflow-wrap: anywhere; }
-dialog a { display: inline-flex; align-items: center; min-height: 44px; }
+[data-dialog="sources"] { width: min(1200px, calc(100% - 32px)); max-height: calc(100dvh - 32px); }
+.source-controls { display: flex; gap: 8px; margin-bottom: 8px; }
+.source-side-switch { display: none; }
+[data-sources] { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+[data-source-panel] { min-width: 0; }
+[data-source-panel] h3 { font: 500 14px var(--font-sans); margin: 0 0 8px; }
+.source-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 12px; }
+.source-grid .source { display: flex; align-items: center; min-width: 0; min-height: 28px; padding: 4px 0; font-size: 13px; line-height: 20px; color: var(--ink-2); text-decoration: none; overflow-wrap: anywhere; }
+.source-grid .source:hover, .source-grid .source:focus-visible { color: var(--ink); text-decoration: underline; }
+@media (min-width: 1200px) {
+  .source-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
 @media (min-width: 900px) {
   .picker summary { pointer-events: none; }
 }
@@ -88,7 +104,16 @@ dialog a { display: inline-flex; align-items: center; min-height: 44px; }
   .exposure-label { display: block; font-size: 11px; }
   .exposure-label::after { content: " ▾"; }
   [data-tile] { display: block; font-size: 14px; }
-  .picker-fields { padding: 8px 10px 12px; }
+  .picker-fields { padding: 8px 6px 12px; }
+  .bubble-pills { gap: 0; padding: 2px; }
+  .bubble-pills button { font-size: 11px; padding: 0 3px; }
+  [data-dialog="sources"] { padding: 12px; }
+  [data-dialog="sources"] form { margin-bottom: 8px; }
+  .source-side-switch { display: flex; }
+  [data-sources] { display: block; }
+  .source-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 8px; }
+  .source-grid .source { min-height: 44px; padding: 4px 0; font-size: 13px; line-height: 16px; }
+  .source-controls .segments button { min-width: 44px; }
   .drawing { grid-column: 1 / -1; grid-row: 2; width: 100%; }
   .drawing svg { height: 330px; }
   .caption { grid-column: 1; grid-row: 3; margin: 0; }

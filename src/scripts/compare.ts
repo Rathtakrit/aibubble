@@ -17,6 +17,13 @@ if (root) {
   phone.addEventListener("change", syncPickers);
   syncPickers();
   let measure = "size";
+  let sourceSide = "0";
+  let sourcePeriod = "chosen";
+  const syncSources = () => {
+    for (const section of root.querySelectorAll<HTMLElement>("[data-source-panel]")) section.hidden = phone.matches && section.dataset.sourcePanel !== sourceSide;
+    for (const button of root.querySelectorAll<HTMLButtonElement>("[data-source-side]")) button.setAttribute("aria-pressed", String(button.dataset.sourceSide === sourceSide));
+    for (const button of root.querySelectorAll<HTMLButtonElement>("[data-source-period]")) button.setAttribute("aria-pressed", String(button.dataset.sourcePeriod === sourcePeriod));
+  };
   let animation = 0;
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const svgNS = "http://www.w3.org/2000/svg";
@@ -64,8 +71,8 @@ if (root) {
     sides.forEach((side, index) => {
       const panel = query<HTMLElement>(`[data-side="${index}"]`);
       const frame = frames[index];
-      panel.querySelector<HTMLSelectElement>("[data-bubble]")!.value = side.dataset.id;
-      panel.querySelector<HTMLSelectElement>("[data-moment]")!.value = side.moment;
+      for (const button of panel.querySelectorAll<HTMLButtonElement>("[data-bubble]")) button.setAttribute("aria-pressed", String(button.dataset.bubble === side.dataset.id));
+      for (const button of panel.querySelectorAll<HTMLButtonElement>("[data-moment]")) button.setAttribute("aria-pressed", String(button.dataset.moment === side.moment));
       const input = panel.querySelector<HTMLInputElement>("[data-date]")!;
       input.min = moments(side.dataset).start!;
       input.max = moments(side.dataset).latest!;
@@ -169,24 +176,28 @@ if (root) {
     query('[data-open="players"]').textContent = phone.matches ? `Players ${checked}/${available}` : `Players: ${checked} of ${available}`;
     const sources = query("[data-sources]");
     sources.replaceChildren();
+    if (measure !== "change") sourcePeriod = "chosen";
+    query("[data-source-period-control]").toggleAttribute("hidden", measure !== "change");
     frames.forEach((frame, index) => {
-      addText(sources, "h3", `${index === 0 ? "A" : "B"} · ${names[sides[index].dataset.id]}`);
-      const snapshots = [{ label: "Chosen moment", date: sides[index].date, values: frame.values }];
-      if (measure === "change") snapshots.push({ label: "Start", date: frame.start, values: frame.baseline.values });
-      for (const snapshot of snapshots) {
-        addText(sources, "p", `${snapshot.label}: ${dayLabel(snapshot.date)}`);
-        const list = document.createElement("ul");
-        for (const entry of snapshot.values) {
-          const item = document.createElement("li");
-          const link = document.createElement("a");
-          link.href = entry.point.source;
-          link.textContent = `${entry.company.name}: ${formatTotal(entry.value)} · recorded ${dayLabel(entry.point.date)}`;
-          item.append(link);
-          list.append(item);
-        }
-        sources.append(list);
+      const baseline = sourcePeriod === "start";
+      const section = document.createElement("section");
+      section.dataset.sourcePanel = String(index);
+      addText(section, "h3", `${index === 0 ? "A" : "B"} · ${names[sides[index].dataset.id]} · ${dayLabel(baseline ? frame.start : sides[index].date)}`);
+      const grid = document.createElement("div");
+      grid.className = "source-grid";
+      for (const entry of baseline ? frame.baseline.values : frame.values) {
+        const link = document.createElement("a");
+        link.className = "source";
+        link.href = entry.point.source;
+        link.textContent = `${entry.company.name} · ${formatTotal(entry.value).replace("$", "")} ↗`;
+        link.title = `Recorded ${dayLabel(entry.point.date)}`;
+        grid.append(link);
       }
+      if (!grid.childElementCount) addText(grid, "p", "No recorded values selected.");
+      section.append(grid);
+      sources.append(section);
     });
+    syncSources();
     query("[data-missing]").textContent = sides.map((side, index) => {
       const known = new Set(totalOn(side.dataset, side.date).values.map((entry) => entry.company.id));
       const missing = side.dataset.companies.filter((company) => !known.has(company.id)).map((company) => company.name);
@@ -219,7 +230,7 @@ if (root) {
 
   root.addEventListener("change", (event) => {
     const input = event.target;
-    if (!(input instanceof HTMLInputElement || input instanceof HTMLSelectElement)) return;
+    if (!(input instanceof HTMLInputElement)) return;
     if (input instanceof HTMLInputElement && input.dataset.player) {
       for (const side of sides.filter((side) => side.dataset.id === input.dataset.dataset)) {
         if (!side.players) side.players = new Set(side.dataset.companies.map((company) => company.id));
@@ -230,11 +241,6 @@ if (root) {
       const panel = input.closest<HTMLElement>("[data-side]");
       if (!panel) return;
       const side = sides[Number(panel.dataset.side)];
-      if (input.hasAttribute("data-bubble")) {
-        side.dataset = datasets.find((dataset) => dataset.id === input.value)!;
-        side.players = null;
-      }
-      if (input.hasAttribute("data-moment")) side.moment = input.value as Side["moment"];
       const dates = moments(side.dataset);
       if (side.moment === "date") {
         const date = input.hasAttribute("data-date") ? input.value : side.date;
@@ -247,7 +253,30 @@ if (root) {
     const button = (event.target as Element).closest<HTMLButtonElement>("button");
     if (!button) return;
     if (button.dataset.open) { dialog(button.dataset.open).showModal(); return; }
-    if (button.hasAttribute("data-swap")) sides.reverse();
+    if (button.dataset.sourceSide !== undefined) {
+      sourceSide = button.dataset.sourceSide;
+      syncSources();
+      return;
+    }
+    if (button.dataset.sourcePeriod) {
+      sourcePeriod = button.dataset.sourcePeriod;
+      render(false);
+      return;
+    }
+    if (button.dataset.bubble || button.dataset.moment) {
+      const panel = button.closest<HTMLElement>("[data-side]")!;
+      const side = sides[Number(panel.dataset.side)];
+      if (button.dataset.bubble) {
+        side.dataset = datasets.find((dataset) => dataset.id === button.dataset.bubble)!;
+        side.players = null;
+      }
+      if (button.dataset.moment) side.moment = button.dataset.moment as Side["moment"];
+      const dates = moments(side.dataset);
+      side.date = side.moment === "date"
+        ? (side.date < dates.start! ? dates.start! : side.date > dates.latest! ? dates.latest! : side.date)
+        : dates[side.moment] ?? dates.start!;
+    }
+    else if (button.hasAttribute("data-swap")) sides.reverse();
     else if (button.dataset.measure) measure = button.dataset.measure;
     else if (button.dataset.quick) {
       const quick = button.dataset.quick;
