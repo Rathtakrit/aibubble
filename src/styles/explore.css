@@ -445,6 +445,16 @@ body:not([data-timeline-zoomed="true"]) [data-zoom-only="true"],
   display: none !important;
 }
 
+/* The burst day: a dotted line through the timeline, in the same ink as the dotted frame a past
+   bubble takes after it bursts. No label, and it takes no clicks. */
+.timeline-burst {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-left: 2px dotted var(--ink);
+  pointer-events: none;
+}
+
 /* --- phone: the bubble as a map with a bottom sheet (layout C) --- */
 
 .layout-phone {

@@ -4,6 +4,7 @@ import "@fontsource-variable/instrument-sans/index.css";
 import "../styles/tokens.css";
 import "../styles/explore.css";
 import {
+  burst,
   companies,
   datasetTitle,
   deals,
@@ -472,6 +473,16 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
             ))
           }
           {
+            burst && (
+              <span
+                class="timeline-burst"
+                data-timeline-date={burst.date}
+                style={`left: ${scale.percentOf(burst.date)}%`}
+                aria-hidden="true"
+              />
+            )
+          }
+          {
             yearNames.map((name) => (
               <span class="timeline-year" data-timeline-date={`${name.year}-01-01`} style={`left: ${name.percent}%`} aria-hidden="true">
                 {name.year}
@@ -667,6 +678,14 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
         <div class="timeline-row">
         <div class="sheet-timeline">
           <div class="timeline-axis" aria-hidden="true"></div>
+          {burst && (
+            <span
+              class="timeline-burst"
+              data-timeline-date={burst.date}
+              style={`left: ${scale.percentOf(burst.date)}%`}
+              aria-hidden="true"
+            />
+          )}
           <input
             class="day-range"
             data-slider
