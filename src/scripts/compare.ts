@@ -196,7 +196,14 @@ if (root) {
     sides.forEach((side, index) => {
       const fieldset = document.createElement("fieldset");
       fieldset.dataset.playerPanel = String(index);
-      addText(fieldset, "legend", `${index === 0 ? "A" : "B"} · ${names[side.dataset.id]} · ${dayLabel(side.date)}`);
+      const legend = addText(fieldset, "legend", `${index === 0 ? "A" : "B"} · ${names[side.dataset.id]} · ${dayLabel(side.date)}`);
+      const toggle = document.createElement("button");
+      toggle.type = "button";
+      toggle.dataset.playerToggle = String(index);
+      const anySelected = totalOn(selectedDataset(side), side.date).values.length > 0;
+      toggle.textContent = anySelected ? "Clear" : "All";
+      toggle.setAttribute("aria-label", `${anySelected ? "Clear" : "Select all"} companies for ${index === 0 ? "A" : "B"}`);
+      legend.append(toggle);
       const grid = document.createElement("div");
       grid.className = "player-grid";
       const entries = totalOn(side.dataset, side.date).values;
@@ -302,6 +309,13 @@ if (root) {
     const button = (event.target as Element).closest<HTMLButtonElement>("button");
     if (!button) return;
     if (button.dataset.open) { dialog(button.dataset.open).showModal(); return; }
+    if (button.dataset.playerToggle !== undefined) {
+      const side = sides[Number(button.dataset.playerToggle)];
+      side.players = totalOn(selectedDataset(side), side.date).values.length > 0 ? new Set() : null;
+      render();
+      query<HTMLButtonElement>(`[data-player-toggle="${button.dataset.playerToggle}"]`).focus();
+      return;
+    }
     if (button.dataset.playerSide !== undefined) {
       playerSide = button.dataset.playerSide;
       syncPlayers();

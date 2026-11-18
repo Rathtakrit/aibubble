@@ -81,8 +81,13 @@ test("percentage differences use B as baseline and handle falls and zero", () =>
   assert.equal(comparisonLine(150.6, 100), "A is 51% bigger than B");
   assert.equal(comparisonLine(49.4, 100), "A is 51% smaller than B");
   for (const value of [99, 100, 101]) assert.equal(comparisonLine(value, 100), "A and B are about the same size");
-  assert.equal(comparisonLine(0, 100), "A is 100% smaller than B");
-  assert.equal(comparisonLine(10, 0), "A has value; B has no recorded value selected");
+});
+
+test("empty sides prompt for players instead of a percentage", () => {
+  assert.equal(comparisonLine(0, 100), "Pick at least one company for A");
+  assert.equal(comparisonLine(10, 0), "Pick at least one company for B");
+  assert.equal(comparisonLine(0, 0), "Pick at least one company for A");
+  assert.equal(formatTotal(0), "$0");
 });
 
 test("top5 sorts by value and excludes groups and missing companies", () => {

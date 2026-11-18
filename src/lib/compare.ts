@@ -73,8 +73,9 @@ export function percentDifference(a: number, b: number): number | null {
 }
 
 export function comparisonLine(a: number, b: number): string {
-  const percent = percentDifference(a, b);
-  if (percent === null) return "A has value; B has no recorded value selected";
+  if (a === 0) return "Pick at least one company for A";
+  if (b === 0) return "Pick at least one company for B";
+  const percent = percentDifference(a, b)!;
   if (Math.abs(percent) <= 1) return "A and B are about the same size";
   return `A is ${Math.round(Math.abs(percent))}% ${percent > 0 ? "bigger" : "smaller"} than B`;
 }
@@ -87,6 +88,7 @@ export function top5(dataset: CompareDataset, date: string) {
 }
 
 export function formatTotal(value: number): string {
+  if (value === 0) return "$0";
   return formatValue(value >= 1000 ? value : Math.round(value));
 }
 
