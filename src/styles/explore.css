@@ -329,6 +329,16 @@
   background: var(--key-date);
 }
 
+body[data-timeline-zoomed="true"] .timeline-dot[data-dot="key"] .dot {
+  width: 14px;
+  height: 14px;
+}
+
+body[data-timeline-zoomed="true"] .timeline-dot[data-dot="small"] .dot {
+  width: 10px;
+  height: 10px;
+}
+
 .timeline-dot[data-dot="small"] .dot {
   width: 7px;
   height: 7px;
@@ -433,6 +443,29 @@
 .timeline-row > .sheet-timeline {
   flex: 1 1 0;
   min-width: 0;
+}
+
+.timeline-start {
+  flex: 0 0 64px;
+  min-width: 64px;
+  height: 44px;
+  padding: 0 10px;
+  border: 1px solid var(--ink);
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.timeline-start:hover:not(:disabled) {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.timeline-start:disabled {
+  opacity: 0.45;
+  cursor: default;
 }
 
 .timeline-zoom {
@@ -928,6 +961,12 @@ body[data-mode="story"] .sheet .sheet-timeline {
 
 /* --- desktop: news beside the bubble, one-line timeline below (layout B) --- */
 
+@media (max-width: 899px) {
+  .timeline-zoom {
+    display: none;
+  }
+}
+
 @media (min-width: 900px) {
   .layout-phone {
     display: none;
@@ -1159,8 +1198,20 @@ body[data-mode="story"] .sheet .sheet-timeline {
     margin: 0 auto;
   }
 
+  .timeline-row > .timeline-start {
+    margin-top: 48px;
+  }
+
   .timeline-zoom {
     margin-top: 48px;
+  }
+
+  .timeline-row > .timeline-start {
+    margin-top: 48px;
+  }
+
+  .timeline-row > .timeline-inner {
+    flex-basis: 0;
   }
 
   .timeline-inner .timeline-axis {

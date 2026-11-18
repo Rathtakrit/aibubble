@@ -351,6 +351,7 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
 
       <section class="timeline" aria-label="Timeline">
         <div class="timeline-row">
+        <button type="button" class="timeline-start" data-action="timeline-start" aria-label="Start at the first item">Start</button>
         <div class="timeline-inner" data-timeline>
           <div class="timeline-axis" aria-hidden="true"></div>
           <input
@@ -493,8 +494,8 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
         </div>
 
         <div class="zoom-buttons timeline-zoom">
-            <button type="button" class="zoom-button" data-action="timeline-zoom" aria-label="Zoom timeline in" aria-pressed="false">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"></path></svg>
+            <button type="button" class="zoom-button" data-action="timeline-zoom" aria-label="Zoom timeline out" aria-pressed="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"></path></svg>
             </button>
           </div>
         </div>
@@ -676,6 +677,7 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
         </div>
 
         <div class="timeline-row">
+        <button type="button" class="timeline-start" data-action="timeline-start" aria-label="Start at the first item">Start</button>
         <div class="sheet-timeline">
           <div class="timeline-axis" aria-hidden="true"></div>
           {burst && (
@@ -747,8 +749,8 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
           }
         </div>
         <div class="zoom-buttons timeline-zoom">
-            <button type="button" class="zoom-button" data-action="timeline-zoom" aria-label="Zoom timeline in" aria-pressed="false">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"></path></svg>
+            <button type="button" class="zoom-button" data-action="timeline-zoom" aria-label="Zoom timeline out" aria-pressed="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"></path></svg>
             </button>
           </div>
         </div>

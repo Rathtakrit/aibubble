@@ -131,22 +131,21 @@ export function timelineScale(lastDate: string, dots: ScaleDots): TimelineScale 
 
 export type TimelineWindow = { start: number; middle: number; end: number; ids: string[] };
 
-// Keep the two neighbours, using the nearest three at either end. The existing day scale
-// supplies all coordinates; splitting at the selected date keeps an uneven pair centred.
+// Keep up to three neighbours on either side, shifting the window at the ends to retain seven.
+// The selected date stays at the centre of the zoomed line.
 export function timelineWindow(items: readonly Dated[], id: string, scale: TimelineScale): TimelineWindow {
   const ordered = inDateOrder(items);
   const at = ordered.findIndex((item) => item.id === id);
   if (at < 0) return { start: 0, middle: 50, end: 100, ids: [] };
-  const first = Math.max(0, Math.min(at - 1, ordered.length - 3));
-  const visible = ordered.slice(first, first + 3);
+  const count = Math.min(7, ordered.length);
+  const first = clamp(0, at - 3, ordered.length - count);
+  const visible = ordered.slice(first, first + count);
   const low = scale.percentOf(visible[0].date);
   const high = scale.percentOf(visible[visible.length - 1].date);
   const margin = Math.max((high - low) / 10, 0.01);
-  const start = low - margin;
-  const end = high + margin;
-  const selected = scale.percentOf(ordered[at].date);
-  const middle = at > first && at < first + visible.length - 1 ? selected : (start + end) / 2;
-  return { start, middle, end, ids: visible.map((item) => item.id) };
+  const middle = scale.percentOf(ordered[at].date);
+  const half = Math.max(middle - low, high - middle, 0.01) + margin;
+  return { start: middle - half, middle, end: middle + half, ids: visible.map((item) => item.id) };
 }
 
 export function windowPercent(percent: number, window: TimelineWindow): number {
