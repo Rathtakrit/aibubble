@@ -36,6 +36,7 @@ import {
   placeLabels,
   publisherName,
   timelineScale,
+  timelineStrip,
   timelineWindow,
   windowPercent,
   windowPlace,
@@ -128,8 +129,61 @@ let timelineTarget = fullTimeline;
 let timelineFrame: number | null = null;
 const timelineMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 const timelineEvents = ordered;
+const stripFirst = isPast ? FIRST_DAY : "2017-06-12";
+const stripLast = isPast ? lastDate : new Date().toISOString().slice(0, 10);
+const strip = timelineStrip(stripFirst, stripLast);
+const stripDots = document.querySelector<HTMLElement>("[data-strip-dots]");
+for (const item of timelineEvents) {
+  const dot = document.createElement("span");
+  dot.style.left = `${strip.percentOf(item.date)}%`;
+  stripDots?.append(dot);
+}
+const stripYears = document.querySelector<HTMLElement>("[data-strip-years]");
+const yearTicks = [{ date: stripFirst, label: new Intl.DateTimeFormat("en-GB", { month: "short", year: "numeric", timeZone: "UTC" }).format(new Date(`${stripFirst}T00:00:00Z`)) }];
+for (let year = Number(stripFirst.slice(0, 4)) + 2; year < Number(stripLast.slice(0, 4)); year += 2) {
+  yearTicks.push({ date: `${year}-01-01`, label: String(year) });
+}
+yearTicks.push({ date: stripLast, label: isPast ? dayLabel(stripLast) : "Today" });
+for (const tick of yearTicks) {
+  const label = document.createElement("span");
+  label.style.left = `${strip.percentOf(tick.date)}%`;
+  label.textContent = tick.label;
+  stripYears?.append(label);
+}
 
 function drawTimeline(): void {
+  const anchor = (itemId === null ? null : byId.get(itemId)) ?? latestOnOrBefore(ordered, day);
+  const currentDate = chapterIndex !== null ? chapters[chapterIndex].date : anchor?.date ?? day;
+  const current = Math.max(0, Math.min(100, windowPercent(scale.percentOf(currentDate), visibleTimeline)));
+  const inner = document.querySelector<HTMLElement>("[data-timeline]");
+  inner?.style.setProperty("--timeline-current", `${current}%`);
+  const marker = document.querySelector<HTMLElement>("[data-timeline-current]");
+  if (marker) {
+    marker.style.left = `${current}%`;
+    const flag = marker.querySelector<HTMLElement>("[data-current-flag]");
+    if (flag && inner) {
+      flag.textContent = `You are here · ${dayLabel(currentDate)}`;
+      const x = inner.clientWidth * current / 100;
+      flag.style.left = `${Math.max(-x, Math.min(-flag.offsetWidth / 2, inner.clientWidth - x - flag.offsetWidth))}px`;
+    }
+  }
+  const firstShown = scale.dateOf(visibleTimeline.start);
+  const lastShown = scale.dateOf(visibleTimeline.end);
+  const summary = document.querySelector<HTMLElement>("[data-timeline-summary]");
+  if (summary) summary.textContent = `${dayLabel(firstShown)} → ${dayLabel(lastShown)} · news ${anchor ? place.get(anchor.id) ?? 0 : 0} of ${ordered.length}`;
+  const bracket = timelineZoomed ? strip.bracket(firstShown, lastShown) : { left: 0, width: 100 };
+  const bracketElement = document.querySelector<HTMLElement>("[data-strip-bracket]");
+  if (bracketElement) {
+    bracketElement.style.left = `${bracket.left}%`;
+    bracketElement.style.width = `${bracket.width}%`;
+  }
+  const stripCurrent = document.querySelector<HTMLElement>("[data-strip-current]");
+  if (stripCurrent) stripCurrent.style.left = `${strip.percentOf(currentDate)}%`;
+  const stripSlider = document.querySelector<HTMLInputElement>("[data-strip-slider]");
+  if (stripSlider) {
+    stripSlider.value = String(Math.round(strip.percentOf(currentDate) * 100));
+    stripSlider.setAttribute("aria-valuetext", dayLabel(currentDate));
+  }
   const ids = new Set(timelineTarget.ids);
   for (const ends of document.querySelectorAll<HTMLElement>(".timeline-ends")) {
     for (const [index, end] of Array.from(ends.children).entries()) {
@@ -161,11 +215,20 @@ function updateTimeline(): void {
     : fullTimeline;
   for (const button of document.querySelectorAll<HTMLButtonElement>('[data-action="timeline-zoom"]')) {
     button.setAttribute("aria-pressed", String(timelineZoomed));
-    button.setAttribute("aria-label", timelineZoomed ? "Zoom timeline out" : "Zoom timeline in");
-    button.querySelector("path")?.setAttribute("d", timelineZoomed ? "M5 12h14" : "M5 12h14M12 5v14");
+    const label = button.querySelector<HTMLElement>("[data-timeline-zoom-label]");
+    if (label) {
+      label.textContent = timelineZoomed ? "Whole timeline" : "Zoom in";
+      button.setAttribute("aria-label", label.textContent);
+      button.querySelector("path")?.setAttribute("d", timelineZoomed
+        ? "M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"
+        : "M4 9h5V4M20 9h-5V4M4 15h5v5M20 15h-5v5");
+    } else {
+      button.setAttribute("aria-label", timelineZoomed ? "Zoom timeline out" : "Zoom timeline in");
+      button.querySelector("path")?.setAttribute("d", timelineZoomed ? "M5 12h14" : "M5 12h14M12 5v14");
+    }
   }
   if (JSON.stringify(target) === JSON.stringify(timelineTarget)) {
-    placeTimelineLabels();
+    drawTimeline();
     return;
   }
   timelineTarget = target;
@@ -657,6 +720,35 @@ function sliderTo(date: string): void {
   moveTo(date);
 }
 
+for (const slider of document.querySelectorAll<HTMLInputElement>("[data-strip-slider]")) {
+  const jump = (percent: number) => {
+    const date = strip.dateOf(percent);
+    const nearest = timelineEvents.reduce<NewsItem | null>((best, item) =>
+      !best || Math.abs(Date.parse(item.date) - Date.parse(date)) < Math.abs(Date.parse(best.date) - Date.parse(date)) ? item : best, null);
+    if (!nearest) return;
+    timelineZoomed = true;
+    if (chapterIndex !== null) {
+      sliderTo(nearest.date);
+    } else {
+      selectItem(nearest.id);
+    }
+  };
+  slider.addEventListener("input", () => jump(Number(slider.value) / 100));
+  slider.addEventListener("keydown", (event) => {
+    const anchor = (itemId === null ? null : byId.get(itemId)) ?? latestOnOrBefore(ordered, day);
+    const at = anchor ? timelineEvents.indexOf(anchor) : 0;
+    let index: number;
+    if (event.key === "Home") index = 0;
+    else if (event.key === "End") index = timelineEvents.length - 1;
+    else if (event.key === "ArrowLeft" || event.key === "ArrowDown") index = at - 1;
+    else if (event.key === "ArrowRight" || event.key === "ArrowUp") index = at + 1;
+    else return;
+    event.preventDefault();
+    const item = timelineEvents[Math.max(0, Math.min(timelineEvents.length - 1, index))];
+    if (item) jump(strip.percentOf(item.date));
+  });
+}
+
 for (const slider of document.querySelectorAll<HTMLInputElement>("[data-slider]")) {
   slider.addEventListener("input", () => {
     sliderTo(scale.dateOf(windowPlace(Number(slider.value) / 100, visibleTimeline)));
@@ -773,39 +865,46 @@ function placeTimelineLabels(): void {
       ? "[data-story-label]"
       : zoomed
         ? '[data-timeline-id]:not([data-outside="true"])'
-        : '[data-timeline-label]:not([data-outside="true"])'),
+        : '[data-timeline-id]:not([data-outside="true"])'),
   );
 
-  for (const label of labels) label.hidden = false;
+  const currentChapter = chapterIndex === null ? null : chapters[chapterIndex];
+  const isCurrentLabel = (label: HTMLElement) => story
+    ? !!currentChapter && label.textContent?.trim() === currentChapter.title
+    : label.dataset.timelineId === selected;
+  for (const label of labels) label.hidden = isCurrentLabel(label);
   const boxes = labels.map((label, index) => ({
     id: String(index),
     percent: Number.parseFloat(label.style.left) || 0,
     width: label.offsetWidth,
   }));
-  const placed = placeLabels(boxes, inner.clientWidth);
+  const placed = placeLabels(boxes.filter((_, index) => !isCurrentLabel(labels[index])), inner.clientWidth);
+  const bounds = inner.getBoundingClientRect();
+  const marker = inner.querySelector<HTMLElement>("[data-timeline-current]");
+  const flag = marker?.querySelector<HTMLElement>("[data-current-flag]")?.getBoundingClientRect();
+  const line = marker?.getBoundingClientRect();
+  const occupied: DOMRect[] = [];
+  const overlaps = (a: DOMRect, b: DOMRect, gap = 4) =>
+    a.left < b.right + gap && a.right > b.left - gap && a.top < b.bottom + gap && a.bottom > b.top - gap;
 
   labels.forEach((label, index) => {
     const spot = placed.get(String(index));
-    label.hidden = spot === undefined || label.offsetHeight > 28;
+    label.hidden = isCurrentLabel(label) || spot === undefined || label.offsetHeight > 28;
     if (!spot) return;
     label.dataset.side = spot.side;
     label.dataset.row = String(spot.row);
     label.dataset.align = spot.align;
     label.style.marginLeft = `${spot.shift}px`;
+    if (label.hidden) return;
+    const box = label.getBoundingClientRect();
+    label.hidden = box.top < bounds.top || box.bottom > bounds.bottom ||
+      box.left < bounds.left || box.right > bounds.right ||
+      (!!flag && overlaps(box, flag)) || (!!line && overlaps(box, line)) ||
+      occupied.some((other) => overlaps(box, other));
+    if (!label.hidden) occupied.push(box);
   });
 
-  if (zoomed) return;
-  for (const label of inner.querySelectorAll<HTMLElement>("[data-timeline-hover]")) {
-    // Restore blue labels' hover-only placement after leaving the zoomed view.
-    label.hidden = false;
-    label.dataset.row = "0";
-    delete label.dataset.side;
-    label.style.marginLeft = "0px";
-    const middle = ((Number.parseFloat(label.style.left) || 0) / 100) * inner.clientWidth;
-    const half = label.offsetWidth / 2;
-    label.dataset.align =
-      middle - half < 0 ? "start" : middle + half > inner.clientWidth ? "end" : "center";
-  }
+  // Hover-only labels share the same collision bounds as persistent titles.
 }
 
 window.addEventListener("resize", placeTimelineLabels);

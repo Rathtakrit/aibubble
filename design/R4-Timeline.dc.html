@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Timeline redesign</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&amp;family=Instrument+Serif&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#1E3A8A}a:hover{color:#1B1A17}
+</style>
+</helmet>
+<div style="width: 1440px; height: 440px; box-sizing: border-box; background: #F5EFE3; color: #1B1A17; font-family: 'Instrument Sans', sans-serif; border-top: 1px solid #1B1A17; padding: 20px 40px 16px; display: flex; flex-direction: column; gap: 10px">
+
+  <div style="display: flex; align-items: center; gap: 16px; font-size: 13px; color: #57534B">
+    <span style="font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; font-size: 12px">Whole story</span>
+    <svg width="1200" height="28" viewBox="0 0 1200 28" role="img" aria-label="Whole range from June 2017 to today; the bracket shows the part zoomed below">
+      <line x1="0" y1="14" x2="1200" y2="14" stroke="#CFC5B2" stroke-width="2"></line>
+      <line x1="0" y1="14" x2="1180" y2="14" stroke="#57534B" stroke-width="2"></line>
+      <circle cx="140" cy="14" r="2.5" fill="#57534B"></circle><circle cx="300" cy="14" r="2.5" fill="#57534B"></circle><circle cx="420" cy="14" r="2.5" fill="#57534B"></circle><circle cx="560" cy="14" r="2.5" fill="#57534B"></circle><circle cx="700" cy="14" r="2.5" fill="#57534B"></circle><circle cx="820" cy="14" r="2.5" fill="#57534B"></circle><circle cx="910" cy="14" r="2.5" fill="#57534B"></circle><circle cx="980" cy="14" r="2.5" fill="#57534B"></circle><circle cx="1040" cy="14" r="2.5" fill="#57534B"></circle><circle cx="1090" cy="14" r="2.5" fill="#57534B"></circle><circle cx="1130" cy="14" r="2.5" fill="#57534B"></circle><circle cx="1160" cy="14" r="2.5" fill="#57534B"></circle>
+      <rect x="1100" y="2" width="96" height="24" rx="3" fill="#1E3A8A" fill-opacity="0.12" stroke="#1E3A8A" stroke-width="1.5"></rect>
+      <line x1="1180" y1="0" x2="1180" y2="28" stroke="#B42318" stroke-width="2"></line>
+    </svg>
+  </div>
+  <div style="display: flex; justify-content: space-between; padding-left: 100px; font-size: 12px; color: #57534B; width: 1300px">
+    <span>Jun 2017</span><span>2019</span><span>2021</span><span>2023</span><span>2025</span><span>Today</span>
+  </div>
+
+  <div style="position: relative; height: 230px; margin-top: 6px">
+    <svg width="1360" height="230" viewBox="0 0 1360 230" role="img" aria-label="Zoomed timeline with news dots; a red marker shows the current item, 12 Nov 2026">
+      <line x1="0" y1="120" x2="1150" y2="120" stroke="#1B1A17" stroke-width="2.5"></line>
+      <line x1="1150" y1="120" x2="1360" y2="120" stroke="#CFC5B2" stroke-width="2" stroke-dasharray="4 4"></line>
+      <circle cx="60" cy="120" r="7" fill="#1E3A8A"></circle>
+      <circle cx="270" cy="120" r="9" fill="#B42318"></circle>
+      <circle cx="330" cy="120" r="7" fill="#1E3A8A"></circle>
+      <circle cx="620" cy="120" r="7" fill="#1E3A8A"></circle>
+      <circle cx="900" cy="120" r="7" fill="#1E3A8A"></circle>
+      <circle cx="1020" cy="120" r="7" fill="#B42318"></circle>
+      <line x1="1150" y1="40" x2="1150" y2="190" stroke="#1B1A17" stroke-width="2"></line>
+      <circle cx="1150" cy="120" r="13" fill="#F5EFE3" stroke="#B42318" stroke-width="3"></circle>
+      <circle cx="1150" cy="120" r="7" fill="#B42318"></circle>
+    </svg>
+    <div style="position: absolute; left: 20px; top: 70px; font-size: 13px; color: #57534B">Alphabet falls on weaker profits</div>
+    <div style="position: absolute; left: 230px; top: 140px; font-size: 13px; color: #57534B">$2.5tn wiped in a day</div>
+    <div style="position: absolute; left: 560px; top: 70px; font-size: 13px; color: #57534B">OpenAI closes $11bn round</div>
+    <div style="position: absolute; left: 850px; top: 140px; font-size: 13px; color: #57534B">OpenAI Q3 results</div>
+    <div style="position: absolute; left: 1018px; top: 2px; display: flex; flex-direction: column; align-items: flex-end; gap: 2px">
+      <span style="background: #1B1A17; color: #F5EFE3; font-size: 13px; font-weight: 600; padding: 5px 10px; border-radius: 3px">You are here · 12 Nov 2026</span>
+    </div>
+    <div style="position: absolute; left: 1060px; top: 196px; font-size: 13px; font-weight: 600">Huang resigns</div>
+  </div>
+
+  <div style="display: flex; align-items: center; justify-content: space-between">
+    <span style="font-size: 13px; color: #57534B">7 Sept 2026 → 14 Nov 2026 · news 57 of 57</span>
+    <div style="display: flex; gap: 8px">
+      <button style="min-height: 44px; padding: 0 16px; border: 1px solid #1B1A17; background: transparent; font: 500 14px 'Instrument Sans', sans-serif; color: #1B1A17; border-radius: 999px; display: flex; align-items: center; gap: 8px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.3-5.6"></path><path d="M4 4v4h4"></path></svg>First day</button>
+      <button style="min-height: 44px; padding: 0 16px; border: 1px solid #1B1A17; background: #1B1A17; font: 500 14px 'Instrument Sans', sans-serif; color: #F5EFE3; border-radius: 999px; display: flex; align-items: center; gap: 8px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"></path></svg>Whole timeline</button>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":440}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

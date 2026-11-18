@@ -15,6 +15,7 @@ import {
   publisherName,
   siteName,
   timelineScale,
+  timelineStrip,
   timelineWindow,
   windowPercent,
   windowPlace,
@@ -62,6 +63,25 @@ test("dateAt turns a day count back into a date", () => {
   for (const date of ["2022-11-30", "2024-02-29", "2026-11-12"]) {
     assert.equal(dateAt(dayIndex(date)), date);
   }
+});
+
+test("the whole-range strip maps dates and a zoom bracket in calendar time", () => {
+  const strip = timelineStrip("2017-06-12", "2017-06-22");
+  assert.equal(strip.percentOf("2017-06-12"), 0);
+  assert.equal(strip.percentOf("2017-06-17"), 50);
+  assert.equal(strip.percentOf("2017-06-22"), 100);
+  assert.equal(strip.dateOf(50), "2017-06-17");
+  assert.deepEqual(strip.bracket("2017-06-14", "2017-06-20"), { left: 20, width: 60 });
+  assert.deepEqual(strip.bracket("2017-06-01", "2017-07-01"), { left: 0, width: 100 });
+  const scale = timelineScale(last, dots);
+  const window = timelineWindow(busyDots, "m2", scale);
+  const first = scale.dateOf(window.start);
+  const end = scale.dateOf(window.end);
+  const overview = timelineStrip("2017-06-12", last);
+  assert.deepEqual(overview.bracket(first, end), {
+    left: overview.percentOf(first),
+    width: overview.percentOf(end) - overview.percentOf(first),
+  });
 });
 
 test("the first day of the scale sits at 0% and the last at 100%", () => {
