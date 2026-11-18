@@ -104,3 +104,27 @@ export function sceneTransform(view: CameraView): string {
   const ty = 50 - view.cy * view.z;
   return `translate(${fixed(tx)}px, ${fixed(ty)}px) scale(${fixed(view.z)})`;
 }
+
+// How far the reader has dragged the picture, in the bubble's own units (the 0–100 viewBox).
+// It moves where the camera looks, so the content slides inside the round frame.
+export type Pan = { dx: number; dy: number };
+
+export function panView(view: CameraView, pan: Pan): CameraView {
+  return { cx: view.cx + pan.dx, cy: view.cy + pan.dy, z: view.z };
+}
+
+// The view is a square of 100 / z and the round frame is the circle of radius 50 around (50, 50),
+// so the view's centre may sit at most 50 - 50 / z away from the frame's centre: the pan that
+// puts it further is pulled back onto that circle, so the content never slides out of the frame.
+export function clampPan(view: CameraView, pan: Pan): Pan {
+  const limit = Math.max(0, 50 - 50 / view.z);
+  if (limit <= 0) return { dx: 0, dy: 0 };
+  const cx = view.cx + pan.dx;
+  const cy = view.cy + pan.dy;
+  const ox = cx - 50;
+  const oy = cy - 50;
+  const distance = Math.hypot(ox, oy);
+  if (distance <= limit) return { dx: pan.dx, dy: pan.dy };
+  const scale = limit / distance;
+  return { dx: 50 + ox * scale - view.cx, dy: 50 + oy * scale - view.cy };
+}

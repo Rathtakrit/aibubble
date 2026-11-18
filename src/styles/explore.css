@@ -17,6 +17,27 @@
   width: 100%;
   height: auto;
   aspect-ratio: 1 / 1;
+  /* In the whole state the page and the bottom sheet keep their own touch gestures; the
+     bubble only stops double-tap zoom. */
+  touch-action: manipulation;
+}
+
+/* While the picture is zoomed in (explore.ts sets data-zoomed) the touch is reserved for
+   dragging the picture around, and the cursor grabs it. */
+[data-bubble][data-zoomed="true"] {
+  touch-action: none;
+  cursor: grab;
+}
+
+[data-bubble][data-zoomed="true"].is-panning {
+  cursor: grabbing;
+}
+
+/* A focus ring follows the round frame: the square bubble is rounded to the frame's own radius
+   (48 of the 100-unit box) only while it has keyboard focus, so the outline is drawn as a ring.
+   Pointer use never focuses the SVG, so no outline appears after a drag. */
+.bubble-svg:focus-visible {
+  border-radius: 48%;
 }
 
 /* Bubbles fade in and out and the camera glides, as in the design; their place and size

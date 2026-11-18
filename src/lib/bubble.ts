@@ -9,8 +9,8 @@
 import { arrowCurve, arrowsForDate, bubblesForDate, formatDate, formatValue, FRAME, totalForDate } from "./layout.ts";
 import type { Arrow, Bubble, Placed } from "./layout.ts";
 import { kindColour } from "./data.ts";
-import { dayView, ringRatio, sceneTransform } from "./camera.ts";
-import type { PeakDay } from "./camera.ts";
+import { clampPan, dayView, panView, ringRatio, sceneTransform } from "./camera.ts";
+import type { Pan, PeakDay } from "./camera.ts";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 const CLIP_ID = "aibubble-clip";
@@ -728,6 +728,9 @@ export type BubbleOptions = {
   focus?: string;
   // The reader's own zoom on top of the automatic fit.
   manual?: number;
+  // The reader's drag of the picture, in the bubble's own units: where the camera looks, moved
+  // by it and clamped so the content stays inside the round frame.
+  pan?: Pan;
   burstDate?: string;
   peak?: PeakDay;
 };
@@ -753,6 +756,9 @@ export function renderBubble(
       : null;
   const view = dayView(bubbles, options.players ?? [], options.manual ?? 1, date, options.burstDate,
     options.peak ? bubblesForDate(options.peak.date) : undefined);
+  // Where the camera looks once the reader's drag is applied; clamped so the content stays
+  // inside the round frame.
+  const shown = panView(view, clampPan(view, options.pan ?? { dx: 0, dy: 0 }));
 
   const { bubbleLayer, arrowLayer, scene } = ensureScene(svg);
   const ring = svg.querySelector<SVGCircleElement>("circle.bubble-frame")!;
@@ -798,5 +804,5 @@ export function renderBubble(
   glide(drawing);
 
   scene.style.transition = cameraTransition();
-  scene.style.transform = sceneTransform(view);
+  scene.style.transform = sceneTransform(shown);
 }
