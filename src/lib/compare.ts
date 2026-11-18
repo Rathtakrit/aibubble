@@ -16,14 +16,13 @@ export const datasets: CompareDataset[] = [
   { id: "housing", companies: housingCompanies.items as Company[], values: housingValues.items as ValuePoint[] },
 ];
 
-export function momentOptions(id: DatasetId): { id: Moment | "date"; label: string }[] {
+export function momentOptions(id: DatasetId): { id: Moment; label: string }[] {
   return [
     { id: "start", label: "Start" },
     { id: "lowest", label: "Lowest" },
     ...(id === "ai"
       ? [{ id: "latest" as const, label: "Current" }]
       : [{ id: "peak" as const, label: "Peak" }, { id: "latest" as const, label: "Latest" }]),
-    { id: "date", label: "Date…" },
   ];
 }
 

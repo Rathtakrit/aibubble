@@ -15,7 +15,6 @@ p { margin: 0; }
 h1 { margin: 0; font-size: 48px; line-height: 1.05; }
 h2 { font-size: 32px; margin: 0; }
 .heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
-.intro { margin-top: 6px; font-size: 17px; color: var(--ink-2); }
 button { cursor: pointer; color: var(--ink); min-height: 44px; }
 button:disabled { cursor: default; color: var(--ink-2); }
 .segments { display: flex; border: 1px solid var(--ink); border-radius: 999px; padding: 3px; gap: 2px; flex-shrink: 0; }
@@ -44,10 +43,9 @@ button:disabled { cursor: default; color: var(--ink-2); }
 .drawing-legend span { min-width: 0; overflow-wrap: anywhere; }
 [data-drawing-label="0"] { color: var(--a); }
 [data-drawing-label="1"] { color: var(--b-text); }
-input[type=date] { width: 100%; min-width: 0; min-height: 44px; border: 1px solid var(--ink); background: transparent; padding: 0 10px; font-size: 16px; color: var(--ink); font-weight: 500; border-radius: 0; }
-.caption { margin-top: 8px; }
-.total { font-family: var(--font-serif); font-size: 34px; line-height: 1; }
-.caption p { margin-top: 6px; font-size: 13px; color: var(--ink-2); }
+.caption { margin-bottom: 12px; color: var(--label); }
+.total { font-family: var(--font-serif); font-size: 48px; line-height: 1; }
+.caption p { margin-top: 6px; font-size: 14px; }
 .drawing { grid-column: 2; grid-row: 1; min-width: 0; }
 .drawing svg { display: block; width: 100%; height: auto; overflow: visible; }
 .drawing [data-exposure="0"] { color: var(--a); fill: var(--a); stroke: var(--a); }
@@ -63,8 +61,8 @@ input[type=date] { width: 100%; min-width: 0; min-height: 44px; border: 1px soli
 .result { font-family: var(--font-serif); font-size: 30px; line-height: 1.2; }
 .actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .actions button, dialog button { padding: 0 16px; border: 1px solid var(--ink); border-radius: 999px; background: transparent; font-size: 14px; font-weight: 500; }
-.foot { font-size: 13px; color: var(--ink-2); max-width: 860px; }
-.foot p + p { margin-top: 6px; }
+.foot { font-size: 13px; line-height: 1.25; color: var(--ink-2); margin-top: 10px; border-top: 1px solid var(--rule); padding-top: 8px; }
+.foot p + p, [data-missing] { margin-top: 4px; }
 dialog { width: min(640px, calc(100% - 32px)); max-height: 85vh; background: var(--paper); color: var(--ink); border: 1px solid var(--ink); padding: 24px; }
 dialog::backdrop { background: rgb(27 26 23 / .35); }
 dialog form { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
@@ -82,6 +80,7 @@ dialog input { accent-color: var(--accent); width: 20px; height: 20px; flex-shri
 .player-grid label > span:not(.amount) { overflow-wrap: anywhere; min-width: 0; }
 .player-grid .amount { font-size: 12px; white-space: nowrap; }
 .source-controls { display: flex; gap: 8px; margin-bottom: 8px; }
+.source-pagination { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; font-size: 13px; }
 .source-side-switch { display: none; }
 [data-sources] { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
 [data-source-panel] { min-width: 0; }
@@ -108,7 +107,7 @@ dialog input { accent-color: var(--accent); width: 20px; height: 20px; flex-shri
   .segments button { font-size: 13px; padding: 0 10px; }
   .workbench { order: 1; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; align-items: start; }
   .exposure { display: contents; }
-  .picker { grid-column: 1; grid-row: 1; background: #FBF7EF; padding: 0; }
+  .picker { grid-column: 1; grid-row: 2; background: #FBF7EF; padding: 0; }
   .exposure-1 .picker { grid-column: 2; }
   .picker summary { min-height: 52px; padding: 6px 10px; cursor: pointer; }
   [data-tile] { display: block; font-size: 14px; }
@@ -129,11 +128,11 @@ dialog input { accent-color: var(--accent); width: 20px; height: 20px; flex-shri
   .source-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 8px; }
   .source-grid .source { min-height: 44px; padding: 4px 0; font-size: 13px; line-height: 16px; }
   .source-controls .segments button { min-width: 44px; }
-  .drawing { grid-column: 1 / -1; grid-row: 2; width: 100%; }
+  .drawing { grid-column: 1 / -1; grid-row: 3; width: 100%; }
   .drawing svg { height: 330px; }
-  .caption { grid-column: 1; grid-row: 3; margin: 0; }
+  .caption { grid-column: 1; grid-row: 1; margin: 0; }
   .exposure-1 .caption { grid-column: 2; }
-  .total { font-size: 28px; color: var(--label); }
+  .total { font-size: 32px; }
   .caption p { font-size: 12px; }
   .result-row { display: contents; }
   .result { order: 2; border-top: 1px solid var(--ink); padding-top: 10px; font-size: 26px; min-width: 0; max-width: 100%; overflow-wrap: anywhere; line-height: 1.3; }

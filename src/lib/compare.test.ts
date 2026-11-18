@@ -51,11 +51,10 @@ test("AI moment pills use Current for latest without a duplicate Peak", () => {
     { id: "start", label: "Start" },
     { id: "lowest", label: "Lowest" },
     { id: "latest", label: "Current" },
-    { id: "date", label: "Date…" },
   ]);
   assert.equal(moments(datasets[0]).latest, moments(datasets[0]).peak);
   for (const id of ["dotcom", "housing"] as const) {
-    assert.deepEqual(momentOptions(id).map((option) => option.label), ["Start", "Lowest", "Peak", "Latest", "Date…"]);
+    assert.deepEqual(momentOptions(id).map((option) => option.label), ["Start", "Lowest", "Peak", "Latest"]);
   }
 });
 

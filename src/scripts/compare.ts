@@ -1,11 +1,11 @@
 import { datasets, comparisonLine, formatTotal, labelsOverlap, moments, momentOptions, packedOn, percentDifference, totalOn } from "../lib/compare.ts";
 import type { CompareDataset, LabelBox, Moment } from "../lib/compare.ts";
 
-type Side = { dataset: CompareDataset; moment: Moment | "date"; date: string; players: Set<string> | null };
+type Side = { dataset: CompareDataset; moment: Moment; date: string; players: Set<string> | null };
 const root = document.querySelector<HTMLElement>(".compare-page");
 if (root) {
   const names = { ai: "AI", dotcom: "Dot-com", housing: "Housing" };
-  const labels = { start: "Start", lowest: "Lowest recorded", peak: "Peak recorded", latest: "Latest", date: "Pick a date" };
+  const labels = { start: "Start", lowest: "Lowest recorded", peak: "Peak recorded", latest: "Latest" };
   const sides: Side[] = [
     { dataset: datasets[0], moment: "lowest", date: moments(datasets[0]).lowest!, players: null },
     { dataset: datasets[1], moment: "peak", date: moments(datasets[1]).peak!, players: null },
@@ -24,10 +24,23 @@ if (root) {
   };
   let sourceSide = "0";
   let sourcePeriod = "chosen";
+  let sourcePage = 0;
   const syncSources = () => {
     for (const section of root.querySelectorAll<HTMLElement>("[data-source-panel]")) section.hidden = phone.matches && section.dataset.sourcePanel !== sourceSide;
+    for (const line of root.querySelectorAll<HTMLElement>("[data-source-missing]")) line.hidden = phone.matches && line.dataset.sourceMissing !== sourceSide;
     for (const button of root.querySelectorAll<HTMLButtonElement>("[data-source-side]")) button.setAttribute("aria-pressed", String(button.dataset.sourceSide === sourceSide));
     for (const button of root.querySelectorAll<HTMLButtonElement>("[data-source-period]")) button.setAttribute("aria-pressed", String(button.dataset.sourcePeriod === sourcePeriod));
+    const panels = Array.from(root.querySelectorAll<HTMLElement>("[data-source-panel]"));
+    const active = panels.find((panel) => panel.dataset.sourcePanel === sourceSide);
+    const pageCount = Math.max(1, Math.ceil((active?.querySelectorAll(".source").length ?? 0) / 16));
+    sourcePage = Math.min(sourcePage, pageCount - 1);
+    for (const panel of panels) {
+      for (const [index, link] of Array.from(panel.querySelectorAll<HTMLElement>(".source")).entries()) link.hidden = phone.matches && Math.floor(index / 16) !== sourcePage;
+    }
+    query("[data-source-pagination]").toggleAttribute("hidden", !phone.matches || pageCount === 1);
+    query("[data-source-page-label]").textContent = `${sourcePage + 1} / ${pageCount}`;
+    query<HTMLButtonElement>('[data-source-page="previous"]').disabled = sourcePage === 0;
+    query<HTMLButtonElement>('[data-source-page="next"]').disabled = sourcePage === pageCount - 1;
   };
   let animation = 0;
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -92,16 +105,10 @@ if (root) {
       }
       for (const button of pillRow.querySelectorAll<HTMLButtonElement>("[data-moment]")) {
         button.setAttribute("aria-pressed", String(button.dataset.moment === side.moment));
-        button.textContent = button.dataset.moment === "date" && side.moment === "date"
-          ? dayLabel(side.date) : options.find((option) => option.id === button.dataset.moment)!.label;
+        button.textContent = options.find((option) => option.id === button.dataset.moment)!.label;
       }
       const momentLabel = side.dataset.id === "ai" && (side.moment === "latest" || side.moment === "peak") ? "Current" : labels[side.moment];
-      const input = panel.querySelector<HTMLInputElement>("[data-date]")!;
-      input.min = moments(side.dataset).start!;
-      input.max = moments(side.dataset).latest!;
-      input.value = side.date;
-      panel.querySelector("[data-date-label]")!.toggleAttribute("hidden", side.moment !== "date");
-      panel.querySelector("[data-tile]")!.textContent = `${names[side.dataset.id]} · ${side.moment === "date" ? dayLabel(side.date) : momentLabel.toLowerCase()}`;
+      panel.querySelector("[data-tile]")!.textContent = `${names[side.dataset.id]} · ${momentLabel.toLowerCase()}`;
       panel.querySelector("[data-total]")!.textContent = formatTotal(frame.total);
       panel.querySelector("[data-caption]")!.textContent = frame.values.length === 1
         ? `${frame.values[0].company.name} · on ${dayLabel(side.date)} · 1 company`
@@ -148,7 +155,7 @@ if (root) {
         group.append(name);
         nameLabels.push({ label: name, circle, width: textContext.measureText(entry.company.name).width });
       }
-      query(`[data-drawing-label="${index}"]`).textContent = `${index === 0 ? "A" : "B"} · ${names[side.dataset.id]}, ${side.moment === "date" ? dayLabel(side.date) : momentLabel.toLowerCase()}`;
+      query(`[data-drawing-label="${index}"]`).textContent = `${index === 0 ? "A" : "B"} · ${names[side.dataset.id]}, ${momentLabel.toLowerCase()}`;
       const barLabel = query<SVGTextElement>(`[data-bar-label="${index}"]`);
       const barText = `${index === 0 ? "A" : "B"} · ${names[side.dataset.id]}: ${signed(frame.change)}`;
       const lines: string[] = [];
@@ -236,11 +243,15 @@ if (root) {
       sources.append(section);
     });
     syncSources();
-    query("[data-missing]").textContent = sides.map((side, index) => {
+    const missingValues = query("[data-missing]");
+    missingValues.replaceChildren();
+    sides.forEach((side, index) => {
       const known = new Set(totalOn(side.dataset, side.date).values.map((entry) => entry.company.id));
       const missing = side.dataset.companies.filter((company) => !known.has(company.id)).map((company) => company.name);
-      return `${index === 0 ? "A" : "B"}: ${missing.length ? `No value in the data on ${dayLabel(side.date)} for: ${missing.join(", ")}.` : "All companies have a recorded value on this date."}`;
-    }).join(" ");
+      const line = addText(missingValues, "p", `${index === 0 ? "A" : "B"}: ${missing.length ? `No value in the data on ${dayLabel(side.date)} for: ${missing.join(", ")}.` : "All companies have recorded values."}`);
+      line.dataset.sourceMissing = String(index);
+    });
+    syncSources();
     query("[data-size]").setAttribute("aria-label", `A in blue: ${formatTotal(frames[0].total)}; B in orange: ${formatTotal(frames[1].total)}. Same area scale. ${comparisonLine(frames[0].total, frames[1].total)}`);
     const start = performance.now();
     const tick = (now: number) => {
@@ -284,15 +295,6 @@ if (root) {
         if (input.checked) side.players.add(input.dataset.player);
         else side.players.delete(input.dataset.player);
       }
-    } else {
-      const panel = input.closest<HTMLElement>("[data-side]");
-      if (!panel) return;
-      const side = sides[Number(panel.dataset.side)];
-      const dates = moments(side.dataset);
-      if (side.moment === "date") {
-        const date = input.hasAttribute("data-date") ? input.value : side.date;
-        side.date = date < dates.start! ? dates.start! : date > dates.latest! ? dates.latest! : date || dates.start!;
-      } else side.date = dates[side.moment] ?? dates.start!;
     }
     render();
   });
@@ -305,7 +307,13 @@ if (root) {
       syncPlayers();
       return;
     }
+    if (button.dataset.sourcePage) {
+      sourcePage += button.dataset.sourcePage === "next" ? 1 : -1;
+      syncSources();
+      return;
+    }
     if (button.dataset.sourceSide !== undefined) {
+      sourcePage = 0;
       sourceSide = button.dataset.sourceSide;
       syncSources();
       return;
@@ -325,9 +333,7 @@ if (root) {
       if (button.dataset.moment) side.moment = button.dataset.moment as Side["moment"];
       if (side.dataset.id === "ai" && side.moment === "peak") side.moment = "latest";
       const dates = moments(side.dataset);
-      side.date = side.moment === "date"
-        ? (side.date < dates.start! ? dates.start! : side.date > dates.latest! ? dates.latest! : side.date)
-        : dates[side.moment] ?? dates.start!;
+      side.date = dates[side.moment] ?? dates.start!;
     }
     else if (button.hasAttribute("data-swap")) sides.reverse();
     else if (button.dataset.measure) measure = button.dataset.measure;
