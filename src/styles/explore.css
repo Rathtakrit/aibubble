@@ -504,12 +504,12 @@ body:not([data-timeline-zoomed="true"]) [data-zoom-only="true"],
   line-height: 1.45;
 }
 
+/* The map's square takes the visible area above the bottom sheet: its width and place are set
+   at runtime from that room (sizeMapBubble in explore.ts), so no fixed size lives here. */
 .map-bubble {
   position: absolute;
-  left: 50%;
   top: 0;
-  width: min(560px, calc(100vw - 24px));
-  margin-left: max(-280px, calc((24px - 100vw) / 2));
+  left: 0;
 }
 
 .map-bubble .bubble-svg {

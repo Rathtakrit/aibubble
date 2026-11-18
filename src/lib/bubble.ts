@@ -365,12 +365,12 @@ function paintBubble(live: LiveBubble, drawing: Drawing): void {
   };
   // The room across the bubble at a line's height: the chord of the circle through the line's
   // furthest edge, so text that fits here stays inside the bubble.
-  const roomAt = (centre: number): number => {
-    const far = Math.max(Math.abs(centre - nameSize / 2 - y), Math.abs(centre + nameSize / 2 - y));
+  const roomAt = (centre: number, half: number): number => {
+    const far = Math.max(Math.abs(centre - half - y), Math.abs(centre + half - y));
     return 2 * Math.sqrt(Math.max(0, r * r - far * far));
   };
   const fits = (text: string, centre: number): boolean =>
-    (nameWidth(name, text) * nameSize) / 100 <= roomAt(centre) * 0.98;
+    (nameWidth(name, text) * nameSize) / 100 <= roomAt(centre, nameSize / 2) * 0.98;
 
   // A name wider than its bubble goes on two lines when both fit; otherwise it is hidden, as the
   // smallest bubbles already were. The full name stays in the group's aria-label and the panel.
@@ -406,17 +406,20 @@ function paintBubble(live: LiveBubble, drawing: Drawing): void {
     logo.style.display = "";
     logoText.textContent = bubble.ticker;
     logoText.style.fontSize = `${fixed(logoSize * 0.5)}px`;
-    logoRect.setAttribute("x", fixed(x - logoSize / 2));
     logoRect.setAttribute("y", fixed(logoCenter - logoSize / 2));
     const tickerWidth = logoText.getComputedTextLength();
-    const boxWidth = Math.max(logoSize, tickerWidth + logoSize * 0.2);
+    // The box takes the ticker's width, and never passes the bubble's edge: it is capped at the
+    // chord across its own height.
+    const boxWidth = Math.min(
+      Math.max(logoSize, tickerWidth + logoSize * 0.2),
+      roomAt(logoCenter, logoSize / 2) * 0.98,
+    );
     logoRect.setAttribute("x", fixed(x - boxWidth / 2));
     logoRect.setAttribute("width", fixed(boxWidth));
     logoRect.setAttribute("height", fixed(logoSize));
     logoRect.setAttribute("rx", fixed(logoSize * 0.25));
     logoText.setAttribute("x", fixed(x));
     logoText.setAttribute("y", fixed(logoCenter));
-    logoText.style.fontSize = `${fixed(logoSize * 0.5)}px`;
   }
   if (nameLines.length > 0) {
     name.style.fontSize = `${fixed(nameSize)}px`;
