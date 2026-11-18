@@ -11,9 +11,16 @@ if (root) {
     { dataset: datasets[1], moment: "peak", date: moments(datasets[1]).peak!, players: null },
   ];
   const phone = window.matchMedia("(max-width: 899px)");
+  const pickers = Array.from(root.querySelectorAll<HTMLDetailsElement>(".picker"));
   const syncPickers = () => {
-    for (const picker of root.querySelectorAll<HTMLDetailsElement>(".picker")) picker.open = !phone.matches;
+    for (const picker of pickers) picker.open = !phone.matches;
   };
+  for (const picker of pickers) {
+    picker.addEventListener("toggle", () => {
+      if (!phone.matches || !picker.open) return;
+      for (const other of pickers) if (other !== picker) other.open = false;
+    });
+  }
   phone.addEventListener("change", syncPickers);
   syncPickers();
   let measure = "size";
@@ -108,11 +115,11 @@ if (root) {
         button.textContent = options.find((option) => option.id === button.dataset.moment)!.label;
       }
       const momentLabel = side.dataset.id === "ai" && (side.moment === "latest" || side.moment === "peak") ? "Current" : labels[side.moment];
-      panel.querySelector("[data-tile]")!.textContent = `${names[side.dataset.id]} · ${momentLabel.toLowerCase()}`;
+      panel.querySelector("[data-tile]")!.textContent = `${names[side.dataset.id]} · ${phone.matches ? momentLabel.toLowerCase().replace(" recorded", "") : momentLabel.toLowerCase()}`;
       panel.querySelector("[data-total]")!.textContent = formatTotal(frame.total);
       panel.querySelector("[data-caption]")!.textContent = frame.values.length === 1
-        ? `${frame.values[0].company.name} · on ${dayLabel(side.date)} · 1 company`
-        : `on ${dayLabel(side.date)} · ${frame.values.length} companies`;
+        ? `${frame.values[0].company.name} · ${phone.matches ? "" : "on "}${dayLabel(side.date)} · 1 company`
+        : `${phone.matches ? "" : "on "}${dayLabel(side.date)} · ${frame.values.length} ${phone.matches ? "cos" : "companies"}`;
       const group = query<SVGGElement>(`[data-size] [data-exposure="${index}"]`);
       const r = 225 * Math.sqrt(frame.total / maximum);
       const shapes = [
