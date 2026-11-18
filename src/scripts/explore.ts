@@ -120,6 +120,7 @@ let chapterIndex: number | null = null;
 let storyListOpen = false;
 // The reader's own zoom on top of the camera; index 1 = follow the players exactly.
 let zoomIndex = 1;
+let fitPlayers = false;
 // The mode whose titles over the timeline were placed last: Explore's news titles or Story's
 // chapter titles, one set at a time.
 let labelsPlacedFor: string | null = null;
@@ -424,6 +425,14 @@ function render(soon = false): void {
     button.disabled = at < 0 || at >= count - 1;
   }
 
+  for (const button of document.querySelectorAll<HTMLButtonElement>('[data-zoom="fit"]')) {
+    button.setAttribute("aria-pressed", String(!fitPlayers));
+    button.setAttribute("aria-label", fitPlayers ? "Show the whole bubble" : "Zoom in to the players");
+    button.querySelector("path")?.setAttribute("d", fitPlayers
+      ? "M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"
+      : "M5 12h14M12 5v14");
+  }
+
   // The zoom buttons step through the reader's own zoom, and stop at the ends.
   for (const button of document.querySelectorAll<HTMLButtonElement>('[data-zoom="in"]')) {
     button.disabled = zoomIndex >= ZOOMS.length - 1;
@@ -436,13 +445,15 @@ function render(soon = false): void {
   // frames its players, a chosen company frames itself and the companies it has money lines
   // with, and a plain day shows the whole frame.
   if (layoutsReady) {
-    const players = storyChapter
-      ? storyChapter.players
-      : item
-        ? item.players
-        : company
-          ? [company.id, ...partnersOf(company.id, day)]
-          : [];
+    const players = !fitPlayers
+      ? []
+      : storyChapter
+        ? storyChapter.players
+        : item
+          ? item.players
+          : company
+            ? [company.id, ...partnersOf(company.id, day)]
+            : [];
     for (const svg of document.querySelectorAll<SVGSVGElement>("[data-bubble]")) {
       renderBubble(svg, day, { players, focus: company?.id, manual: ZOOMS[zoomIndex], burstDate: burst?.date });
     }
@@ -525,6 +536,7 @@ function selectItem(id: string): void {
   itemId = item.id;
   companyId = null;
   day = item.date;
+  fitPlayers = true;
   zoomIndex = 1;
   render();
 }
@@ -556,6 +568,7 @@ function step(direction: -1 | 1): void {
 }
 
 function moveTo(date: string): void {
+  fitPlayers = true;
   day = date;
   itemId = null;
   zoomIndex = 1;
@@ -621,6 +634,7 @@ document.addEventListener("click", (event) => {
     zoomIndex = Math.max(0, zoomIndex - 1);
     render();
   } else if (zoom === "fit") {
+    fitPlayers = !fitPlayers;
     zoomIndex = 1;
     render();
   }
@@ -706,6 +720,7 @@ function readAddress(): void {
   const wanted = wantedId ? byId.get(wantedId) : undefined;
   if (wanted) {
     itemId = wanted.id;
+    fitPlayers = true;
     day = wanted.date;
     return;
   }

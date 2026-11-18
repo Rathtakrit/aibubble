@@ -8,7 +8,7 @@
 
 import { arrowCurve, arrowsForDate, bubblesForDate, formatDate, formatValue, FRAME } from "./layout.ts";
 import type { Arrow, Bubble, Placed } from "./layout.ts";
-import { kindColour } from "./data.ts";
+import { companies, kindColour } from "./data.ts";
 import { dayView, sceneTransform } from "./camera.ts";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
@@ -328,7 +328,8 @@ function paintBubble(live: LiveBubble, drawing: Drawing): void {
 
   // Which labels show depends on the size of the circle on screen.
   const onScreen = r * zoom;
-  const showLogo = !isGroup && onScreen >= 6.5;
+  const ticker = companies.find((company) => company.id === bubble.id)?.ticker;
+  const showLogo = !isGroup && !!ticker && onScreen >= 6.5;
   const showName = onScreen >= 3.4;
   const showValue = onScreen >= 7;
 
@@ -403,15 +404,16 @@ function paintBubble(live: LiveBubble, drawing: Drawing): void {
   const { logoCenter, nameCenter, valueCenter } = centres(nameLines.length);
 
   if (showLogo) {
-    logoRect.setAttribute("x", fixed(x - logoSize / 2));
+    const logoWidth = Math.max(logoSize, (nameWidth(name, ticker!) * logoSize * 0.5) / 100 + logoSize * 0.5);
+    logoRect.setAttribute("x", fixed(x - logoWidth / 2));
     logoRect.setAttribute("y", fixed(logoCenter - logoSize / 2));
-    logoRect.setAttribute("width", fixed(logoSize));
+    logoRect.setAttribute("width", fixed(logoWidth));
     logoRect.setAttribute("height", fixed(logoSize));
     logoRect.setAttribute("rx", fixed(logoSize * 0.25));
     logoText.setAttribute("x", fixed(x));
     logoText.setAttribute("y", fixed(logoCenter));
     logoText.style.fontSize = `${fixed(logoSize * 0.5)}px`;
-    logoText.textContent = bubble.name.charAt(0);
+    logoText.textContent = ticker!;
   }
   if (nameLines.length > 0) {
     name.style.fontSize = `${fixed(nameSize)}px`;

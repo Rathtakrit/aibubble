@@ -44,6 +44,14 @@ test("no players gives the whole frame", () => {
   assert.deepEqual(view, { cx: 50, cy: 50, z: 1 });
 });
 
+test("whole and players views frame the corresponding bubbles", () => {
+  const bubbles = [bubble("whole-left", 15, 50, 5), bubble("player", 50, 50, 4), bubble("whole-right", 85, 50, 5)];
+  assert.deepEqual(fitView(bubbles, [], 1), { cx: 50, cy: 50, z: 1 });
+  const players = fitView(bubbles, ["player"], 1);
+  assert.ok(players.z > 1);
+  assert.ok(inside(visibleSquare(players), bubbles[1]));
+});
+
 test("one small player gives the maximum zoom centred on it", () => {
   const view = fitView([bubble("a", 30, 40, 2)], ["a"], 1);
   assert.equal(view.z, 3.2);
