@@ -1,0 +1,30 @@
+name: A fact or story is wrong
+description: Tell us about a fact or story that needs correcting.
+labels: [documentation]
+body:
+  - type: input
+    id: item
+    attributes:
+      label: Which item or date?
+      description: Name the item or date.
+    validations:
+      required: true
+  - type: textarea
+    id: wrong
+    attributes:
+      label: What is wrong?
+      description: Explain what needs correcting.
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: A better source link
+      description: Share a link that supports the correction.
+    validations:
+      required: true
+  - type: textarea
+    id: other
+    attributes:
+      label: Anything else
+      description: Add any other helpful details.

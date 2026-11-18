@@ -170,7 +170,7 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
   <body data-mode="explore" data-dataset={id} data-story-enabled={isPast ? undefined : STORY_ENABLED}>
     <div class="layout-desktop">
       <header class="site-header">
-        <a class="wordmark" href="/">AI Bubble</a>
+        <a class="wordmark" href="/">Bubble</a>
         <nav class="site-nav" aria-label="Sections">
           {STORY_ENABLED && <a class="nav-item" data-mode="story" href="/?chapter=1">Story</a>}
           <a
@@ -189,8 +189,6 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
             href="/past/housing/"
             aria-current={id === "housing" ? "page" : undefined}>Housing</a
           >
-          <span class="nav-item">Science<span class="nav-tag">soon</span></span>
-          <span class="nav-item">News<span class="nav-tag">soon</span></span>
         </nav>
       </header>
 
@@ -498,7 +496,7 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
             </button>
           </div>
         </div>
-        {statusLine && <p class="status">{statusLine}</p>}
+        {statusLine && <p class="status">{statusLine} <a href="https://github.com/Rathtakrit/aibubble/issues/new/choose">Report a problem</a></p>}
       </section>
     </div>
 
@@ -508,7 +506,7 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
       </div>
 
       <div class="map-top">
-        <span class="wordmark-chip">AI Bubble</span>
+        <span class="wordmark-chip">Bubble</span>
       </div>
 
       <div class="zoom-buttons map-zoom">
@@ -759,7 +757,7 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
           <button type="button" class="button button-primary" data-action="later">Later →</button>
         </div>
 
-        {statusLine && <p class="status">{statusLine}</p>}
+        {statusLine && <p class="status">{statusLine} <a href="https://github.com/Rathtakrit/aibubble/issues/new/choose">Report a problem</a></p>}
       </section>
     </div>
 
