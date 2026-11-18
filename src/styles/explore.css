@@ -429,6 +429,7 @@ body[data-timeline-zoomed="true"] .timeline-dot[data-dot="small"] .dot {
   display: flex;
   justify-content: space-between;
   font-size: 12px;
+  line-height: 1;
   color: var(--ink-2);
 }
 
@@ -540,17 +541,20 @@ body:not([data-timeline-zoomed="true"]) [data-zoom-only="true"],
   font-style: italic;
 }
 
-.map-zoom {
-  position: absolute;
-  right: 12px;
-  top: 96px;
-}
-
-.phone-legend {
+/* The money key and the zoom buttons stand in one column at the top right: the key first, the
+   buttons 8px below it, so the buttons follow the key however many money kinds a page has. */
+.map-side {
   position: absolute;
   top: 12px;
   right: 12px;
   z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.phone-legend {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -566,6 +570,8 @@ body:not([data-timeline-zoomed="true"]) [data-zoom-only="true"],
   gap: 6px;
 }
 
+/* The cap is on the whole box: the sheet's padding and top border count inside the 40dvh, so
+   the panel never takes more than 40% of the screen. */
 .sheet {
   position: absolute;
   left: 0;
@@ -574,7 +580,8 @@ body:not([data-timeline-zoomed="true"]) [data-zoom-only="true"],
   max-height: 40vh;
   max-height: 40dvh;
   overflow-y: auto;
-  padding: 6px 16px 10px;
+  box-sizing: border-box;
+  padding: 4px 16px 8px;
   background: var(--paper);
   border-top: 1px solid var(--ink);
   box-shadow: 0 -10px 24px color-mix(in srgb, var(--ink) 10%, transparent);
@@ -583,7 +590,7 @@ body:not([data-timeline-zoomed="true"]) [data-zoom-only="true"],
 .grabber {
   width: 36px;
   height: 4px;
-  margin: 0 auto 8px;
+  margin: 0 auto;
   border-radius: 2px;
   background: var(--rule);
 }
@@ -591,14 +598,17 @@ body:not([data-timeline-zoomed="true"]) [data-zoom-only="true"],
 .sheet-kicker {
   margin: 0;
   font-size: 11px;
+  line-height: 1;
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--accent);
 }
 
+/* The sheet's lines sit close together so the panel, with its day line, buttons and the status
+   line, fits inside its 40dvh height without scrolling. The text sizes stay as they are. */
 .sheet-title {
-  margin: 2px 0 6px;
+  margin: 0;
   font-family: var(--font-serif);
   font-weight: 400;
   font-size: 26px;
@@ -608,12 +618,8 @@ body:not([data-timeline-zoomed="true"]) [data-zoom-only="true"],
 .summary {
   margin: 0;
   font-size: 14px;
-  line-height: 1.55;
+  line-height: 1.45;
   color: var(--text-body);
-}
-
-.sheet .source {
-  --source-gap: 4px;
 }
 
 .pill-row {
@@ -621,7 +627,7 @@ body:not([data-timeline-zoomed="true"]) [data-zoom-only="true"],
   flex-wrap: wrap;
   align-items: center;
   gap: 6px 10px;
-  margin-top: 8px;
+  margin-top: 0;
   font-size: 13px;
   color: var(--ink-2);
 }
@@ -634,21 +640,11 @@ body:not([data-timeline-zoomed="true"]) [data-zoom-only="true"],
   width: 12px;
 }
 
-.sheet .legend {
-  gap: 14px;
-  margin-top: 8px;
-  font-size: 12px;
-}
-
-.sheet .legend-line {
-  width: 16px;
-}
-
 /* The day line in the bottom sheet: the slider with the date dots on it, no labels. */
 .sheet-timeline {
   position: relative;
   height: 44px;
-  margin-top: 10px;
+  margin-top: 0;
 }
 
 .sheet-timeline .timeline-axis {
@@ -661,27 +657,33 @@ body:not([data-timeline-zoomed="true"]) [data-zoom-only="true"],
 
 .sheet-buttons {
   gap: 10px;
-  margin-top: 4px;
+  margin-top: 0;
 }
 
 .sheet-buttons .button {
   flex: 1 1 0;
+  height: 44px;
+  font-size: 14px;
 }
 
 .sheet-buttons .button-primary {
   flex: 1 1 0;
 }
 
-.sheet-buttons .button {
-  min-height: 44px;
-  height: 44px;
-  font-size: 14px;
-}
-
 .sheet .status {
-  margin: 8px 0 0;
+  margin: 0;
   font-size: 11px;
   color: var(--ink-2);
+}
+
+/* In the sheet the Report link keeps its 44px tap area but, like the source line, gives the
+   extra height back with negative margins: it takes one text line, not 44px. */
+.sheet .status a {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1.45;
+  margin-top: calc((1lh - 44px) / 2);
+  margin-bottom: calc((1lh - 44px) / 2);
 }
 
 .status a {
@@ -877,8 +879,8 @@ body[data-mode="story"] .story-dot {
 /* The phone's bubble tabs and Story / Explore switch share the bottom sheet's pill row. */
 .mode-switch {
   display: flex;
-  padding: 2px;
-  margin-bottom: 10px;
+  padding: 0;
+  margin-bottom: 0;
   border: 1px solid var(--ink);
   border-radius: 999px;
 }
@@ -910,10 +912,10 @@ body[data-mode="story"] .story-dot {
 }
 
 /* On the phone the chapter lives in the sheet: kicker, title, note, players and buttons stay
-   put and the text scrolls inside them, so the sheet never grows past its 55dvh and nothing is
-   drawn over the buttons or the day line. The legend has no room left in Story and is left out;
-   Explore keeps it. */
-body[data-mode="story"] .sheet > .legend {
+   put and the text scrolls inside them, so the sheet never grows past its 40dvh and nothing is
+   drawn over the buttons or the day line. The money key has no room left in Story and is left
+   out; Explore keeps it. */
+body[data-mode="story"] .phone-legend {
   display: none;
 }
 
@@ -943,7 +945,7 @@ body[data-mode="story"] .sheet > .legend {
 }
 
 /* A few pixels less between the lines that stay put leaves the chapter text more of the
-   55dvh to read in. */
+   40dvh to read in. */
 body[data-mode="story"] .sheet .mode-switch {
   margin-bottom: 8px;
 }
