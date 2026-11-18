@@ -23,6 +23,7 @@ import type { DayLayouts } from "../lib/layout.ts";
 import workerUrl from "./layout.worker.ts?worker&url";
 import { layoutCacheKey, layoutStore, loadLayouts } from "./layout-cache.ts";
 import { renderBubble } from "../lib/bubble.ts";
+import { peakDay } from "../lib/camera.ts";
 import type { Chapter } from "../lib/story.ts";
 import {
   dateAt,
@@ -48,6 +49,7 @@ const requested = document.body.dataset.dataset;
 useDataset(requested === "dotcom" || requested === "housing" ? requested : "ai");
 // A past page has no Story mode: no chapters, and ?chapter= is ignored.
 const isPast = datasetId !== "ai";
+const peak = burst ? peakDay(FIRST_DAY, burst.date, totalForDate) : undefined;
 let layoutsReady = false;
 function computeLayouts(): Promise<DayLayouts> {
   return new Promise((resolve, reject) => {
@@ -459,11 +461,13 @@ function render(soon = false): void {
   }
 
   setText("date", dayLabel(day));
+  const total = totalForDate(day);
+  const lossPercent = peak && peak.total > 0 ? Math.round((1 - total / peak.total) * 100) : 0;
   setText(
     "companies",
-    `${isPast ? "All companies shown" : "All AI companies"} on ${dayLabel(day)} · total ${formatValue(
-      totalForDate(day),
-    )}`,
+    peak && burst && day >= burst.date
+      ? `Peak ${dayLabel(peak.date)}: ${formatValue(peak.total)} · now ${formatValue(total)} (${lossPercent >= 0 ? "−" : "+"}${Math.abs(lossPercent)}%)`
+      : `${isPast ? "All companies shown" : "All AI companies"} on ${dayLabel(day)} · total ${formatValue(total)}`,
   );
 
   for (const marker of document.querySelectorAll<HTMLElement>("[data-news]")) {
@@ -512,7 +516,7 @@ function render(soon = false): void {
           ? [company.id, ...partnersOf(company.id, day)]
           : [];
     for (const svg of document.querySelectorAll<SVGSVGElement>("[data-bubble]")) {
-      renderBubble(svg, day, { players, focus: company?.id, manual: 1, burstDate: burst?.date });
+      renderBubble(svg, day, { players, focus: company?.id, manual: 1, burstDate: burst?.date, peak });
     }
   }
 

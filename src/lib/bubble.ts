@@ -6,10 +6,11 @@
 // every bubble from where it is now to where the new day puts it, and the money lines are
 // redrawn from the bubbles' tweened places on each frame, so they stay attached.
 
-import { arrowCurve, arrowsForDate, bubblesForDate, formatDate, formatValue, FRAME } from "./layout.ts";
+import { arrowCurve, arrowsForDate, bubblesForDate, formatDate, formatValue, FRAME, totalForDate } from "./layout.ts";
 import type { Arrow, Bubble, Placed } from "./layout.ts";
 import { kindColour } from "./data.ts";
-import { dayView, sceneTransform } from "./camera.ts";
+import { dayView, ringRatio, sceneTransform } from "./camera.ts";
+import type { PeakDay } from "./camera.ts";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 const CLIP_ID = "aibubble-clip";
@@ -105,6 +106,10 @@ type Drawing = {
   startedAt: number;
   raf: number | null;
   reduced: boolean;
+  realRing: SVGCircleElement;
+  ringRadius: number;
+  fromRingRadius: number;
+  toRingRadius: number;
 };
 
 const drawings = new WeakMap<SVGSVGElement, Drawing>();
@@ -211,6 +216,18 @@ function ensureScene(
     ring.setAttribute("vector-effect", "non-scaling-stroke");
     ring.style.pointerEvents = "none";
     svg.appendChild(ring);
+  }
+
+  if (!svg.querySelector("circle.bubble-real-ring")) {
+    const realRing = el<SVGCircleElement>("circle");
+    realRing.setAttribute("class", "bubble-real-ring");
+    realRing.setAttribute("cx", String(FRAME.cx));
+    realRing.style.fill = "none";
+    realRing.style.stroke = "var(--ink)";
+    realRing.style.strokeWidth = "1.5px";
+    realRing.setAttribute("vector-effect", "non-scaling-stroke");
+    realRing.style.pointerEvents = "none";
+    svg.appendChild(realRing);
   }
 
   return {
@@ -517,6 +534,8 @@ function paintArrows(drawing: Drawing): void {
 }
 
 function paintAll(drawing: Drawing): void {
+  drawing.realRing.setAttribute("r", fixed(drawing.ringRadius));
+  drawing.realRing.setAttribute("cy", fixed(FRAME.cy));
   for (const live of drawing.bubbles.values()) paintBubble(live, drawing);
   paintArrows(drawing);
 }
@@ -525,6 +544,7 @@ function paintAll(drawing: Drawing): void {
 function step(drawing: Drawing, now: number): void {
   const t = Math.min(1, Math.max(0, (now - drawing.startedAt) / GLIDE_MS));
   const e = ease(t);
+  drawing.ringRadius = drawing.fromRingRadius + (drawing.toRingRadius - drawing.fromRingRadius) * e;
   for (const live of drawing.bubbles.values()) {
     live.x = live.fromX + (live.toX - live.fromX) * e;
     live.y = live.fromY + (live.toY - live.fromY) * e;
@@ -540,6 +560,7 @@ function jump(drawing: Drawing): void {
     cancelAnimationFrame(drawing.raf);
     drawing.raf = null;
   }
+  drawing.ringRadius = drawing.toRingRadius;
   for (const live of drawing.bubbles.values()) {
     live.x = live.toX;
     live.y = live.toY;
@@ -708,6 +729,7 @@ export type BubbleOptions = {
   // The reader's own zoom on top of the automatic fit.
   manual?: number;
   burstDate?: string;
+  peak?: PeakDay;
 };
 
 export function renderBubble(
@@ -729,7 +751,8 @@ export function renderBubble(
     options.focus !== undefined && bubbles.some((bubble) => bubble.id === options.focus)
       ? options.focus
       : null;
-  const view = dayView(bubbles, options.players ?? [], options.manual ?? 1, date, options.burstDate);
+  const view = dayView(bubbles, options.players ?? [], options.manual ?? 1, date, options.burstDate,
+    options.peak ? bubblesForDate(options.peak.date) : undefined);
 
   const { bubbleLayer, arrowLayer, scene } = ensureScene(svg);
   const ring = svg.querySelector<SVGCircleElement>("circle.bubble-frame")!;
@@ -737,11 +760,20 @@ export function renderBubble(
   ring.classList.toggle("burst", afterBurst);
   if (afterBurst) ring.setAttribute("stroke-dasharray", "0 4.5");
   else ring.removeAttribute("stroke-dasharray");
+  const realRing = svg.querySelector<SVGCircleElement>("circle.bubble-real-ring")!;
+  realRing.style.display = afterBurst && options.peak ? "" : "none";
+  const radius = options.peak
+    ? FRAME.radius * ringRatio(totalForDate(date), options.peak.total)
+    : FRAME.radius;
   let drawing = drawings.get(svg);
   if (!drawing) {
     drawing = {
       bubbles: new Map(),
       arrows: new Map(),
+      realRing,
+      ringRadius: FRAME.radius,
+      fromRingRadius: FRAME.radius,
+      toRingRadius: radius,
       zoom: view.z,
       players,
       focus,
@@ -753,6 +785,8 @@ export function renderBubble(
     drawings.set(svg, drawing);
     liveDrawings.add(drawing);
   }
+  drawing.fromRingRadius = drawing.ringRadius;
+  drawing.toRingRadius = afterBurst ? radius : FRAME.radius;
   drawing.zoom = view.z;
   drawing.players = players;
   drawing.focus = focus;
