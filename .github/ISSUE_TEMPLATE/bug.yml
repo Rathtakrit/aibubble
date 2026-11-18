@@ -1,0 +1,28 @@
+name: Something's broken
+description: Report a problem with the site.
+labels: [bug]
+body:
+  - type: textarea
+    id: did
+    attributes:
+      label: What did you do?
+      description: Tell us what you did before the problem.
+    validations:
+      required: true
+  - type: textarea
+    id: happened
+    attributes:
+      label: What happened?
+      description: Tell us what went wrong.
+    validations:
+      required: true
+  - type: input
+    id: address
+    attributes:
+      label: Page address
+      description: Which page were you on?
+  - type: input
+    id: device
+    attributes:
+      label: Device and browser
+      description: What device and browser were you using?

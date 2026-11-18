@@ -625,6 +625,13 @@ body:not([data-timeline-zoomed="true"]) [data-zoom-only="true"],
   color: var(--ink-2);
 }
 
+.status a {
+  display: inline-block;
+  min-height: 44px;
+  line-height: 44px;
+  color: var(--accent);
+}
+
 /* With a company chosen the sheet keeps to the same height as the news sheet, and the news list
    scrolls inside it, so the kicker, Back, the name and value and the legend, day line and Earlier /
    Later stay in view without the page scrolling. */
@@ -993,12 +1000,6 @@ body[data-mode="story"] .sheet .sheet-timeline {
     text-decoration-thickness: 2px;
     text-decoration-color: var(--accent);
     text-underline-offset: 6px;
-  }
-
-  .nav-tag {
-    font-size: 11px;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
   }
 
   .explore-main {
