@@ -3,7 +3,7 @@
 import test from "node:test";
 // @ts-expect-error node:assert has no types in this repo
 import assert from "node:assert";
-import { dayView, fitView, peakDay, ringRatio, sceneTransform } from "./camera.ts";
+import { clampPan, dayView, fitView, panView, peakDay, ringRatio, sceneTransform } from "./camera.ts";
 import { bubblesForDate, enclosingCircle, FRAME, totalForDate } from "./layout.ts";
 import type { Bubble } from "./layout.ts";
 import { burst, useDataset } from "./data.ts";
@@ -166,4 +166,60 @@ test("the scene transform puts the camera point at the centre", () => {
   const point = moved(sceneTransform(view), view.cx, view.cy);
   assert.ok(Math.abs(point.x - 50) < 0.01, `x is ${point.x}, not 50`);
   assert.ok(Math.abs(point.y - 50) < 0.01, `y is ${point.y}, not 50`);
+});
+
+test("the pan moves where the camera looks, in the bubble's own units", () => {
+  const view = { cx: 30, cy: 40, z: 2 };
+  assert.deepEqual(panView(view, { dx: 10, dy: -5 }), { cx: 40, cy: 35, z: 2 });
+  assert.deepEqual(panView(view, { dx: 0, dy: 0 }), view);
+});
+
+test("clampPan leaves a pan inside the limit untouched", () => {
+  // At z 2 the view is 50 wide, so its centre may sit 50 - 50 / 2 = 25 from the frame's centre.
+  const view = { cx: 50, cy: 50, z: 2 };
+  assert.deepEqual(clampPan(view, { dx: 0, dy: 0 }), { dx: 0, dy: 0 });
+  assert.deepEqual(clampPan(view, { dx: 10, dy: 0 }), { dx: 10, dy: 0 });
+  assert.deepEqual(clampPan(view, { dx: 25, dy: 0 }), { dx: 25, dy: 0 });
+  assert.deepEqual(clampPan(view, { dx: -17.5, dy: 17.5 }), { dx: -17.5, dy: 17.5 });
+});
+
+test("clampPan pulls a pan back so the view stays inside the frame", () => {
+  const view = { cx: 50, cy: 50, z: 2 };
+  assert.deepEqual(clampPan(view, { dx: 40, dy: 0 }), { dx: 25, dy: 0 });
+  assert.deepEqual(clampPan(view, { dx: 0, dy: -60 }), { dx: 0, dy: -25 });
+  // A diagonal pan lands on the limit circle, at 25 / sqrt(2) per axis.
+  const diagonal = clampPan(view, { dx: -25, dy: 25 });
+  assert.ok(Math.abs(diagonal.dx + 25 / Math.SQRT2) < 1e-9, `dx is ${diagonal.dx}`);
+  assert.ok(Math.abs(diagonal.dy - 25 / Math.SQRT2) < 1e-9, `dy is ${diagonal.dy}`);
+});
+
+test("clampPan measures the limit from the frame's centre, not from the view", () => {
+  // The view already sits 10 from the frame's centre, so it may pan 15 more units that way.
+  const view = { cx: 60, cy: 50, z: 2 };
+  assert.deepEqual(clampPan(view, { dx: 15, dy: 0 }), { dx: 15, dy: 0 });
+  assert.deepEqual(clampPan(view, { dx: 20, dy: 0 }), { dx: 15, dy: 0 });
+  assert.deepEqual(clampPan(view, { dx: -25, dy: 0 }), { dx: -25, dy: 0 });
+});
+
+test("clampPan allows no pan at the whole-frame zoom, and more the further the zoom", () => {
+  assert.deepEqual(clampPan({ cx: 50, cy: 50, z: 1 }, { dx: 9, dy: 9 }), { dx: 0, dy: 0 });
+  // At z 4 the view is 25 wide, so its centre may sit 50 - 50 / 4 = 37.5 from the frame's centre.
+  assert.deepEqual(clampPan({ cx: 50, cy: 50, z: 4 }, { dx: 37.5, dy: 0 }), { dx: 37.5, dy: 0 });
+  assert.deepEqual(clampPan({ cx: 50, cy: 50, z: 4 }, { dx: 50, dy: 0 }), { dx: 37.5, dy: 0 });
+});
+
+test("clamped views never leave the frame", () => {
+  for (const z of [1, 1.5, 2, 3.2, 4]) {
+    for (const [dx, dy] of [
+      [0, 0], [40, 0], [-40, 0], [0, 40], [40, 40], [-30, 20], [100, -100],
+    ] as const) {
+      const view = { cx: 50, cy: 50, z };
+      const after = panView(view, clampPan(view, { dx, dy }));
+      const distance = Math.hypot(after.cx - 50, after.cy - 50);
+      assert.ok(
+        distance <= 50 - 50 / z + 1e-9,
+        `z ${z}, pan ${dx}, ${dy}: the centre sits ${distance.toFixed(3)} from the frame's centre`,
+      );
+    }
+  }
 });

@@ -23,7 +23,8 @@ import type { DayLayouts } from "../lib/layout.ts";
 import workerUrl from "./layout.worker.ts?worker&url";
 import { layoutCacheKey, layoutStore, loadLayouts } from "./layout-cache.ts";
 import { renderBubble } from "../lib/bubble.ts";
-import { peakDay } from "../lib/camera.ts";
+import { clampPan, dayView, peakDay } from "../lib/camera.ts";
+import type { CameraView } from "../lib/camera.ts";
 import type { Chapter } from "../lib/story.ts";
 import {
   dateAt,
@@ -121,6 +122,11 @@ let chapterIndex: number | null = null;
 // Whether "Read the story" has the list of chapters open.
 let storyListOpen = false;
 let fitPlayers = false;
+// The picture's pan, in the bubble's own units (the 0–100 viewBox), and the framing it was set
+// under: when the item, company, chapter or focus state changes the camera flies to new
+// players, and the pan goes back to zero.
+let pan = { dx: 0, dy: 0 };
+let lastFraming = "";
 // The mode whose titles over the timeline were placed last: Explore's news titles or Story's
 // chapter titles, one set at a time.
 let labelsPlacedFor: string | null = null;
@@ -296,6 +302,26 @@ function isCompanyShown(id: string, date: string): boolean {
   return bubblesForDate(date).some((bubble) => bubble.id === id);
 }
 
+// The companies the camera frames right now: a chapter's players, an item's players, or a
+// company and the companies it has money lines with; in the whole state the camera frames
+// nothing and the view is the whole frame.
+function playersNow(): string[] {
+  const chapter = chapterIndex === null ? null : (chapters[chapterIndex] ?? null);
+  if (chapter !== null) return fitPlayers ? chapter.players : [];
+  const item = itemId === null ? null : (byId.get(itemId) ?? null);
+  if (item !== null && fitPlayers) return item.players;
+  const company = companyId === null ? null : (companyById.get(companyId) ?? null);
+  return company !== null && fitPlayers ? [company.id, ...partnersOf(company.id, day)] : [];
+}
+
+// The view the bubble is drawing right now, from the same inputs render() hands to renderBubble:
+// the drag and the arrow keys turn pixels and steps into these units, so they must agree.
+function currentView(): CameraView | null {
+  if (!layoutsReady) return null;
+  const bubbles = bubblesForDate(day);
+  return dayView(bubbles, playersNow(), 1, day, burst?.date, peak ? bubblesForDate(peak.date) : undefined);
+}
+
 // The company's news rows, newest first, are rebuilt only when the company or the day changes,
 // so dragging the slider keeps the list where the reader left it.
 let rowsKey = "";
@@ -348,6 +374,13 @@ function renderCompany(company: Company): void {
 function render(soon = false): void {
   // A company the chosen day does not show goes back to the quiet day.
   if (companyId !== null && !isCompanyShown(companyId, day)) companyId = null;
+  // The camera flies to new players when the item, company, chapter or focus state changes, so
+  // the picture starts back at its centre: the pan goes to zero.
+  const framing = `${chapterIndex}|${itemId}|${companyId}|${fitPlayers}`;
+  if (framing !== lastFraming) {
+    lastFraming = framing;
+    pan = { dx: 0, dy: 0 };
+  }
   const storyAt = chapterIndex;
   const storyChapter = storyAt === null ? null : (chapters[storyAt] ?? null);
   if (storyAt !== null && storyChapter === null) chapterIndex = null;
@@ -508,15 +541,25 @@ function render(soon = false): void {
   // with, and a plain day shows the whole frame. In the whole state none of them frames: the
   // button's state and the view stay the same.
   if (layoutsReady) {
-    const players = storyChapter
-      ? (fitPlayers ? storyChapter.players : [])
-      : item && fitPlayers
-        ? item.players
-        : company && fitPlayers
-          ? [company.id, ...partnersOf(company.id, day)]
-          : [];
+    const players = playersNow();
+    // The picture can only be dragged where the camera is zoomed in beyond the whole frame;
+    // in the whole state the drag does nothing and the pan is zero.
+    const view = currentView();
+    const zoomedIn = fitPlayers && view !== null && view.z > 1;
     for (const svg of document.querySelectorAll<SVGSVGElement>("[data-bubble]")) {
-      renderBubble(svg, day, { players, focus: company?.id, manual: 1, burstDate: burst?.date, peak });
+      svg.dataset.zoomed = String(zoomedIn);
+      renderBubble(svg, day, {
+        players,
+        focus: company?.id,
+        manual: 1,
+        burstDate: burst?.date,
+        peak,
+        pan: zoomedIn ? pan : { dx: 0, dy: 0 },
+      });
+      // The bubble is also a view the reader can move: while it can be panned, the label says
+      // so. renderBubble sets the rest of the label fresh on every draw, so nothing repeats.
+      const label = svg.getAttribute("aria-label") ?? "";
+      svg.setAttribute("aria-label", zoomedIn ? `${label} Use the arrow keys to move the view.` : label);
     }
   }
 
@@ -771,12 +814,27 @@ for (const slider of document.querySelectorAll<HTMLInputElement>("[data-slider]"
 }
 
 // A bubble is a button: a click or a tap on it, or Tab to it and Enter or Space, opens that
-// company's panel in the text column.
+// company's panel in the text column. While the view is zoomed in, the picture can also be
+// dragged around: the pan is kept in the bubble's own units, so screen pixels are turned into
+// units with the SVG's on-screen size and the current zoom. A move under PAN_TAP_PX is a tap,
+// so tapping a company still opens it.
+const PAN_TAP_PX = 6;
+const PAN_STEP = 5; // the arrow keys move the view this many units
+
 for (const svg of document.querySelectorAll<SVGSVGElement>("[data-bubble]")) {
   const companyAt = (event: Event): string | null => {
     const target = event.target instanceof Element ? event.target : null;
     return target?.closest<SVGElement>("[data-company]")?.getAttribute("data-company") ?? null;
   };
+  // The view the picture can be panned: the same view render() draws, and only where the
+  // camera is zoomed in beyond the whole frame.
+  const panningView = (): CameraView | null => {
+    if (!fitPlayers) return null;
+    const view = currentView();
+    return view !== null && view.z > 1 ? view : null;
+  };
+  // The picture is a view the keyboard can move, too.
+  svg.setAttribute("tabindex", "0");
   svg.addEventListener("click", (event) => {
     const id = companyAt(event);
     if (id) chooseCompany(id);
@@ -787,6 +845,83 @@ for (const svg of document.querySelectorAll<SVGSVGElement>("[data-bubble]")) {
     if (!id) return;
     event.preventDefault();
     chooseCompany(id);
+  });
+  // The arrow keys move the view, but only while the bubble itself has focus and the view can
+  // be panned; a focused bubble below it keeps its own Enter and Space behaviour.
+  svg.addEventListener("keydown", (event) => {
+    if (event.target !== svg) return;
+    let dx = 0;
+    let dy = 0;
+    if (event.key === "ArrowLeft") dx = -PAN_STEP;
+    else if (event.key === "ArrowRight") dx = PAN_STEP;
+    else if (event.key === "ArrowUp") dy = -PAN_STEP;
+    else if (event.key === "ArrowDown") dy = PAN_STEP;
+    else return;
+    const view = panningView();
+    if (view === null) return;
+    event.preventDefault();
+    pan = clampPan(view, { dx: pan.dx + dx, dy: pan.dy + dy });
+    render();
+  });
+
+  // The drag only starts once the pointer has moved PAN_TAP_PX, so a tap stays a tap and the
+  // page's own gestures (page and sheet scroll) stay alone in the whole state.
+  let drag: { id: number; x: number; y: number; moved: number; captured: boolean } | null = null;
+  // While the pointer is on the picture the view follows it one to one: the camera's glide is
+  // off, even though renderBubble would set it back on.
+  const holdScene = (): void => {
+    svg.querySelector<SVGGElement>("g.scene")?.style.setProperty("transition", "none");
+  };
+
+  svg.addEventListener("pointerdown", (event) => {
+    if (drag !== null) return;
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+    if (panningView() === null) return;
+    drag = { id: event.pointerId, x: event.clientX, y: event.clientY, moved: 0, captured: false };
+    // Keep text selection and the browser's focus out of a would-be drag.
+    event.preventDefault();
+  });
+
+  svg.addEventListener("pointermove", (event) => {
+    if (drag === null || drag.id !== event.pointerId) return;
+    const dx = event.clientX - drag.x;
+    const dy = event.clientY - drag.y;
+    drag.moved += Math.hypot(dx, dy);
+    drag.x = event.clientX;
+    drag.y = event.clientY;
+    if (!drag.captured) {
+      if (drag.moved < PAN_TAP_PX) return;
+      drag.captured = true;
+      svg.setPointerCapture(event.pointerId);
+      svg.classList.add("is-panning");
+    }
+    const view = panningView();
+    if (view === null) return;
+    // One screen pixel is 100 / size viewBox units, and the camera's zoom scales them.
+    const size = svg.getBoundingClientRect().width;
+    const units = size > 0 ? 100 / (size * view.z) : 0;
+    // The picture follows the pointer: dragging it right moves the view left.
+    pan = clampPan(view, { dx: pan.dx - dx * units, dy: pan.dy - dy * units });
+    render();
+    holdScene();
+  });
+
+  const endDrag = (event: PointerEvent): void => {
+    if (drag === null || drag.id !== event.pointerId) return;
+    const wasDrag = drag.captured;
+    drag = null;
+    if (!wasDrag) return;
+    svg.classList.remove("is-panning");
+    if (svg.hasPointerCapture(event.pointerId)) svg.releasePointerCapture(event.pointerId);
+    // Back to the camera's own glide for the next move; the picture does not take focus, so a
+    // pointer drag leaves no focus outline (the arrow keys still work from the keyboard).
+    render();
+  };
+  svg.addEventListener("pointerup", endDrag);
+  svg.addEventListener("pointercancel", endDrag);
+  // A pointer that leaves before it has moved far enough: no drag was on its way.
+  svg.addEventListener("pointerleave", () => {
+    if (drag !== null && !drag.captured) drag = null;
   });
 }
 
