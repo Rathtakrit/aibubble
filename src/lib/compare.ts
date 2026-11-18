@@ -9,7 +9,7 @@ import { dayLayouts, formatValue } from "./layout.ts";
 import { FIRST_DAY } from "./timeline.ts";
 
 export type CompareDataset = { id: DatasetId; companies: Company[]; values: ValuePoint[] };
-export type Moment = "peak" | "start" | "latest";
+export type Moment = "peak" | "start" | "lowest" | "latest";
 export const datasets: CompareDataset[] = [
   { id: "ai", companies: aiCompanies.items as Company[], values: aiValues.items as ValuePoint[] },
   { id: "dotcom", companies: dotcomCompanies.items as Company[], values: dotcomValues.items as ValuePoint[] },
@@ -41,7 +41,25 @@ export function moments(dataset: CompareDataset): Record<Moment, string | null> 
     const total = totalOn(dataset, date).total;
     if (total > highest) { highest = total; peak = date; }
   }
-  return { start, peak: dataset.id === "ai" ? latest : peak, latest };
+  let lowest: string | null = null;
+  let smallest = Infinity;
+  for (const date of dates.slice(1)) {
+    const total = totalOn(dataset, date).total;
+    if (total < smallest) { smallest = total; lowest = date; }
+  }
+  return { start, lowest, peak: dataset.id === "ai" ? latest : peak, latest };
+}
+
+// A zero baseline has no finite percentage change.
+export function percentDifference(a: number, b: number): number | null {
+  return b === 0 ? (a === 0 ? 0 : null) : (a - b) / b * 100;
+}
+
+export function comparisonLine(a: number, b: number): string {
+  const percent = percentDifference(a, b);
+  if (percent === null) return "A has value; B has no recorded value selected";
+  if (Math.abs(percent) <= 1) return "A and B are about the same size";
+  return `A is ${Math.round(Math.abs(percent))}% ${percent > 0 ? "bigger" : "smaller"} than B`;
 }
 
 export function top5(dataset: CompareDataset, date: string) {

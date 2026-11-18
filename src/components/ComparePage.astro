@@ -3,36 +3,20 @@ import "@fontsource/instrument-serif/400.css";
 import "@fontsource-variable/instrument-sans/index.css";
 import "../styles/tokens.css";
 import "../styles/compare.css";
-import { datasets, formatTotal, moments, packedOn, top5, totalOn } from "../lib/compare.ts";
-import type { Moment } from "../lib/compare.ts";
-
-const choices: { id: Moment; label: string }[] = [
-  { id: "peak", label: "At its peak" },
-  { id: "start", label: "At the start" },
-  { id: "latest", label: "Latest" },
+import { datasets, comparisonLine, formatTotal, moments, packedOn, totalOn } from "../lib/compare.ts";
+const names = { ai: "AI", dotcom: "Dot-com", housing: "Housing" };
+const choices = { start: "Start", lowest: "Lowest recorded", peak: "Peak recorded", latest: "Latest", date: "Pick a date" };
+const defaults = [
+  { dataset: datasets[0], moment: "lowest" as const },
+  { dataset: datasets[1], moment: "peak" as const },
 ];
-const names = { ai: "AI (today)", dotcom: "Dot-com", housing: "Housing" };
-const dateFormat = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
-const dayLabel = (date: string) => dateFormat.format(new Date(`${date}T00:00:00Z`));
-const listNames = (names: string[]) => names.length < 2
-  ? names.join("")
-  : `${names.slice(0, -1).join(", ")} and ${names.at(-1)}`;
-const panels = choices.map((choice) => {
-  const frames = datasets.map((dataset) => {
-    const date = moments(dataset)[choice.id]!;
-    const snapshot = totalOn(dataset, date);
-    const known = new Set(snapshot.values.map((entry) => entry.company.id));
-    return {
-      id: dataset.id, name: dataset.id === "ai" && choice.id === "start" ? "AI" : names[dataset.id], date, total: snapshot.total,
-      players: top5(dataset, date), circles: packedOn(dataset, date),
-      missing: dataset.companies.filter((company) => !known.has(company.id)),
-    };
-  });
-  const maximum = Math.max(...frames.map((frame) => frame.total), 1);
-  return { ...choice, frames: frames.map((frame) => ({ ...frame, ratio: Math.sqrt(frame.total / maximum) })) };
+const frames = defaults.map(({ dataset, moment }) => {
+  const date = moments(dataset)[moment]!;
+  return { dataset, moment, date, ...totalOn(dataset, date), circles: packedOn(dataset, date) };
 });
+const maximum = Math.max(...frames.map((f) => f.total), 1);
+const dayLabel = (date: string) => new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }).format(new Date(`${date}T00:00:00Z`));
 ---
-
 <!doctype html>
 <html lang="en">
   <head>
@@ -52,86 +36,74 @@ const panels = choices.map((choice) => {
         </nav>
       </header>
       <main id="compare">
-        <h1>Compare the bubbles</h1>
-        <p class="intro">Total value: what all of these companies' shares were worth together.</p>
-        <div class="moment-control">
-          <p class="control-title">Moment</p>
-          <div class="segments" role="group" aria-label="Moment">
-            {choices.map((choice) => <button type="button" data-moment={choice.id} aria-pressed={choice.id === "peak"} aria-controls={`moment-${choice.id}`}>{choice.label}</button>)}
+        <div class="heading">
+          <div><h1>Compare the bubbles</h1><p class="intro">Pick two moments. Both circles share one scale, laid over each other like a double exposure.</p></div>
+          <div class="segments" role="group" aria-label="Measure">
+            <button type="button" data-measure="size" aria-pressed="true">Size</button>
+            <button type="button" data-measure="change" aria-pressed="false">Change %</button>
+            <button type="button" disabled>Growth <small>soon</small></button>
           </div>
-          <p class="note">AI uses its latest date for the peak.<br />Untick a player to hide its circle.</p>
         </div>
-        {panels.map((panel) => (
-          <div id={`moment-${panel.id}`} class="moment-panel" data-panel={panel.id} hidden={panel.id !== "peak"}>
-            <div class="desktop-players">
-              <p class="control-title">Players</p>
-              <div class="player-groups">
-                {panel.frames.map((frame) => (
-                  <fieldset class="players">
-                    <legend class="player-heading">{frame.name}</legend>
-                    {frame.players.map((entry) => (
-                      <label>
-                        <input type="checkbox" checked data-player={`${panel.id}-${frame.id}-${entry.company.id}`} />
-                        <span>{entry.company.name}</span><span class="amount">{formatTotal(entry.value)}</span>
-                      </label>
-                    ))}
-                  </fieldset>
-                ))}
-              </div>
-            </div>
-            <div class="frames" aria-live="polite">
-              {panel.frames.map((frame) => (
-                <section aria-label={frame.name}>
-                  <div class="stage">
-                    <div class="frame" style={`--ratio:${frame.ratio}`} role="img" aria-label={`${frame.name}, circles sized by recorded company value; total of companies with a value on this date ${formatTotal(frame.total)} on ${dayLabel(frame.date)}`}>
-                      {frame.circles.map((circle) => {
-                        const desktopDiameter = circle.r * 2 * 2.5 * frame.ratio;
-                        const phoneDiameter = circle.r * 2 * 3.18 * frame.ratio;
-                        const fits = (diameter: number) => diameter >= 22 && circle.company.name.length * 5.5 < diameter * 0.85;
-                        return (
-                          <div
-                            class:list={["company", circle.company.kind === "group" && "group"]}
-                            data-circle={`${panel.id}-${frame.id}-${circle.company.id}`}
-                            title={`${circle.company.name}: ${formatTotal(circle.value)} (${dayLabel(circle.point.date)}); ${circle.point.source}`}
-                            style={`left:${circle.x - circle.r}%;top:${circle.y - circle.r}%;width:${circle.r * 2}%;height:${circle.r * 2}%`}
-                          ><span class:list={["circle-label", !fits(desktopDiameter) && "no-desktop", !fits(phoneDiameter) && "no-phone"]}>{circle.company.name}</span></div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                  <div class="caption">
-                    <h2>{frame.name}</h2>
-                    <p>{formatTotal(frame.total)} on {dayLabel(frame.date)}</p>
-                    <p class="total-label">total of companies with a value on this date</p>
-                  </div>
-                  <div class="phone-players">
-                    <p class="control-title">Players</p>
-                    <fieldset class="players">
-                      <legend class="player-heading">{frame.name}</legend>
-                      {frame.players.map((entry) => (
-                        <label>
-                          <input type="checkbox" checked data-player={`${panel.id}-${frame.id}-${entry.company.id}`} />
-                          <span>{entry.company.name}</span><span class="amount">{formatTotal(entry.value)}</span>
-                        </label>
-                      ))}
-                    </fieldset>
-                  </div>
-                </section>
-              ))}
-            </div>
-            <div class="foot">
-              <p>Same area scale across all frames; values are US dollars, not adjusted for inflation. B = billion. T = trillion.</p>
-              <p>Peak uses the highest sum of the latest records available on each date; records between dates are carried forward. AI includes private-company valuations.</p>
-              {panel.frames.filter((frame) => frame.missing.length > 0).map((frame) => (
-                <p>No value in the data on {dayLabel(frame.date)} for: {listNames(frame.missing.map((company) => company.name))}.</p>
-              ))}
+        <div class="quick-questions" role="group" aria-label="Quick questions">
+          <span>Try</span>
+          <button type="button" data-quick="lowest">AI lowest vs Dot-com peak</button>
+          <button type="button" data-quick="peaks">Peaks side by side</button>
+          <button type="button" data-quick="biggest">Biggest company of each</button>
+          <button type="button" data-quick="then">AI then vs AI now</button>
+        </div>
+        <div class="workbench">
+          {frames.map((frame, index) => (
+            <section class={`exposure exposure-${index}`} data-side={index}>
+              <details class="picker" open>
+                <summary><span class="exposure-label">Exposure {index === 0 ? "A" : "B"}</span><span data-tile>{names[frame.dataset.id]} · {frame.moment}</span></summary>
+                <div class="picker-fields">
+                  <label>Bubble<select data-bubble>{datasets.map((dataset) => <option value={dataset.id} selected={dataset.id === frame.dataset.id}>{names[dataset.id]}</option>)}</select></label>
+                  <label>Moment<select data-moment>{Object.entries(choices).map(([value, label]) => <option value={value} selected={value === frame.moment}>{label}</option>)}</select></label>
+                  <label data-date-label hidden>Pick a date<input type="date" data-date min={moments(frame.dataset).start!} max={moments(frame.dataset).latest!} value={frame.date} /></label>
+                </div>
+              </details>
+              <div class="caption"><span class="total" data-total>{formatTotal(frame.total)}</span><p data-caption>on {dayLabel(frame.date)} · {frame.values.length} companies</p></div>
+            </section>
+          ))}
+          <div class="drawing">
+            <svg data-size viewBox="0 0 620 500" role="img" aria-label="A in blue and B in orange, sharing one area scale and bottom point">
+              {frames.map((frame, index) => {
+                const r = 225 * Math.sqrt(frame.total / maximum);
+                return <g data-exposure={index}>
+                  <circle data-shape={`${index}-frame`} cx="300" cy={485-r} r={r} class="outline" />
+                  {frame.circles.map((circle) => <circle data-shape={`${index}-${circle.company.id}`} cx={300+(circle.x-50)*r/48} cy={485-r+(circle.y-50)*r/48} r={circle.r*r/48} class="company"><title>{circle.company.name}: {formatTotal(circle.value)}</title></circle>)}
+                  <text data-svg-label={index} x="300" y={Math.max(18, 485-r*2-12)} text-anchor="middle">{index === 0 ? "A" : "B"} · {names[frame.dataset.id]}, {choices[frame.moment].toLowerCase()}</text>
+                </g>;
+              })}
+              <line x1="300" y1="485" x2="300" y2="495" stroke="currentColor" />
+            </svg>
+            <div data-change hidden>
+            <svg viewBox="0 0 620 500" role="img" aria-label="Change from each bubble's Start total to its chosen moment">
+              <line x1="300" y1="110" x2="300" y2="410" class="zero-line" />
+              <text x="300" y="90" text-anchor="middle">0%</text>
+              {[0,1].map((index) => <g data-exposure={index}><rect data-bar={index} x="300" y={160+index*140} width="0" height="48" /><text data-bar-label={index} x="300" y={145+index*140} text-anchor="middle" /></g>)}
+              <text x="300" y="465" text-anchor="middle">Change from Start</text>
+            </svg>
             </div>
           </div>
-        ))}
+        </div>
+        <div class="result-row">
+          <p class="result" data-result aria-live="polite">{comparisonLine(frames[0].total, frames[1].total)}</p>
+          <div class="actions">
+            <button type="button" data-swap>Swap<span class="desktop-word"> A and B</span></button>
+            <button type="button" data-open="players" aria-haspopup="dialog">Players: {frames.reduce((n, f) => n+f.values.length, 0)} of {frames.reduce((n, f) => n+f.values.length, 0)}</button>
+            <button type="button" data-open="sources" aria-haspopup="dialog">Sources</button>
+          </div>
+        </div>
+        <div class="foot">
+          <p>Circle area = total value of the chosen companies, same area scale for both. Total value means what the companies are worth together. Values are US dollars, not adjusted for inflation. B = billion. T = trillion.</p>
+          <p>Values are mostly year-end records, so lowest/highest recorded do not mean an all-time low or high. Records are carried forward between dates. AI uses its latest date for peak and includes private-company valuations (estimates of what companies without publicly traded shares are worth).</p>
+          <p data-missing></p>
+        </div>
+        <dialog data-dialog="players" aria-labelledby="players-title"><form method="dialog"><h2 id="players-title">Players</h2><button>Close</button></form><div data-player-groups></div></dialog>
+        <dialog data-dialog="sources" aria-labelledby="sources-title"><form method="dialog"><h2 id="sources-title">Sources</h2><button>Close</button></form><div data-sources></div></dialog>
       </main>
     </div>
-    <script>
-      import "../scripts/compare.ts";
-    </script>
+    <script>import "../scripts/compare.ts";</script>
   </body>
 </html>
