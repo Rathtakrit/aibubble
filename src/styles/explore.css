@@ -48,15 +48,6 @@
   cursor: pointer;
 }
 
-.zoom-button + .zoom-button {
-  border-top: 1px solid var(--rule);
-}
-
-.zoom-button:disabled {
-  opacity: 0.35;
-  cursor: default;
-}
-
 .pill {
   display: inline-flex;
   align-items: center;

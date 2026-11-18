@@ -78,7 +78,7 @@ type MetaFile = { title: string; first_day: string; last_day: string; kinds: Dea
 // One data set: the four files, the words the page needs, and the days it covers.
 type Dataset = {
   id: DatasetId;
-  // What the page calls the set in its kicker: "Explore" for the AI bubble, which has always
+  // What the page calls the set in its kicker: "AI" for the AI bubble, which has always
   // said so, and the set's own title for a past one.
   title: string;
   status: DataStatus;
@@ -116,7 +116,7 @@ const HOUSING_META = housingMetaJson as MetaFile;
 const DATASETS: Record<DatasetId, Dataset> = {
   ai: {
     id: "ai",
-    title: "Explore",
+    title: "AI",
     status: aiCompaniesJson.status as DataStatus,
     companies: companiesOf(aiCompaniesJson),
     values: aiValuesJson.items as unknown as ValuePoint[],

@@ -23,7 +23,6 @@ import type { DayLayouts } from "../lib/layout.ts";
 import workerUrl from "./layout.worker.ts?worker&url";
 import { layoutCacheKey, layoutStore, loadLayouts } from "./layout-cache.ts";
 import { renderBubble } from "../lib/bubble.ts";
-import { ZOOMS } from "../lib/camera.ts";
 import type { Chapter } from "../lib/story.ts";
 import {
   dateAt,
@@ -118,8 +117,6 @@ let companyId: string | null = null;
 let chapterIndex: number | null = null;
 // Whether "Read the story" has the list of chapters open.
 let storyListOpen = false;
-// The reader's own zoom on top of the camera; index 1 = follow the players exactly.
-let zoomIndex = 1;
 let fitPlayers = false;
 // The mode whose titles over the timeline were placed last: Explore's news titles or Story's
 // chapter titles, one set at a time.
@@ -428,20 +425,15 @@ function render(soon = false): void {
     button.disabled = at === 0;
   }
 
+  // The one focus toggle: in the whole state pressing it focuses on the players, in the players
+  // state it shows the whole bubble. The label says what pressing does, and the corners follow
+  // the state: inward in the whole state, outward in the players state.
   for (const button of document.querySelectorAll<HTMLButtonElement>('[data-zoom="fit"]')) {
     button.setAttribute("aria-pressed", String(fitPlayers));
-    button.setAttribute("aria-label", fitPlayers ? "Show the whole bubble" : "Zoom in to the players");
+    button.setAttribute("aria-label", fitPlayers ? "Show the whole bubble" : "Focus on the players");
     button.querySelector("path")?.setAttribute("d", fitPlayers
       ? "M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"
       : "M4 9h5V4M20 9h-5V4M4 15h5v5M20 15h-5v5");
-  }
-
-  // The zoom buttons step through the reader's own zoom, and stop at the ends.
-  for (const button of document.querySelectorAll<HTMLButtonElement>('[data-zoom="in"]')) {
-    button.disabled = zoomIndex >= ZOOMS.length - 1;
-  }
-  for (const button of document.querySelectorAll<HTMLButtonElement>('[data-zoom="out"]')) {
-    button.disabled = zoomIndex <= 0;
   }
 
   // The bubble follows the day; a chapter frames its players as a news item does, a chosen item
@@ -457,7 +449,7 @@ function render(soon = false): void {
           ? [company.id, ...partnersOf(company.id, day)]
           : [];
     for (const svg of document.querySelectorAll<SVGSVGElement>("[data-bubble]")) {
-      renderBubble(svg, day, { players, focus: company?.id, manual: ZOOMS[zoomIndex], burstDate: burst?.date });
+      renderBubble(svg, day, { players, focus: company?.id, manual: 1, burstDate: burst?.date });
     }
   }
 
@@ -509,7 +501,6 @@ function goToChapter(index: number): void {
   itemId = null;
   companyId = null;
   day = chapter.date;
-  zoomIndex = 1;
   render();
   // A chapter opens at its first line, never where the last one was left.
   for (const text of document.querySelectorAll<HTMLElement>('[data-bind="story-text"]')) {
@@ -523,7 +514,6 @@ function leaveStory(date: string): void {
   storyListOpen = false;
   itemId = null;
   fitPlayers = false;
-  zoomIndex = 1;
   day = date;
   render(true);
 }
@@ -541,7 +531,6 @@ function selectItem(id: string): void {
   itemId = item.id;
   companyId = null;
   day = item.date;
-  zoomIndex = 1;
   render();
 }
 
@@ -556,7 +545,6 @@ function chooseCompany(id: string): void {
   // The button's state follows the view: a company open frames it, the quiet day shows the whole
   // frame.
   fitPlayers = companyId !== null;
-  zoomIndex = 1;
   render();
 }
 
@@ -581,7 +569,6 @@ function moveTo(date: string): void {
   // the whole state until an item or a company is picked.
   fitPlayers = false;
   itemId = null;
-  zoomIndex = 1;
   render(true);
 }
 
@@ -640,16 +627,9 @@ document.addEventListener("click", (event) => {
     openStoryList(false);
   }
 
-  const zoom = control.dataset.zoom;
-  if (zoom === "in") {
-    zoomIndex = Math.min(ZOOMS.length - 1, zoomIndex + 1);
-    render();
-  } else if (zoom === "out") {
-    zoomIndex = Math.max(0, zoomIndex - 1);
-    render();
-  } else if (zoom === "fit") {
+  // The bubble's one zoom button: the focus toggle, nothing else.
+  if (control.dataset.zoom === "fit") {
     fitPlayers = !fitPlayers;
-    zoomIndex = 1;
     render();
   }
 });
