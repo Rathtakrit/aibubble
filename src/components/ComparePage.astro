@@ -1,0 +1,137 @@
+---
+import "@fontsource/instrument-serif/400.css";
+import "@fontsource-variable/instrument-sans/index.css";
+import "../styles/tokens.css";
+import "../styles/compare.css";
+import { datasets, formatTotal, moments, packedOn, top5, totalOn } from "../lib/compare.ts";
+import type { Moment } from "../lib/compare.ts";
+
+const choices: { id: Moment; label: string }[] = [
+  { id: "peak", label: "At its peak" },
+  { id: "start", label: "At the start" },
+  { id: "latest", label: "Latest" },
+];
+const names = { ai: "AI (today)", dotcom: "Dot-com", housing: "Housing" };
+const dateFormat = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+const dayLabel = (date: string) => dateFormat.format(new Date(`${date}T00:00:00Z`));
+const listNames = (names: string[]) => names.length < 2
+  ? names.join("")
+  : `${names.slice(0, -1).join(", ")} and ${names.at(-1)}`;
+const panels = choices.map((choice) => {
+  const frames = datasets.map((dataset) => {
+    const date = moments(dataset)[choice.id]!;
+    const snapshot = totalOn(dataset, date);
+    const known = new Set(snapshot.values.map((entry) => entry.company.id));
+    return {
+      id: dataset.id, name: dataset.id === "ai" && choice.id === "start" ? "AI" : names[dataset.id], date, total: snapshot.total,
+      players: top5(dataset, date), circles: packedOn(dataset, date),
+      missing: dataset.companies.filter((company) => !known.has(company.id)),
+    };
+  });
+  const maximum = Math.max(...frames.map((frame) => frame.total), 1);
+  return { ...choice, frames: frames.map((frame) => ({ ...frame, ratio: Math.sqrt(frame.total / maximum) })) };
+});
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Compare the bubbles | AI Bubble</title>
+  </head>
+  <body>
+    <div class="compare-page">
+      <header class="site-header">
+        <a class="wordmark" href="/">Bubble</a>
+        <nav class="site-nav" aria-label="Sections">
+          <a class="nav-item" href="/">Explore</a>
+          <a class="nav-item" href="/past/dotcom/">Dot-com</a>
+          <a class="nav-item" href="/past/housing/">Housing</a>
+          <a class="nav-item nav-current" href="/compare/" aria-current="page">Compare</a>
+        </nav>
+      </header>
+      <main id="compare">
+        <h1>Compare the bubbles</h1>
+        <p class="intro">Total value: what all of these companies' shares were worth together.</p>
+        <div class="moment-control">
+          <p class="control-title">Moment</p>
+          <div class="segments" role="group" aria-label="Moment">
+            {choices.map((choice) => <button type="button" data-moment={choice.id} aria-pressed={choice.id === "peak"} aria-controls={`moment-${choice.id}`}>{choice.label}</button>)}
+          </div>
+          <p class="note">AI uses its latest date for the peak.<br />Untick a player to hide its circle.</p>
+        </div>
+        {panels.map((panel) => (
+          <div id={`moment-${panel.id}`} class="moment-panel" data-panel={panel.id} hidden={panel.id !== "peak"}>
+            <div class="desktop-players">
+              <p class="control-title">Players</p>
+              <div class="player-groups">
+                {panel.frames.map((frame) => (
+                  <fieldset class="players">
+                    <legend class="player-heading">{frame.name}</legend>
+                    {frame.players.map((entry) => (
+                      <label>
+                        <input type="checkbox" checked data-player={`${panel.id}-${frame.id}-${entry.company.id}`} />
+                        <span>{entry.company.name}</span><span class="amount">{formatTotal(entry.value)}</span>
+                      </label>
+                    ))}
+                  </fieldset>
+                ))}
+              </div>
+            </div>
+            <div class="frames" aria-live="polite">
+              {panel.frames.map((frame) => (
+                <section aria-label={frame.name}>
+                  <div class="stage">
+                    <div class="frame" style={`--ratio:${frame.ratio}`} role="img" aria-label={`${frame.name}, circles sized by recorded company value; total of companies with a value on this date ${formatTotal(frame.total)} on ${dayLabel(frame.date)}`}>
+                      {frame.circles.map((circle) => {
+                        const desktopDiameter = circle.r * 2 * 2.5 * frame.ratio;
+                        const phoneDiameter = circle.r * 2 * 3.18 * frame.ratio;
+                        const fits = (diameter: number) => diameter >= 22 && circle.company.name.length * 5.5 < diameter * 0.85;
+                        return (
+                          <div
+                            class:list={["company", circle.company.kind === "group" && "group"]}
+                            data-circle={`${panel.id}-${frame.id}-${circle.company.id}`}
+                            title={`${circle.company.name}: ${formatTotal(circle.value)} (${dayLabel(circle.point.date)}); ${circle.point.source}`}
+                            style={`left:${circle.x - circle.r}%;top:${circle.y - circle.r}%;width:${circle.r * 2}%;height:${circle.r * 2}%`}
+                          ><span class:list={["circle-label", !fits(desktopDiameter) && "no-desktop", !fits(phoneDiameter) && "no-phone"]}>{circle.company.name}</span></div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <div class="caption">
+                    <h2>{frame.name}</h2>
+                    <p>{formatTotal(frame.total)} on {dayLabel(frame.date)}</p>
+                    <p class="total-label">total of companies with a value on this date</p>
+                  </div>
+                  <div class="phone-players">
+                    <p class="control-title">Players</p>
+                    <fieldset class="players">
+                      <legend class="player-heading">{frame.name}</legend>
+                      {frame.players.map((entry) => (
+                        <label>
+                          <input type="checkbox" checked data-player={`${panel.id}-${frame.id}-${entry.company.id}`} />
+                          <span>{entry.company.name}</span><span class="amount">{formatTotal(entry.value)}</span>
+                        </label>
+                      ))}
+                    </fieldset>
+                  </div>
+                </section>
+              ))}
+            </div>
+            <div class="foot">
+              <p>Same area scale across all frames; values are US dollars, not adjusted for inflation. B = billion. T = trillion.</p>
+              <p>Peak uses the highest sum of the latest records available on each date; records between dates are carried forward. AI includes private-company valuations.</p>
+              {panel.frames.filter((frame) => frame.missing.length > 0).map((frame) => (
+                <p>No value in the data on {dayLabel(frame.date)} for: {listNames(frame.missing.map((company) => company.name))}.</p>
+              ))}
+            </div>
+          </div>
+        ))}
+      </main>
+    </div>
+    <script>
+      import "../scripts/compare.ts";
+    </script>
+  </body>
+</html>
