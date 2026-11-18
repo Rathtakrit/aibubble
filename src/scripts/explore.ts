@@ -433,7 +433,7 @@ function render(soon = false): void {
     button.setAttribute("aria-label", fitPlayers ? "Show the whole bubble" : "Zoom in to the players");
     button.querySelector("path")?.setAttribute("d", fitPlayers
       ? "M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"
-      : "M9 4H4v5M15 4h5v5M4 15v5h5M20 15h-5v5");
+      : "M4 9h5V4M20 9h-5V4M4 15h5v5M20 15h-5v5");
   }
 
   // The zoom buttons step through the reader's own zoom, and stop at the ends.
@@ -446,13 +446,14 @@ function render(soon = false): void {
 
   // The bubble follows the day; a chapter frames its players as a news item does, a chosen item
   // frames its players, a chosen company frames itself and the companies it has money lines
-  // with, and a plain day shows the whole frame.
+  // with, and a plain day shows the whole frame. In the whole state none of them frames: the
+  // button's state and the view stay the same.
   if (layoutsReady) {
     const players = storyChapter
       ? (fitPlayers ? storyChapter.players : [])
       : item && fitPlayers
         ? item.players
-        : company
+        : company && fitPlayers
           ? [company.id, ...partnersOf(company.id, day)]
           : [];
     for (const svg of document.querySelectorAll<SVGSVGElement>("[data-bubble]")) {
@@ -521,6 +522,7 @@ function leaveStory(date: string): void {
   chapterIndex = null;
   storyListOpen = false;
   itemId = null;
+  fitPlayers = false;
   zoomIndex = 1;
   day = date;
   render(true);
@@ -547,11 +549,13 @@ function selectItem(id: string): void {
 // also leaves the chapter, as Explore's own company panel does.
 function chooseCompany(id: string): void {
   if (!companyById.has(id)) return;
-  fitPlayers = true;
   chapterIndex = null;
   storyListOpen = false;
   companyId = companyId === id ? null : id;
   itemId = null;
+  // The button's state follows the view: a company open frames it, the quiet day shows the whole
+  // frame.
+  fitPlayers = companyId !== null;
   zoomIndex = 1;
   render();
 }
@@ -559,6 +563,7 @@ function chooseCompany(id: string): void {
 function clearCompany(): void {
   companyId = null;
   itemId = null;
+  fitPlayers = false;
   render();
 }
 
@@ -572,7 +577,9 @@ function step(direction: -1 | 1): void {
 
 function moveTo(date: string): void {
   day = date;
-  fitPlayers = true;
+  // Dragging the slider frames nothing, so the view is the whole frame and the button keeps
+  // the whole state until an item or a company is picked.
+  fitPlayers = false;
   itemId = null;
   zoomIndex = 1;
   render(true);
@@ -621,6 +628,7 @@ document.addEventListener("click", (event) => {
         chapterIndex = null;
         storyListOpen = false;
         itemId = null;
+        fitPlayers = false;
         render();
       } else {
         goToChapter(chapterIndex + 1);
@@ -720,6 +728,7 @@ function readAddress(): void {
     itemId = null;
     companyId = null;
     day = chapters[at].date;
+    fitPlayers = true;
     return;
   }
   const wantedId = params.get("news");
@@ -727,6 +736,7 @@ function readAddress(): void {
   if (wanted) {
     itemId = wanted.id;
     day = wanted.date;
+    fitPlayers = true;
     return;
   }
   const wantedDate = params.get("date");
@@ -741,6 +751,7 @@ function readAddress(): void {
     companyId = company.id;
     itemId = null;
     day = calendarDate ?? lastDate;
+    fitPlayers = true;
     return;
   }
   if (calendarDate) {
@@ -819,3 +830,26 @@ function placeTimelineLabels(): void {
 
 window.addEventListener("resize", placeTimelineLabels);
 document.fonts.ready.then(placeTimelineLabels, () => {});
+
+// The phone's map is sized from the visible area: the room above the bottom sheet, minus 12px on
+// each side, never wider than the window, and 560px at most; it is centred in that space. The
+// sheet grows and shrinks with its content, so the map is measured again whenever the sheet or
+// the window changes, never from a fixed pixel guess. Desktop is untouched: its map is hidden.
+function sizeMapBubble(): void {
+  const map = document.querySelector<HTMLElement>(".layout-phone");
+  const bubble = document.querySelector<HTMLElement>(".map-bubble");
+  const sheet = document.querySelector<HTMLElement>("[data-sheet]");
+  if (!map || !bubble || !sheet) return;
+  const mapBox = map.getBoundingClientRect();
+  const mapWidth = mapBox.width;
+  const sheetTop = sheet.getBoundingClientRect().top - mapBox.top;
+  const size = Math.max(0, Math.min(560, mapWidth - 24, sheetTop - 24));
+  bubble.style.width = `${size}px`;
+  bubble.style.left = `${(mapWidth - size) / 2}px`;
+  bubble.style.top = `${(sheetTop - size) / 2}px`;
+}
+
+sizeMapBubble();
+const mapSheet = document.querySelector<HTMLElement>("[data-sheet]");
+if (mapSheet) new ResizeObserver(sizeMapBubble).observe(mapSheet);
+window.addEventListener("resize", sizeMapBubble);
