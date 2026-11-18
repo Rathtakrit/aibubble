@@ -452,8 +452,7 @@ body[data-timeline-zoomed="true"] .timeline-dot[data-dot="small"] .dot {
   gap: 12px;
 }
 
-.timeline-row > .timeline-inner,
-.timeline-row > .sheet-timeline {
+.timeline-row > .timeline-inner {
   flex: 1 1 0;
   min-width: 0;
 }
@@ -479,11 +478,6 @@ body[data-timeline-zoomed="true"] .timeline-dot[data-dot="small"] .dot {
 .timeline-start:disabled {
   opacity: 0.45;
   cursor: default;
-}
-
-.timeline-zoom {
-  flex: 0 0 auto;
-  margin-top: 10px;
 }
 
 body:not([data-timeline-zoomed="true"]) [data-zoom-only="true"],
@@ -713,8 +707,8 @@ body:not([data-timeline-zoomed="true"]) [data-zoom-only="true"],
   color: var(--accent);
 }
 
-/* The sheet's lines sit close together so the panel, with its day line, buttons and the status
-   line, fits inside its 40dvh height without scrolling. The text sizes stay as they are. */
+/* The sheet's lines keep a small gap so each reads on its own; if the text runs taller than the
+   panel's 40dvh the sheet scrolls. The text sizes stay as they are. */
 .sheet-title {
   margin: 0;
   font-family: var(--font-serif);
@@ -730,37 +724,114 @@ body:not([data-timeline-zoomed="true"]) [data-zoom-only="true"],
   color: var(--text-body);
 }
 
-.pill-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px 10px;
-  margin-top: 0;
-  font-size: 13px;
-  color: var(--ink-2);
+/* The sheet's three dots: the news before this one, this one and the next, with an empty slot at
+   either end so the current dot keeps the middle. A side dot's half-line runs to the current dot,
+   so the line stops where there is no dot to join. */
+.sheet-steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin-top: 14px;
 }
 
-.sheet .pill {
-  padding: 2px 10px;
+.step-slot {
+  min-width: 0;
 }
 
-.sheet .pill-line {
-  width: 12px;
-}
-
-/* The day line in the bottom sheet: the slider with the date dots on it, no labels. */
-.sheet-timeline {
+.step-button {
   position: relative;
-  height: 44px;
-  margin-top: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
 }
 
-.sheet-timeline .timeline-axis {
-  top: 22px;
+.step-button[hidden] {
+  display: none;
 }
 
-.sheet-timeline .day-range {
-  top: 0;
+.step-button::before {
+  content: "";
+  position: absolute;
+  top: 24px;
+  border-top: 1px solid var(--ink);
+}
+
+.step-button[data-step="before"]::before {
+  left: 50%;
+  right: -100%;
+}
+
+.step-button[data-step="next"]::before {
+  right: 50%;
+  left: -100%;
+}
+
+/* Every dot keeps the label line, so the three dots stay on one level; only Now has words. */
+.step-now {
+  display: block;
+  height: 14px;
+  line-height: 14px;
+}
+
+.step-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 20px;
+}
+
+.step-dot {
+  box-sizing: border-box;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--ink-2);
+  border: 1.5px solid var(--paper);
+}
+
+.step-button[data-step="current"] .step-dot {
+  width: 16px;
+  height: 16px;
+  background: var(--accent);
+  box-shadow: 0 0 0 2px var(--ink);
+}
+
+.step-date {
+  margin-top: 2px;
+  font-size: 12px;
+  line-height: 1.2;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The open dock gives its lines room: tab row to kicker, kicker to title, title to summary,
+   summary to source, source to the three dots and dots to Earlier / Later. */
+.sheet > .sheet-kicker {
+  margin-top: 12px;
+}
+
+.sheet [data-block="item"] .sheet-title {
+  margin-top: 6px;
+}
+
+.sheet [data-block="item"] .summary {
+  margin-top: 8px;
+}
+
+.sheet [data-block="item"] .source {
+  --source-gap: 6px;
+}
+
+.sheet > .sheet-buttons {
+  margin-top: 12px;
 }
 
 .sheet-buttons {
@@ -1067,10 +1138,6 @@ body[data-mode="story"] .sheet .read-story {
   margin-top: 4px;
 }
 
-body[data-mode="story"] .sheet .sheet-timeline {
-  margin-top: 6px;
-}
-
 .sheet [data-block="story"] .chapter-text p {
   margin: 4px 0 10px;
   font-size: 14px;
@@ -1110,12 +1177,6 @@ body[data-mode="story"] .sheet .sheet-timeline {
 }
 
 /* --- desktop: news beside the bubble, one-line timeline below (layout B) --- */
-
-@media (max-width: 899px) {
-  .timeline-zoom {
-    display: none;
-  }
-}
 
 @media (min-width: 900px) {
   .layout-phone {

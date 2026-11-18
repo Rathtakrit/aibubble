@@ -35,6 +35,7 @@ import {
   inDateOrder,
   FIRST_DAY,
   latestOnOrBefore,
+  monthYear,
   neighbour,
   pillKind,
   placeLabels,
@@ -284,6 +285,11 @@ function namesOf(ids: readonly string[]): string {
   return ids.map((id) => nameOf.get(id) ?? id).join(", ");
 }
 
+// The label the sheet's dots and the timeline's dots carry for an item: its place, day and title.
+function ariaFor(id: string, itemTitle: string, date: string): string {
+  return `News ${place.get(id)} of ${ordered.length}: ${dayLabel(date)}, ${itemTitle}`;
+}
+
 // The companies on the company's money lines that day: the ones the camera frames with it.
 function partnersOf(id: string, date: string): string[] {
   const out: string[] = [];
@@ -474,7 +480,6 @@ function render(soon = false): void {
     setText("dock-title", item.title);
     setText("summary", item.summary);
     setText("names-desktop", namesOf(item.players));
-    setText("names-phone", namesOf(item.players));
     for (const line of document.querySelectorAll<HTMLElement>("[data-players-line]")) {
       line.hidden = item.players.length === 0;
     }
@@ -531,6 +536,21 @@ function render(soon = false): void {
   }
   for (const button of document.querySelectorAll<HTMLButtonElement>('[data-action="timeline-start"]')) {
     button.disabled = at === 0;
+  }
+
+  // The sheet's three dots: the news before the anchor, the anchor and the news after it. At
+  // either end of the set the slot stays empty, so the current dot keeps the middle.
+  const beforeStep = anchor ? neighbour(ordered, anchor.id, -1) : null;
+  const nextStep = anchor ? neighbour(ordered, anchor.id, 1) : null;
+  for (const button of document.querySelectorAll<HTMLButtonElement>("[data-step]")) {
+    const which = button.dataset.step;
+    const target = which === "before" ? beforeStep : which === "next" ? nextStep : anchor;
+    button.hidden = target === null;
+    if (target === null) continue;
+    button.dataset.news = target.id;
+    button.setAttribute("aria-label", ariaFor(target.id, target.title, target.date));
+    const date = button.querySelector<HTMLElement>(".step-date");
+    if (date) date.textContent = monthYear(target.date);
   }
 
   // The one focus toggle: in the whole state pressing it focuses on the players, in the players
