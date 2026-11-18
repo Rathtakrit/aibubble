@@ -599,12 +599,108 @@ body:not([data-timeline-zoomed="true"]) [data-zoom-only="true"],
   box-shadow: 0 -10px 24px color-mix(in srgb, var(--ink) 10%, transparent);
 }
 
+/* The handle has a row of its own at the very top of the sheet, about 20px tall with the bar
+   centred, so no grip sits on the panel's edge. The whole row is the button's hit area, and the
+   row takes the pointer's moves for the drag; nothing else in the sheet does. */
+.sheet-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-width: 44px;
+  height: 20px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  touch-action: none;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.sheet.is-dragging .sheet-handle {
+  cursor: grabbing;
+}
+
 .grabber {
   width: 36px;
   height: 4px;
-  margin: 0 auto;
   border-radius: 2px;
   background: var(--rule);
+  pointer-events: none;
+}
+
+/* The docked sheet: the handle, the tab pill and one line with the news title, ellipsed, beside
+   the compact Earlier / Later arrows. The rest of the panel waits until it is open again. */
+.sheet[data-sheet-state="docked"] {
+  /* The panel is as tall as its three rows and no taller; on a very short screen that is a few
+     pixels over 40%, and the rows are the smallest they can be with 44px arrows. */
+  max-height: none;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.sheet[data-sheet-state="docked"] > :not(.sheet-handle):not(.mode-switch):not(.dock-row) {
+  display: none;
+}
+
+.sheet[data-sheet-state="docked"] .mode-switch {
+  margin-bottom: 8px;
+}
+
+.dock-row {
+  display: none;
+  align-items: center;
+  gap: 8px;
+}
+
+.sheet[data-sheet-state="docked"] .dock-row {
+  display: flex;
+}
+
+.dock-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-family: var(--font-serif);
+  font-size: 16px;
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+.dock-button {
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid var(--ink);
+  background: transparent;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.dock-button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* While the handle is dragged, and while the sheet settles, the panel's own scrolling waits so
+   its height is the only thing moving. */
+.sheet.is-dragging,
+.sheet.is-snapping {
+  overflow: hidden;
+}
+
+.sheet.is-snapping {
+  transition: height 200ms ease;
 }
 
 .sheet-kicker {
@@ -1556,6 +1652,10 @@ body[data-mode="story"] .sheet .sheet-timeline {
   .dot,
   .bubble,
   .bubble-arrow {
+    transition: none;
+  }
+
+  .sheet.is-snapping {
     transition: none;
   }
 }

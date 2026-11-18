@@ -540,7 +540,15 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
       </div>
 
       <section class="sheet" aria-label="News item" data-sheet>
-        <div class="grabber" aria-hidden="true"></div>
+        <button
+          type="button"
+          class="sheet-handle"
+          data-sheet-handle
+          aria-expanded="true"
+          aria-label="Show less"
+        >
+          <span class="grabber" aria-hidden="true"></span>
+        </button>
         <nav class="mode-switch" aria-label="Bubbles">
           <a
             class:list={["mode-button", !isPast && "nav-current"]}
@@ -571,6 +579,12 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
             </div>
           )
         }
+        <div class="dock-row">
+          <p class="dock-title" data-bind="dock-title">{current.title}</p>
+          <button type="button" class="dock-button" data-action="earlier" aria-label="Earlier">←</button>
+          <button type="button" class="dock-button" data-action="later" aria-label="Later">→</button>
+        </div>
+
         <p class="sheet-kicker explore-only" data-bind="kicker-phone">
           News {position} of {count} · {dayLabel(current.date)}
         </p>
