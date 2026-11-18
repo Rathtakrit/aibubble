@@ -129,6 +129,23 @@ export function timelineScale(lastDate: string, dots: ScaleDots): TimelineScale 
   return { percentOf, dateOf };
 }
 
+// The overview uses calendar time, independent of the weighted, zoomed news line.
+export function timelineStrip(first: string, last: string): TimelineScale & {
+  bracket(start: string, end: string): { left: number; width: number };
+} {
+  const start = midnight(first);
+  const duration = Math.max(DAY_MS, midnight(last) - start);
+  const percentOf = (date: string) => clamp(0, ((midnight(date) - start) / duration) * 100, 100);
+  return {
+    percentOf,
+    dateOf: (percent) => new Date(start + Math.round(clamp(0, percent, 100) / 100 * duration / DAY_MS) * DAY_MS).toISOString().slice(0, 10),
+    bracket: (firstDate, lastDate) => {
+      const left = percentOf(firstDate);
+      return { left, width: Math.max(0, percentOf(lastDate) - left) };
+    },
+  };
+}
+
 export type TimelineWindow = { start: number; middle: number; end: number; ids: string[] };
 
 // Keep up to three neighbours on either side, shifting the window at the ends to retain seven.
