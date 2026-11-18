@@ -60,20 +60,39 @@ export function fitView(bubbles: Bubble[], playerIds: string[], manual: number):
   return { cx: 50 + (bx - 50) * pull, cy: 50 + (by - 50) * pull, z };
 }
 
-// After a burst, fit the cluster's enclosing circle to the layout's padded round frame.
-// The player camera's 56-unit square target would leave the cluster barely half as wide.
+export type PeakDay = { date: string; total: number };
+
+// Scan calendar days, including the burst day. Ties keep the first peak day.
+export function peakDay(first: string, burstDate: string, totalAt: (date: string) => number): PeakDay {
+  let peak = { date: first, total: totalAt(first) };
+  for (let time = Date.parse(`${first}T00:00:00Z`) + 86_400_000;
+    time <= Date.parse(`${burstDate}T00:00:00Z`); time += 86_400_000) {
+    const date = new Date(time).toISOString().slice(0, 10);
+    const total = totalAt(date);
+    if (total > peak.total) peak = { date, total };
+  }
+  return peak;
+}
+
+export function ringRatio(totalToday: number, totalAtPeak: number): number {
+  return totalAtPeak > 0 ? Math.sqrt(Math.max(0, totalToday) / totalAtPeak) : 0;
+}
+
+// After a burst, keep the peak cluster's scale while following today's cluster centre.
 export function dayView(
   bubbles: Bubble[],
   playerIds: string[],
   manual: number,
   date: string,
   burstDate?: string,
+  peakBubbles: Bubble[] = bubbles,
 ): CameraView {
-  if (burstDate === undefined || date < burstDate || bubbles.length === 0) {
+  if (burstDate === undefined || date < burstDate || peakBubbles.length === 0) {
     return fitView(bubbles, playerIds, manual);
   }
-  const circle = enclosingCircle(bubbles);
-  const autoZ = Math.max(MIN_ZOOM, FRAME.fitRadius / circle.r);
+  const circle = bubbles.length > 0 ? enclosingCircle(bubbles) : enclosingCircle(peakBubbles);
+  const peakCircle = enclosingCircle(peakBubbles);
+  const autoZ = Math.max(MIN_ZOOM, FRAME.fitRadius / peakCircle.r);
   // Keep zoom buttons relative to the fitted cluster, even if it needs more than the player cap.
   const z = clamp(MIN_ZOOM, autoZ * manual, Math.max(MAX_ZOOM, autoZ * ZOOMS[ZOOMS.length - 1]));
   return { cx: circle.x, cy: circle.y, z };
