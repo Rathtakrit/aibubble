@@ -253,7 +253,7 @@
   color: var(--ink);
 }
 
-/* The value on the chosen day, in the serif like the date; then the line that explains the kind
+/* The value on the chosen day, in the serif like the heading; then the line that explains the kind
    of value in plain words, and the quiet source line under it. */
 .company-value {
   margin: 4px 0 0;
@@ -299,12 +299,6 @@
   font-family: inherit;
   text-align: left;
   cursor: pointer;
-}
-
-.company-news-date {
-  display: block;
-  font-size: 13px;
-  color: var(--ink-2);
 }
 
 .company-news-title {
@@ -705,6 +699,11 @@ body:not([data-timeline-zoomed="true"]) [data-zoom-only="true"],
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--accent);
+}
+
+.kicker.boom-kicker,
+.sheet-kicker.boom-kicker {
+  text-transform: none;
 }
 
 /* The sheet's lines keep a small gap so each reads on its own; if the text runs taller than the
@@ -1277,16 +1276,27 @@ body[data-mode="story"] .sheet .read-story {
     color: var(--accent);
   }
 
-  .big-date {
+  .big-heading {
     margin: 0;
     font-family: var(--font-serif);
+    font-weight: 400;
     font-size: clamp(52px, 6vw, 84px);
     line-height: 0.92;
     letter-spacing: -0.02em;
+    overflow-wrap: anywhere;
+  }
+
+  .big-heading .latest-button {
+    font: inherit;
+    letter-spacing: inherit;
   }
 
   .story-column .pill {
     margin-top: 18px;
+  }
+
+  .story-column [data-block="item"] .pill {
+    margin-bottom: 10px;
   }
 
   .headline {
@@ -1328,7 +1338,7 @@ body[data-mode="story"] .sheet .read-story {
   }
 
   /* The company panel keeps its news inside the column, so the timeline keeps its place: the list
-     takes the room the window has left over after the header, the date, the panel's own lines and
+     takes the room the window has left over after the header, the panel's own lines and
      the timeline, and scrolls inside it. */
   .story-column .company-news {
     max-height: min(32vh, calc(100vh - 700px));
@@ -1339,20 +1349,22 @@ body[data-mode="story"] .sheet .read-story {
     margin: 18px 0 0;
   }
 
-  /* The bubble is a square, and everything else on the page has to stay in view without
-     scrolling: the header, the padding, the two lines under the bubble and the timeline take
-     380px plus the compact lower-label band, so the bubble gives back the remaining height.
-     The room comes from the space above the date and around the bubble, not from the text. */
+  /* Leave room for the header, padding, caption, legend and timeline around the square. */
   .bubble-column {
     /* The zoom buttons stand in a strip of their own beside the square, 10px clear of it, so the
        frame's circle is never under them however small the window makes the bubble. The column is
        the square plus that strip; the square keeps the size the window's height allows. */
     --zoom-strip: 56px;
+    --caption-extra: 0px;
     flex: 1 1 560px;
     min-width: 0;
-    max-width: min(calc(680px + var(--zoom-strip)), calc(100vh - 380px - var(--timeline-extra) + var(--zoom-strip)));
-    max-width: min(calc(680px + var(--zoom-strip)), calc(100dvh - 380px - var(--timeline-extra) + var(--zoom-strip)));
+    max-width: min(calc(680px + var(--zoom-strip)), calc(100vh - 380px - var(--caption-extra) - var(--timeline-extra) + var(--zoom-strip)));
+    max-width: min(calc(680px + var(--zoom-strip)), calc(100dvh - 380px - var(--caption-extra) - var(--timeline-extra) + var(--zoom-strip)));
     margin: 0 auto;
+  }
+
+  body[data-dataset="ai"] .bubble-column {
+    --caption-extra: 18px;
   }
 
   .bubble-wrap {
@@ -1608,7 +1620,7 @@ body[data-mode="story"] .sheet .read-story {
     flex: 0 0 auto;
   }
 
-  /* Inside the column the kicker, the date and, in the block, the title, the sample note, the
+  /* Inside the column the kicker and, in the block, the title, the sample note, the
      players line, the buttons and "Read the story" keep their natural height; the chapter text is
      the only part that grows into the leftover room and shrinks below its content to scroll. */
   body[data-mode="story"] .story-column [data-block="story"]:not([hidden]) {
