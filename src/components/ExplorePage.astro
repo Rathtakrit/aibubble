@@ -209,7 +209,9 @@ const ariaFor = (itemTitle: string, date: string) => `${dayLabel(date)}, ${itemT
             )
           }
           <div data-block="item">
-            <h1 class="big-heading" data-bind="title">{current.title}</h1>
+            <h1 class="big-heading" data-bind="title" data-long-heading={current.title.length > 34 ? "" : undefined}>
+              {current.title}
+            </h1>
             <span class:list={["pill", `pill-${pillColour}`]} data-bind="pill"
               ><span class="pill-line" aria-hidden="true"></span
               ><span data-bind="pill-label">{pillName}</span></span
@@ -232,7 +234,7 @@ const ariaFor = (itemTitle: string, date: string) => `${dayLabel(date)}, ${itemT
 
           <div data-block="quiet" hidden>
             <p class="latest-label">Latest before this day:</p>
-            <h1 class="big-heading">
+            <h1 class="big-heading" data-long-heading={current.title.length > 34 ? "" : undefined}>
               <button type="button" class="latest-button" data-action="latest" data-bind="latest-title"
                 >{current.title}</button
               >
