@@ -1,33 +1,37 @@
-# AI Bubble
+# The Bubble
 
-<!-- DRAFT for the owner to rewrite. Lines starting "<!-- YOU:" are prompts for your own words; delete them after. -->
-
-**How did a few companies come to be worth trillions on the promise of AI?** This site draws it: every company is a
-bubble sized by its value, and arrows show the money moving between them, day by day since June 2017.
-
-<!-- YOU: one or two sentences on why you made this. What made you want to see it drawn? -->
+Have you ever wanted to see an economic bubble take shape? This site visualises
+three of them—AI, dot-com and housing—and shows how the companies, deals and
+news connect over time.
 
 **See it live:** https://will-it-pop.rathtakrit.workers.dev
 
-![The AI bubble on 12 November 2026: Nvidia at $4.0 trillion fills the frame, with the news of the day beside it](docs/screenshots/desktop.png)
+![The latest AI bubble view on desktop, with Nvidia at $4.0 trillion and the day's news beside it](docs/screenshots/desktop.png)
+
+The site also works on phones:
+
+<img src="docs/screenshots/phone.png" alt="The latest AI bubble view on a phone" width="300">
 
 ## What you can do
 
-| | |
+| Try | How? |
 |---|---|
-| **Scrub through time** | Drag the timeline or tap a dot to jump to a day. The bubble resizes and the news card explains what happened. |
-| **Follow the money** | Arrows show investments (blue), cloud deals (orange) and chip deals (teal), each with its source. |
-| **Compare past bubbles** | The dot-com bubble (burst 10 March 2000) and the housing bubble (burst 15 September 2008) sit beside it as tabs. |
+| **Scrub through time** | Drag the timeline or select a date to see the bubble and its news change. |
+| **Follow the money** | Arrows show investments, cloud deals and chip deals, each with its source. |
+| **Compare bubbles** | Compare AI, dot-com and housing values in the comparison view. |
+| **Zoom into the map** | Focus on the players to inspect the companies and money flows. |
 
-<img src="docs/screenshots/phone.png" alt="The same day on a phone: the bubble on top, the news card and timeline below" width="260" align="right">
+### See it in action
 
-It works on a phone too.
+| Interaction | Preview |
+|---|---|
+| Compare bubbles | ![Comparing bubbles](docs/screenshots/compare.gif) |
+| Scrub the timeline | ![Scrubbing the timeline](docs/screenshots/timeline.gif) |
+| Zoom into the money flows | ![Zooming into the money flows](docs/screenshots/zoom.gif) |
 
-<!-- YOU: anything you want readers to notice first: a day worth jumping to, a surprise in the data. -->
+This is an explainer for learning and exploration, not financial advice. It
+does not tell you to buy or sell, and it does not predict prices.
 
-This is an explainer, not investment advice. It never says buy or sell and never predicts prices.
-
-<br clear="right">
 
 ## Where the numbers come from
 
@@ -53,16 +57,16 @@ npm run dev     # start a local copy; open the address it prints
 npm run check   # data checks, tests and a production build
 ```
 
-Built with [Astro](https://astro.build) and TypeScript. Page code is in `src/`, the plan and every design decision in
-[`docs/briefs/2026-11-15-aibubble.md`](docs/briefs/2026-11-15-aibubble.md), the design in `design/`.
+Built with [Astro](https://astro.build) and TypeScript. Page code is in `src/`,
+the plan and design decisions are in
+[`docs/briefs/2026-11-15-aibubble.md`](docs/briefs/2026-11-15-aibubble.md),
+and the design files are in `design/`.
 
 ## How it's made
 
-<!-- YOU: a line on how you work with AI here, in your own words, if you want it public. -->
-
-An AI coding agent works through issues labeled `night` overnight (`.github/workflows/night-shift.yml`), one pull
-request per issue. Every change is reviewed and merged by the owner, and nothing AI-written goes live without that.
-Off switch: Actions → **night-shift** → **...** → **Disable workflow**. Variable `NIGHT_SHIFT_MODEL`; secrets
-`GATEWAY_URL`, `NIGHT_GATEWAY_KEY`, `TS_OAUTH_CLIENT_ID`, `TS_OAUTH_SECRET`.
+This project is also a test of an AI coding-agent workflow. Some features and
+fixes run overnight without supervision and are checked in pull requests.
+Anyone can contribute by opening an issue or submitting a pull request. The
+data will be updated as new information about the bubbles becomes available.
 
 Rules for anyone (or any agent) changing this repo: [`AGENTS.md`](AGENTS.md).
