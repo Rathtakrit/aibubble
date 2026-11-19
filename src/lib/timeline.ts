@@ -32,6 +32,11 @@ export function dateAt(index: number): string {
   return new Date(midnight(FIRST_DAY) + index * DAY_MS).toISOString().slice(0, 10);
 }
 
+// Dates are YYYY-MM-DD, so they sort in calendar order.
+export function snapToFirstItemDate(date: string, firstItemDate: string): string {
+  return date < firstItemDate ? firstItemDate : date;
+}
+
 // --- the day scale: busy months get more room, empty ones less ---
 
 // Every dot on the line, split by the colour it is drawn in: a red key date earns its month more

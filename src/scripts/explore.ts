@@ -38,6 +38,7 @@ import {
   pillKind,
   placeLabels,
   publisherName,
+  snapToFirstItemDate,
   stepDateLabel,
   type LabelRect,
   timelineScale,
@@ -673,14 +674,27 @@ function openStoryList(open: boolean): void {
   focusVisible(open ? '[data-action="story-close"]' : '[data-action="story-open"]');
 }
 
-function selectItem(id: string): void {
-  const item = byId.get(id);
-  if (!item) return;
+function setItem(item: NewsItem): void {
   itemId = item.id;
   companyId = null;
   day = item.date;
   resetZoom(true);
+}
+
+function selectItem(id: string): void {
+  const item = byId.get(id);
+  if (!item) return;
+  setItem(item);
   render();
+}
+
+function snapToFirstItem(date: string): boolean {
+  const first = ordered[0];
+  if (!first || snapToFirstItemDate(date, first.date) === date) return false;
+  chapterIndex = null;
+  storyListOpen = false;
+  setItem(first);
+  return true;
 }
 
 // A bubble opens its company; the same company again, or Back, goes to the quiet day. In Story it
@@ -795,6 +809,10 @@ document.addEventListener("keydown", (event) => {
 // One step of the value is not one day, so Left and Right (and Up and Down) move a day and Home
 // and End jump to the first and last day, handled here rather than by the browser.
 function sliderTo(date: string): void {
+  if (snapToFirstItem(date)) {
+    render(true);
+    return;
+  }
   const chapterAt = chapters.findIndex((chapter) => chapter.date === date);
   if (chapterIndex !== null && chapterAt >= 0) {
     goToChapter(chapterAt);
@@ -810,6 +828,11 @@ function sliderTo(date: string): void {
 for (const slider of document.querySelectorAll<HTMLInputElement>("[data-strip-slider]")) {
   const jump = (percent: number) => {
     const date = strip.dateOf(percent);
+    if (snapToFirstItem(date)) {
+      timelineZoomed = true;
+      render();
+      return;
+    }
     const nearest = timelineEvents.reduce<NewsItem | null>((best, item) =>
       !best || Math.abs(Date.parse(item.date) - Date.parse(date)) < Math.abs(Date.parse(best.date) - Date.parse(date)) ? item : best, null);
     if (!nearest) return;
@@ -1070,6 +1093,7 @@ function readAddress(): void {
     wantedDate && /^\d{4}-\d{2}-\d{2}$/.test(wantedDate) && !Number.isNaN(Date.parse(wantedDate))
       ? dateAt(Math.min(lastDay, Math.max(0, dayIndex(wantedDate))))
       : null;
+  if (calendarDate && snapToFirstItem(calendarDate)) return;
   const wantedCompany = params.get("company");
   const company = wantedCompany ? companyById.get(wantedCompany) : undefined;
   if (company) {
