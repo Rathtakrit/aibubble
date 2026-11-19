@@ -156,12 +156,9 @@ const firstChapterNames = firstChapter
 // the files again.
 const chaptersJson = isPast ? "" : JSON.stringify(chapters).replace(/</g, "\\u003c");
 
-const statusLine =
-  setStatus === "sample"
-    ? "Sample data, for testing only."
-    : setStatus === "draft"
-      ? "Draft data: researched, not yet checked by the owner."
-      : "";
+// A sample set says so. Any other set carries no sentence of its own; the Report a problem link
+// below shows on every set either way.
+const statusLine = setStatus === "sample" ? "Sample data, for testing only." : "";
 const ariaFor = (itemTitle: string, date: string) => `${dayLabel(date)}, ${itemTitle}`;
 ---
 
@@ -513,7 +510,7 @@ const ariaFor = (itemTitle: string, date: string) => `${dayLabel(date)}, ${itemT
             </button>
           </div>
         </div>
-        {statusLine && <p class="status">{statusLine} <a href="https://github.com/Rathtakrit/aibubble/issues/new/choose">Report a problem</a></p>}
+        <p class="status">{statusLine && `${statusLine} `}<a href="https://github.com/Rathtakrit/aibubble/issues/new/choose">Report a problem</a></p>
       </section>
     </div>
 
@@ -720,7 +717,7 @@ const ariaFor = (itemTitle: string, date: string) => `${dayLabel(date)}, ${itemT
           <button type="button" class="button button-primary" data-action="later">Later →</button>
         </div>
 
-        {statusLine && <p class="status">{statusLine} <a href="https://github.com/Rathtakrit/aibubble/issues/new/choose">Report a problem</a></p>}
+        <p class="status">{statusLine && `${statusLine} `}<a href="https://github.com/Rathtakrit/aibubble/issues/new/choose">Report a problem</a></p>
       </section>
     </div>
 
