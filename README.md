@@ -1,36 +1,24 @@
 # The Bubble
 
-Have you ever wanted to see an economic bubble take shape? This site visualises
-three of them—AI, dot-com and housing—and shows how the companies, deals and
-news connect over time.
+
+**Everyone kept saying about the AI bubble, but have anyone actually see it?**
+The site was created with a sole purpose of visualizing three economic bubbles: AI, Dot-com, and Housing. How each story connects and ties together in a simple way.
+
 
 **See it live:** https://will-it-pop.rathtakrit.workers.dev
 
-![The latest AI bubble view on desktop, with Nvidia at $4.0 trillion and the day's news beside it](docs/screenshots/desktop.png)
 
-The site also works on phones:
-
-<img src="docs/screenshots/phone.png" alt="The latest AI bubble view on a phone" width="300">
 
 ## What you can do
 
-| Try | How? |
+| Try| How?|
 |---|---|
-| **Scrub through time** | Drag the timeline or select a date to see the bubble and its news change. |
-| **Follow the money** | Arrows show investments, cloud deals and chip deals, each with its source. |
-| **Compare bubbles** | Compare AI, dot-com and housing values in the comparison view. |
-| **Zoom into the map** | Focus on the players to inspect the companies and money flows. |
+| **Scrub through time** | Drag the timeline or tap a dot to jump to a day. The bubble resizes and the news card explains what happened. |
+| **Follow the money** | Arrows show investments (blue), cloud deals (orange) and chip deals (teal), each with its source. |
+| **Compare past bubbles** | The dot-com bubble (burst 10 March 2000) and the housing bubble (burst 15 September 2008) sit beside it as tabs. |
 
-### See it in action
 
-| Interaction | Preview |
-|---|---|
-| Compare bubbles | ![Comparing bubbles](docs/screenshots/compare.gif) |
-| Scrub the timeline | ![Scrubbing the timeline](docs/screenshots/timeline.gif) |
-| Zoom into the money flows | ![Zooming into the money flows](docs/screenshots/zoom.gif) |
-
-This is an explainer for learning and exploration, not financial advice. It
-does not tell you to buy or sell, and it does not predict prices.
+This project is created for fun. Not a financial advice. Do not take anything for granted as there may be mistake.
 
 
 ## Where the numbers come from
@@ -57,16 +45,11 @@ npm run dev     # start a local copy; open the address it prints
 npm run check   # data checks, tests and a production build
 ```
 
-Built with [Astro](https://astro.build) and TypeScript. Page code is in `src/`,
-the plan and design decisions are in
-[`docs/briefs/2026-11-15-aibubble.md`](docs/briefs/2026-11-15-aibubble.md),
-and the design files are in `design/`.
+Built with [Astro](https://astro.build) and TypeScript. Page code is in `src/`, the plan and every design decision in
+[`docs/briefs/2026-11-15-aibubble.md`](docs/briefs/2026-11-15-aibubble.md), the design in `design/`.
 
 ## How it's made
 
-This project is also a test of an AI coding-agent workflow. Some features and
-fixes run overnight without supervision and are checked in pull requests.
-Anyone can contribute by opening an issue or submitting a pull request. The
-data will be updated as new information about the bubbles becomes available.
+This project is a bench test for AI coding agent system that is developing. Some features and fixes run overnight without supervision. For any more news in the AI bubbles, the dev will try to update.
 
 Rules for anyone (or any agent) changing this repo: [`AGENTS.md`](AGENTS.md).
