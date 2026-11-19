@@ -3,7 +3,7 @@
 import test from "node:test";
 // @ts-expect-error node:assert has no types in this repo
 import assert from "node:assert";
-import { clampPan, dayView, fitView, panView, peakDay, ringRatio, sceneTransform } from "./camera.ts";
+import { clampPan, dayView, fitView, panView, peakDay, ringRatio, sceneTransform, zoomBy } from "./camera.ts";
 import { bubblesForDate, enclosingCircle, FRAME, totalForDate } from "./layout.ts";
 import type { Bubble } from "./layout.ts";
 import { burst, useDataset } from "./data.ts";
@@ -69,15 +69,16 @@ test("players at opposite ends of the frame still both fit", () => {
   assert.ok(inside(square, players[1]), "the second player is cut off");
 });
 
-test("the manual factor multiplies the zoom within the 1..4 clamp", () => {
+test("the manual factor multiplies the zoom within the 1..6 clamp", () => {
   const one = [bubble("a", 30, 40, 2)];
   assert.equal(fitView(one, ["a"], 1).z, 3.2);
-  assert.equal(fitView(one, ["a"], 2).z, 4);
+  assert.equal(fitView(one, ["a"], 2).z, 6);
   assert.equal(fitView(one, ["a"], 0.5).z, 1.6);
 
   const none = [bubble("a", 30, 40, 2)];
   assert.equal(fitView(none, [], 2).z, 2);
   assert.equal(fitView(none, [], 4).z, 4);
+  assert.equal(fitView(none, [], 10).z, 6);
   assert.equal(fitView(none, [], 0.4).z, 1);
 });
 
@@ -166,6 +167,43 @@ test("the scene transform puts the camera point at the centre", () => {
   const point = moved(sceneTransform(view), view.cx, view.cy);
   assert.ok(Math.abs(point.x - 50) < 0.01, `x is ${point.x}, not 50`);
   assert.ok(Math.abs(point.y - 50) < 0.01, `y is ${point.y}, not 50`);
+});
+
+// What a zoom keeps put: the scene point the reader points at, checked through the transform.
+function pointUnder(transform: string, frameX: number, frameY: number): { x: number; y: number } {
+  const numbers = (transform.match(/-?\d+(\.\d+)?/g) ?? []).map(Number);
+  const [tx, ty, z] = numbers;
+  return { x: (frameX - tx) / z, y: (frameY - ty) / z };
+}
+
+test("zoomBy multiplies the zoom and keeps the pointer's scene point still", () => {
+  const view = fitView([bubble("a", 30, 40, 2)], ["a"], 1); // z 3.2 on (30, 40)
+  for (const factor of [1.5, 1 / 1.5]) {
+    const zoomed = zoomBy(view, factor, { x: 60, y: 30 });
+    assert.ok(Math.abs(zoomed.z - view.z * factor) < 1e-9, `z is ${zoomed.z}`);
+    // The scene point that sat under the pointer sits there again after the zoom.
+    // The transform rounds to three decimals, so the point stays still within a pixel.
+    const before = pointUnder(sceneTransform(view), 60, 30);
+    const after = pointUnder(sceneTransform(zoomed), 60, 30);
+    assert.ok(Math.abs(after.x - before.x) < 0.01 && Math.abs(after.y - before.y) < 0.01, "the point under the pointer moved");
+  }
+});
+
+test("zoomBy clamps the zoom between the floor and 6, and zooms at the centre by default", () => {
+  const view = { cx: 50, cy: 50, z: 3 };
+  assert.equal(zoomBy(view, 4).z, 6, "the zoom caps at 6");
+  assert.equal(zoomBy(view, 100).z, 6);
+  assert.deepEqual(zoomBy(view, 100), { cx: 50, cy: 50, z: 6 }, "a centre zoom does not move the centre");
+  assert.equal(zoomBy(view, 1 / 8).z, 1, "the zoom floors at 1");
+  assert.equal(zoomBy({ cx: 40, cy: 40, z: 2 }, 1 / 4, { x: 50, y: 50 }, { x: 50, y: 50 }, 2).z, 2);
+});
+
+test("zoomBy moves the camera so a pinch that drifts its midpoint keeps the point under it", () => {
+  const view = { cx: 40, cy: 40, z: 2 };
+  const zoomed = zoomBy(view, 2, { x: 60, y: 30 }, { x: 70, y: 40 });
+  const before = pointUnder(sceneTransform(view), 60, 30);
+  const after = pointUnder(sceneTransform(zoomed), 70, 40);
+  assert.ok(Math.abs(after.x - before.x) < 1e-9 && Math.abs(after.y - before.y) < 1e-9, "the pinch point moved");
 });
 
 test("the pan moves where the camera looks, in the bubble's own units", () => {

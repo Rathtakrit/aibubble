@@ -25,9 +25,8 @@ const FADE_MS = 700;
 const FAINT = "0.45";
 const DIM = "0.38";
 
-// A small bubble still gets at least this much radius on screen, so it is easy to tap:
-// about 44px across at the usual size of the bubble.
-const HIT_RADIUS = 3.4;
+// Minimum hit radius in CSS pixels, not in the viewBox or scene.
+const HIT_RADIUS = 22;
 
 // The small arrowhead at the end of a strong line.
 const HEAD_LENGTH = 1.4;
@@ -99,6 +98,8 @@ type Drawing = {
   bubbles: Map<string, LiveBubble>;
   arrows: Map<string, LiveArrow>;
   zoom: number;
+  pixelsPerUnit: number;
+  day: string;
   players: Set<string>;
   // The company whose panel is open, if any: its own ring and money lines.
   focus: string | null;
@@ -218,6 +219,25 @@ function ensureScene(
     svg.appendChild(ring);
   }
 
+  if (!svg.querySelector(".bubble-drop")) {
+    const id = `bubble-peak-arc-${svg.dataset.bubble}`;
+    const arc = el<SVGPathElement>("path");
+    arc.id = id;
+    // Run clockwise along the upper-right edge, just inside the dots.
+    arc.setAttribute("d", "M 66.07 5.84 A 47 47 0 0 1 96.82 45.90");
+    defs.appendChild(arc);
+    const text = el<SVGTextElement>("text");
+    text.setAttribute("class", "bubble-drop");
+    text.setAttribute("aria-hidden", "true");
+    text.setAttribute("dy", "0.85em");
+    const label = el<SVGTextPathElement>("textPath");
+    label.setAttribute("href", `#${id}`);
+    label.setAttribute("startOffset", "50%");
+    label.setAttribute("text-anchor", "middle");
+    text.appendChild(label);
+    svg.appendChild(text);
+  }
+
   if (!svg.querySelector("circle.bubble-real-ring")) {
     const realRing = el<SVGCircleElement>("circle");
     realRing.setAttribute("class", "bubble-real-ring");
@@ -253,8 +273,7 @@ function createBubbleNode(bubble: Bubble): BubbleNode {
   const title = el<SVGTitleElement>("title");
   group.appendChild(title);
 
-  // A transparent circle under the bubble, at least HIT_RADIUS / zoom wide on screen, so a
-  // small company is still easy to hit.
+  // A transparent circle under the visible bubble makes small companies easier to tap.
   const hit = el<SVGCircleElement>("circle");
   hit.setAttribute("class", "bubble-hit");
   hit.style.fill = "transparent";
@@ -322,7 +341,7 @@ function paintBubble(live: LiveBubble, drawing: Drawing): void {
 
   hit.setAttribute("cx", fixed(x));
   hit.setAttribute("cy", fixed(y));
-  hit.setAttribute("r", fixed(Math.max(r, HIT_RADIUS / zoom)));
+  hit.setAttribute("r", String(Math.max(r, HIT_RADIUS / (zoom * drawing.pixelsPerUnit))));
   node.group.setAttribute("aria-label", `${bubble.name}, ${formatValue(bubble.value)}: show its news`);
   title.textContent = `${bubble.name}, ${formatValue(bubble.value)}`;
 
@@ -733,6 +752,8 @@ export type BubbleOptions = {
   pan?: Pan;
   burstDate?: string;
   peak?: PeakDay;
+  changeFromPeak?: string;
+  immediate?: boolean;
 };
 
 export function renderBubble(
@@ -761,6 +782,17 @@ export function renderBubble(
   const shown = panView(view, clampPan(view, options.pan ?? { dx: 0, dy: 0 }));
 
   const { bubbleLayer, arrowLayer, scene } = ensureScene(svg);
+  scene.style.transition = options.immediate ? "none" : cameraTransition();
+  scene.style.transform = sceneTransform(shown);
+
+  const existing = drawings.get(svg);
+  if (options.immediate && existing?.day === date && existing.focus === focus
+    && existing.players.size === players.size && [...players].every((id) => existing.players.has(id))) {
+    existing.zoom = view.z;
+    paintAll(existing);
+    return;
+  }
+
   const ring = svg.querySelector<SVGCircleElement>("circle.bubble-frame")!;
   const afterBurst = options.burstDate !== undefined && date >= options.burstDate;
   ring.classList.toggle("burst", afterBurst);
@@ -771,7 +803,11 @@ export function renderBubble(
   const radius = options.peak
     ? FRAME.radius * ringRatio(totalForDate(date), options.peak.total)
     : FRAME.radius;
-  let drawing = drawings.get(svg);
+  const drop = svg.querySelector<SVGTextElement>(".bubble-drop")!;
+  const showDrop = afterBurst && options.changeFromPeak !== undefined;
+  drop.classList.toggle("burst", showDrop);
+  drop.querySelector("textPath")!.textContent = showDrop ? `${options.changeFromPeak} from peak` : "";
+  let drawing = existing;
   if (!drawing) {
     drawing = {
       bubbles: new Map(),
@@ -781,6 +817,8 @@ export function renderBubble(
       fromRingRadius: FRAME.radius,
       toRingRadius: radius,
       zoom: view.z,
+      pixelsPerUnit: 1,
+      day: date,
       players,
       focus,
       dim: players.size > 0,
@@ -790,7 +828,19 @@ export function renderBubble(
     };
     drawings.set(svg, drawing);
     liveDrawings.add(drawing);
+    const live = drawing;
+    const resize = (): void => {
+      const width = svg.getBoundingClientRect().width;
+      if (width === 0) return;
+      live.pixelsPerUnit = width / 100;
+      // The label is in the fixed frame, not the zoomed scene, so it needs only viewBox scaling.
+      drop.style.fontSize = `calc(var(--bubble-caption-size) / ${live.pixelsPerUnit})`;
+      paintAll(live);
+    };
+    resize();
+    new ResizeObserver(resize).observe(svg);
   }
+  drawing.day = date;
   drawing.fromRingRadius = drawing.ringRadius;
   drawing.toRingRadius = afterBurst ? radius : FRAME.radius;
   drawing.zoom = view.z;
@@ -803,6 +853,27 @@ export function renderBubble(
   updateArrows(drawing, arrowLayer, arrows);
   glide(drawing);
 
-  scene.style.transition = cameraTransition();
-  scene.style.transform = sceneTransform(shown);
+}
+
+// Transparent targets can overlap; use the nearest visible company centre, not SVG paint order.
+export function bubbleAtPoint(svg: SVGSVGElement, x: number, y: number): string | null {
+  const drawing = drawings.get(svg);
+  const scene = svg.querySelector<SVGGElement>(".scene");
+  const matrix = scene?.getScreenCTM();
+  const frame = svg.getScreenCTM();
+  if (!drawing || !matrix || !frame) return null;
+  const centre = new DOMPoint(FRAME.cx, FRAME.cy).matrixTransform(frame);
+  if (Math.hypot(x - centre.x, y - centre.y) > FRAME.radius * frame.a) return null;
+  let nearest: string | null = null;
+  let closest = Infinity;
+  for (const [id, live] of drawing.bubbles) {
+    if (live.leaving) continue;
+    const point = new DOMPoint(live.x, live.y).matrixTransform(matrix);
+    const distance = Math.hypot(x - point.x, y - point.y);
+    if (distance <= Math.max(HIT_RADIUS, live.r * matrix.a) && distance < closest) {
+      nearest = id;
+      closest = distance;
+    }
+  }
+  return nearest;
 }
