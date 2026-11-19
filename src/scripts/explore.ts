@@ -21,8 +21,8 @@ import { arrowsForDate, bubblesForDate, defaultDate, formatValue, installLayouts
 import type { DayLayouts } from "../lib/layout.ts";
 import workerUrl from "./layout.worker.ts?worker&url";
 import { layoutCacheKey, layoutStore, loadLayouts } from "./layout-cache.ts";
-import { renderBubble } from "../lib/bubble.ts";
-import { clampPan, dayView, peakDay } from "../lib/camera.ts";
+import { bubbleAtPoint, renderBubble } from "../lib/bubble.ts";
+import { clampPan, dayView, panView, peakDay, zoomBy } from "../lib/camera.ts";
 import type { CameraView } from "../lib/camera.ts";
 import type { Chapter } from "../lib/story.ts";
 import { SHEET_TAP_PX, snapSheet } from "../lib/sheet.ts";
@@ -124,11 +124,10 @@ let chapterIndex: number | null = null;
 // Whether "Read the story" has the list of chapters open.
 let storyListOpen = false;
 let fitPlayers = false;
-// The picture's pan, in the bubble's own units (the 0–100 viewBox), and the framing it was set
-// under: when the item, company, chapter or focus state changes the camera flies to new
-// players, and the pan goes back to zero.
+let manual = 1;
+let changeFromPeak: string | undefined;
+// The picture's pan, in the bubble's own units (the 0–100 viewBox).
 let pan = { dx: 0, dy: 0 };
-let lastFraming = "";
 let timelineZoomed = true;
 const fullTimeline: TimelineWindow = { start: 0, middle: 50, end: 100, ids: [] };
 let visibleTimeline = fullTimeline;
@@ -353,24 +352,28 @@ function isCompanyShown(id: string, date: string): boolean {
   return bubblesForDate(date).some((bubble) => bubble.id === id);
 }
 
-// The companies the camera frames right now: a chapter's players, an item's players, or a
-// company and the companies it has money lines with; in the whole state the camera frames
-// nothing and the view is the whole frame.
+// The companies that the focus button can frame on this day.
 function playersNow(): string[] {
   const chapter = chapterIndex === null ? null : (chapters[chapterIndex] ?? null);
-  if (chapter !== null) return fitPlayers ? chapter.players : [];
+  if (chapter !== null) return chapter.players;
   const item = itemId === null ? null : (byId.get(itemId) ?? null);
-  if (item !== null && fitPlayers) return item.players;
-  const company = companyId === null ? null : (companyById.get(companyId) ?? null);
-  return company !== null && fitPlayers ? [company.id, ...partnersOf(company.id, day)] : [];
+  if (item !== null) return item.players;
+  return companyId !== null ? [companyId, ...partnersOf(companyId, day)] : [];
 }
 
-// The view the bubble is drawing right now, from the same inputs render() hands to renderBubble:
-// the drag and the arrow keys turn pixels and steps into these units, so they must agree.
-function currentView(): CameraView | null {
-  if (!layoutsReady) return null;
-  const bubbles = bubblesForDate(day);
-  return dayView(bubbles, playersNow(), 1, day, burst?.date, peak ? bubblesForDate(peak.date) : undefined);
+function hasPlayers(): boolean {
+  return playersNow().some((id) => isCompanyShown(id, day));
+}
+
+function resetZoom(focus = false): void {
+  fitPlayers = focus && hasPlayers();
+  manual = 1;
+  pan = { dx: 0, dy: 0 };
+}
+
+function cameraView(scale: number, players = fitPlayers ? playersNow() : []): CameraView {
+  return dayView(bubblesForDate(day), players, scale, day, burst?.date,
+    peak ? bubblesForDate(peak.date) : undefined);
 }
 
 // The company's news rows, newest first, are rebuilt only when the company or the day changes,
@@ -422,13 +425,9 @@ function renderCompany(company: Company): void {
 
 function render(soon = false): void {
   // A company the chosen day does not show goes back to the quiet day.
-  if (companyId !== null && !isCompanyShown(companyId, day)) companyId = null;
-  // The camera flies to new players when the item, company, chapter or focus state changes, so
-  // the picture starts back at its centre: the pan goes to zero.
-  const framing = `${chapterIndex}|${itemId}|${companyId}|${fitPlayers}`;
-  if (framing !== lastFraming) {
-    lastFraming = framing;
-    pan = { dx: 0, dy: 0 };
+  if (companyId !== null && !isCompanyShown(companyId, day)) {
+    companyId = null;
+    resetZoom();
   }
   const storyAt = chapterIndex;
   const storyChapter = storyAt === null ? null : (chapters[storyAt] ?? null);
@@ -541,10 +540,13 @@ function render(soon = false): void {
 
   const total = totalForDate(day);
   const lossPercent = peak && peak.total > 0 ? Math.round((1 - total / peak.total) * 100) : 0;
+  changeFromPeak = peak && burst && day >= burst.date
+    ? `${lossPercent >= 0 ? "−" : "+"}${Math.abs(lossPercent)}%`
+    : undefined;
   setText(
     "companies",
-    peak && burst && day >= burst.date
-      ? `Peak ${formatValue(peak.total)} · now ${formatValue(total)} (${lossPercent >= 0 ? "−" : "+"}${Math.abs(lossPercent)}%)`
+    peak && changeFromPeak !== undefined
+      ? `Peak ${formatValue(peak.total)} · now ${formatValue(total)} (${changeFromPeak})`
       : `Combined value of the companies shown: ${formatValue(total)}`,
   );
 
@@ -567,46 +569,41 @@ function render(soon = false): void {
 
   renderSteps(anchor, at);
 
-  // The one focus toggle: in the whole state pressing it focuses on the players, in the players
-  // state it shows the whole bubble. The label says what pressing does, and the corners follow
-  // the state: inward in the whole state, outward in the players state.
+  drawBubble(false);
+  if (soon) writeAddressSoon();
+  else writeAddress();
+}
+
+// Gesture frames update only the camera, not the news panel, timeline or address.
+function drawBubble(immediate: boolean): void {
+  const zoomActive = fitPlayers || manual !== 1;
+  const zoomLabel = zoomActive ? "Show the whole bubble" : hasPlayers() ? "Focus on the players" : "Zoom in";
   for (const button of document.querySelectorAll<HTMLButtonElement>('[data-zoom="fit"]')) {
-    button.setAttribute("aria-pressed", String(fitPlayers));
-    button.setAttribute("aria-label", fitPlayers ? "Show the whole bubble" : "Focus on the players");
-    button.querySelector("path")?.setAttribute("d", fitPlayers
+    button.setAttribute("aria-pressed", String(zoomActive));
+    button.setAttribute("aria-label", zoomLabel);
+    button.querySelector("path")?.setAttribute("d", zoomActive
       ? "M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"
       : "M4 9h5V4M20 9h-5V4M4 15h5v5M20 15h-5v5");
   }
 
-  // The bubble follows the day; a chapter frames its players as a news item does, a chosen item
-  // frames its players, a chosen company frames itself and the companies it has money lines
-  // with, and a plain day shows the whole frame. In the whole state none of them frames: the
-  // button's state and the view stay the same.
-  if (layoutsReady) {
-    const players = playersNow();
-    // The picture can only be dragged where the camera is zoomed in beyond the whole frame;
-    // in the whole state the drag does nothing and the pan is zero.
-    const view = currentView();
-    const zoomedIn = fitPlayers && view !== null && view.z > 1;
-    for (const svg of document.querySelectorAll<SVGSVGElement>("[data-bubble]")) {
-      svg.dataset.zoomed = String(zoomedIn);
-      renderBubble(svg, day, {
-        players,
-        focus: company?.id,
-        manual: 1,
-        burstDate: burst?.date,
-        peak,
-        pan: zoomedIn ? pan : { dx: 0, dy: 0 },
-      });
-      // The bubble is also a view the reader can move: while it can be panned, the label says
-      // so. renderBubble sets the rest of the label fresh on every draw, so nothing repeats.
-      const label = svg.getAttribute("aria-label") ?? "";
-      svg.setAttribute("aria-label", zoomedIn ? `${label} Use the arrow keys to move the view.` : label);
-    }
+  if (!layoutsReady) return;
+  const players = fitPlayers ? playersNow() : [];
+  const zoomedIn = zoomActive && cameraView(manual, players).z > 1;
+  for (const svg of document.querySelectorAll<SVGSVGElement>("[data-bubble]")) {
+    svg.dataset.zoomed = String(zoomedIn);
+    renderBubble(svg, day, {
+      players,
+      focus: companyId ?? undefined,
+      manual,
+      burstDate: burst?.date,
+      peak,
+      changeFromPeak,
+      immediate,
+      pan: zoomedIn ? pan : { dx: 0, dy: 0 },
+    });
+    const label = svg.getAttribute("aria-label") ?? "";
+    svg.setAttribute("aria-label", `${label} Use + and − to zoom.${zoomedIn ? " Use the arrow keys to move the view." : ""}`);
   }
-
-  if (soon) writeAddressSoon();
-  else writeAddress();
 }
 
 // The address keeps working for ?chapter=<number>, ?date=YYYY-MM-DD, ?news=<news id> and
@@ -648,11 +645,11 @@ function goToChapter(index: number): void {
   const chapter = chapters[index];
   if (!chapter) return;
   chapterIndex = index;
-  fitPlayers = true;
   storyListOpen = false;
   itemId = null;
   companyId = null;
   day = chapter.date;
+  resetZoom(true);
   render();
   // A chapter opens at its first line, never where the last one was left.
   for (const text of document.querySelectorAll<HTMLElement>('[data-bind="story-text"]')) {
@@ -665,7 +662,7 @@ function leaveStory(date: string): void {
   chapterIndex = null;
   storyListOpen = false;
   itemId = null;
-  fitPlayers = false;
+  resetZoom();
   day = date;
   render(true);
 }
@@ -679,10 +676,10 @@ function openStoryList(open: boolean): void {
 function selectItem(id: string): void {
   const item = byId.get(id);
   if (!item) return;
-  fitPlayers = true;
   itemId = item.id;
   companyId = null;
   day = item.date;
+  resetZoom(true);
   render();
 }
 
@@ -696,14 +693,14 @@ function chooseCompany(id: string): void {
   itemId = null;
   // The button's state follows the view: a company open frames it, the quiet day shows the whole
   // frame.
-  fitPlayers = companyId !== null;
+  resetZoom(companyId !== null);
   render();
 }
 
 function clearCompany(): void {
   companyId = null;
   itemId = null;
-  fitPlayers = false;
+  resetZoom();
   render();
 }
 
@@ -719,7 +716,7 @@ function moveTo(date: string): void {
   day = date;
   // Dragging the slider frames nothing, so the view is the whole frame and the button keeps
   // the whole state until an item or a company is picked.
-  fitPlayers = false;
+  resetZoom();
   itemId = null;
   render(true);
 }
@@ -767,7 +764,7 @@ document.addEventListener("click", (event) => {
         chapterIndex = null;
         storyListOpen = false;
         itemId = null;
-        fitPlayers = false;
+        resetZoom();
         render();
       } else {
         goToChapter(chapterIndex + 1);
@@ -779,9 +776,10 @@ document.addEventListener("click", (event) => {
     openStoryList(false);
   }
 
-  // The bubble's one zoom button: the focus toggle, nothing else.
   if (control.dataset.zoom === "fit") {
-    fitPlayers = !fitPlayers;
+    const toWhole = fitPlayers || manual !== 1;
+    resetZoom(!toWhole);
+    if (!toWhole && !fitPlayers) manual = 2;
     render();
   }
 });
@@ -896,34 +894,60 @@ const PAN_TAP_PX = 6;
 const PAN_STEP = 5; // the arrow keys move the view this many units
 
 for (const svg of document.querySelectorAll<SVGSVGElement>("[data-bubble]")) {
-  const companyAt = (event: Event): string | null => {
-    const target = event.target instanceof Element ? event.target : null;
-    return target?.closest<SVGElement>("[data-company]")?.getAttribute("data-company") ?? null;
-  };
-  // The view the picture can be panned: the same view render() draws, and only where the
-  // camera is zoomed in beyond the whole frame.
   const panningView = (): CameraView | null => {
-    if (!fitPlayers) return null;
-    const view = currentView();
-    return view !== null && view.z > 1 ? view : null;
+    if (!layoutsReady || (!fitPlayers && manual === 1)) return null;
+    const view = cameraView(manual);
+    return view.z > 1 ? view : null;
   };
-  // The picture is a view the keyboard can move, too.
+  const centre = { x: 50, y: 50 };
+  const framePoint = (x: number, y: number) => {
+    const box = svg.getBoundingClientRect();
+    return { x: 100 * (x - box.left) / box.width, y: 100 * (y - box.top) / box.height };
+  };
+  const zoom = (factor: number, from = centre, to = from): void => {
+    if (!layoutsReady) return;
+    const view = cameraView(manual);
+    const whole = cameraView(1, []);
+    const shown = panView(view, clampPan(view, pan));
+    const next = zoomBy(shown, factor, from, to, whole.z);
+    if (next.z === whole.z) {
+      resetZoom();
+    } else {
+      // The manual factor multiplies the current automatic fit, not the previous zoom.
+      manual = next.z / cameraView(1).z;
+      const base = cameraView(manual);
+      pan = clampPan(base, { dx: next.cx - base.cx, dy: next.cy - base.cy });
+    }
+    drawBubble(true);
+  };
+
   svg.setAttribute("tabindex", "0");
+  let suppressTap = false;
   svg.addEventListener("click", (event) => {
-    const id = companyAt(event);
+    const id = event.detail === 0
+      ? (event.target as Element).closest("[data-company]")?.getAttribute("data-company")
+      : !suppressTap && bubbleAtPoint(svg, event.clientX, event.clientY);
     if (id) chooseCompany(id);
   });
-  svg.addEventListener("keydown", (event) => {
-    if (event.key !== "Enter" && event.key !== " ") return;
-    const id = companyAt(event);
-    if (!id) return;
+  svg.addEventListener("wheel", (event) => {
     event.preventDefault();
-    chooseCompany(id);
-  });
-  // The arrow keys move the view, but only while the bubble itself has focus and the view can
-  // be panned; a focused bubble below it keeps its own Enter and Space behaviour.
+    const pixels = event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? svg.clientHeight : 1);
+    if (pixels !== 0) zoom(Math.exp(-pixels * 0.002), framePoint(event.clientX, event.clientY));
+  }, { passive: false });
   svg.addEventListener("keydown", (event) => {
-    if (event.target !== svg) return;
+    if (event.target !== svg) {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      const id = (event.target as Element).closest("[data-company]")?.getAttribute("data-company");
+      if (!id) return;
+      event.preventDefault();
+      chooseCompany(id);
+      return;
+    }
+    if (event.key === "+" || event.key === "-") {
+      event.preventDefault();
+      zoom(event.key === "+" ? 1.25 : 1 / 1.25);
+      return;
+    }
     let dx = 0;
     let dy = 0;
     if (event.key === "ArrowLeft") dx = -PAN_STEP;
@@ -935,67 +959,83 @@ for (const svg of document.querySelectorAll<SVGSVGElement>("[data-bubble]")) {
     if (view === null) return;
     event.preventDefault();
     pan = clampPan(view, { dx: pan.dx + dx, dy: pan.dy + dy });
-    render();
+    drawBubble(false);
   });
 
-  // The drag only starts once the pointer has moved PAN_TAP_PX, so a tap stays a tap and the
-  // page's own gestures (page and sheet scroll) stay alone in the whole state.
-  let drag: { id: number; x: number; y: number; moved: number; captured: boolean } | null = null;
-  // While the pointer is on the picture the view follows it one to one: the camera's glide is
-  // off, even though renderBubble would set it back on.
-  const holdScene = (): void => {
-    svg.querySelector<SVGGElement>("g.scene")?.style.setProperty("transition", "none");
+  type Point = { x: number; y: number };
+  const touches = new Map<number, Point>();
+  const pinch = () => {
+    const [a, b] = touches.values();
+    return {
+      distance: Math.hypot(a.x - b.x, a.y - b.y),
+      midpoint: framePoint((a.x + b.x) / 2, (a.y + b.y) / 2),
+    };
   };
+  let drag: { id: number; x: number; y: number; moved: number; captured: boolean } | null = null;
 
   svg.addEventListener("pointerdown", (event) => {
-    if (drag !== null) return;
     if (event.pointerType === "mouse" && event.button !== 0) return;
-    if (panningView() === null) return;
+    if (event.pointerType === "touch") {
+      touches.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      if (touches.size > 1) {
+        suppressTap = true;
+        drag = null;
+        svg.classList.remove("is-panning");
+        for (const id of touches.keys()) svg.setPointerCapture(id);
+        return;
+      }
+    }
+    if (drag !== null) return;
+    suppressTap = false;
+    const canPan = panningView() !== null;
+    if (!canPan && event.pointerType !== "touch") return;
     drag = { id: event.pointerId, x: event.clientX, y: event.clientY, moved: 0, captured: false };
-    // Keep text selection and the browser's focus out of a would-be drag.
-    event.preventDefault();
+    if (canPan) event.preventDefault();
   });
 
   svg.addEventListener("pointermove", (event) => {
+    if (touches.has(event.pointerId)) {
+      const before = touches.size >= 2 ? pinch() : null;
+      touches.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      if (before !== null) {
+        const after = pinch();
+        if (before.distance > 0 && after.distance > 0) {
+          zoom(after.distance / before.distance, before.midpoint, after.midpoint);
+        }
+        return;
+      }
+    }
     if (drag === null || drag.id !== event.pointerId) return;
     const dx = event.clientX - drag.x;
     const dy = event.clientY - drag.y;
     drag.moved += Math.hypot(dx, dy);
     drag.x = event.clientX;
     drag.y = event.clientY;
+    if (drag.moved < PAN_TAP_PX) return;
+    suppressTap = true;
+    const view = panningView();
+    if (view === null) return;
     if (!drag.captured) {
-      if (drag.moved < PAN_TAP_PX) return;
       drag.captured = true;
       svg.setPointerCapture(event.pointerId);
       svg.classList.add("is-panning");
     }
-    const view = panningView();
-    if (view === null) return;
-    // One screen pixel is 100 / size viewBox units, and the camera's zoom scales them.
     const size = svg.getBoundingClientRect().width;
     const units = size > 0 ? 100 / (size * view.z) : 0;
-    // The picture follows the pointer: dragging it right moves the view left.
     pan = clampPan(view, { dx: pan.dx - dx * units, dy: pan.dy - dy * units });
-    render();
-    holdScene();
+    drawBubble(true);
   });
 
-  const endDrag = (event: PointerEvent): void => {
-    if (drag === null || drag.id !== event.pointerId) return;
-    const wasDrag = drag.captured;
+  const endPointer = (event: PointerEvent): void => {
+    touches.delete(event.pointerId);
+    if (drag?.id !== event.pointerId) return;
     drag = null;
-    if (!wasDrag) return;
     svg.classList.remove("is-panning");
-    if (svg.hasPointerCapture(event.pointerId)) svg.releasePointerCapture(event.pointerId);
-    // Back to the camera's own glide for the next move; the picture does not take focus, so a
-    // pointer drag leaves no focus outline (the arrow keys still work from the keyboard).
-    render();
   };
-  svg.addEventListener("pointerup", endDrag);
-  svg.addEventListener("pointercancel", endDrag);
-  // A pointer that leaves before it has moved far enough: no drag was on its way.
-  svg.addEventListener("pointerleave", () => {
-    if (drag !== null && !drag.captured) drag = null;
+  svg.addEventListener("pointerup", endPointer);
+  svg.addEventListener("pointercancel", endPointer);
+  svg.addEventListener("pointerleave", (event) => {
+    if (!svg.hasPointerCapture(event.pointerId) && !drag?.captured) endPointer(event);
   });
 }
 
@@ -1013,7 +1053,7 @@ function readAddress(): void {
     itemId = null;
     companyId = null;
     day = chapters[at].date;
-    fitPlayers = true;
+    resetZoom(true);
     return;
   }
   const wantedId = params.get("news");
@@ -1021,7 +1061,7 @@ function readAddress(): void {
   if (wanted) {
     itemId = wanted.id;
     day = wanted.date;
-    fitPlayers = true;
+    resetZoom(true);
     return;
   }
   const wantedDate = params.get("date");
@@ -1036,7 +1076,7 @@ function readAddress(): void {
     companyId = company.id;
     itemId = null;
     day = calendarDate ?? lastDate;
-    fitPlayers = true;
+    resetZoom(true);
     return;
   }
   if (calendarDate) {

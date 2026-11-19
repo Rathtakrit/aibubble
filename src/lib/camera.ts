@@ -13,11 +13,21 @@ export type CameraView = {
 // The players are framed with room around them: 56 of the 100 units fit inside the view.
 const FIT_SPAN = 56;
 const MIN_ZOOM = 1;
-const MAX_ZOOM = 4;
+const MAX_ZOOM = 6;
 const MAX_AUTO_ZOOM = 3.2;
 
-// Manual zoom on top of the automatic camera; index 1 = follow the players exactly.
-export const ZOOMS = [0.4, 1, 1.5, 2.25];
+type Point = { x: number; y: number };
+const CENTRE: Point = { x: 50, y: 50 };
+
+export function zoomBy(view: CameraView, factor: number, from: Point = CENTRE, to = from, minZoom = MIN_ZOOM): CameraView {
+  const z = clamp(minZoom, view.z * factor, MAX_ZOOM);
+  // Keep the same scene point under the pointer, even as a pinch moves its midpoint.
+  return {
+    cx: view.cx + (from.x - CENTRE.x) / view.z - (to.x - CENTRE.x) / z,
+    cy: view.cy + (from.y - CENTRE.y) / view.z - (to.y - CENTRE.y) / z,
+    z,
+  };
+}
 
 function clamp(min: number, value: number, max: number): number {
   return Math.min(max, Math.max(min, value));
@@ -93,8 +103,8 @@ export function dayView(
   const circle = bubbles.length > 0 ? enclosingCircle(bubbles) : enclosingCircle(peakBubbles);
   const peakCircle = enclosingCircle(peakBubbles);
   const autoZ = Math.max(MIN_ZOOM, FRAME.fitRadius / peakCircle.r);
-  // Keep zoom buttons relative to the fitted cluster, even if it needs more than the player cap.
-  const z = clamp(MIN_ZOOM, autoZ * manual, Math.max(MAX_ZOOM, autoZ * ZOOMS[ZOOMS.length - 1]));
+  // 1x on a burst day is the peak-fit view, not the unscaled layout.
+  const z = clamp(MIN_ZOOM, autoZ * manual, MAX_ZOOM);
   return { cx: circle.x, cy: circle.y, z };
 }
 
