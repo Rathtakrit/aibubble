@@ -1,7 +1,17 @@
-import { datasets, comparisonLine, formatTotal, labelsOverlap, moments, momentOptions, packedOn, percentDifference, totalOn } from "../lib/compare.ts";
+import { datasets, changeLine, comparisonLine, formatTotal, labelsOverlap, moments, momentOptions, packedOn, percentDifference, totalOn } from "../lib/compare.ts";
 import type { CompareDataset, LabelBox, Moment } from "../lib/compare.ts";
+import { publisherName } from "../lib/timeline.ts";
 
 type Side = { dataset: CompareDataset; moment: Moment; date: string; players: Set<string> | null };
+type Frame = {
+  selected: CompareDataset;
+  values: ReturnType<typeof totalOn>["values"];
+  total: number;
+  baseline: ReturnType<typeof totalOn>;
+  start: string;
+  circles: ReturnType<typeof packedOn>;
+  change: number | null;
+};
 const root = document.querySelector<HTMLElement>(".compare-page");
 if (root) {
   const names = { ai: "AI", dotcom: "Dot-com", housing: "Housing" };
@@ -64,20 +74,122 @@ if (root) {
     return element;
   };
 
+  // One frame per side index, kept until that side's dataset, date or ticked set changes, so
+  // ticking a company repacks one drawing, not both.
+  const frameSlots: { key: string; frame: Frame }[] = [];
+  const frameKey = (side: Side) => `${side.dataset.id}|${side.date}|${side.players ? [...side.players].sort().join(",") : "*"}`;
+  const frameFor = (side: Side, index: number): Frame => {
+    const key = frameKey(side);
+    const slot = frameSlots[index];
+    if (slot && slot.key === key) return slot.frame;
+    const selected = selectedDataset(side);
+    const snapshot = totalOn(selected, side.date);
+    const start = moments(side.dataset).start!;
+    const baseline = totalOn(selected, start);
+    const frame: Frame = { ...snapshot, selected, baseline, start, circles: packedOn(selected, side.date), change: percentDifference(snapshot.total, baseline.total) };
+    frameSlots[index] = { key, frame };
+    return frame;
+  };
+
+  // The checkbox lists are kept in place while their companies stay the same, so a tick keeps
+  // keyboard focus on its own checkbox.
+  const playerPanels: HTMLFieldSetElement[] = [];
+  const playerPanelKeys: string[] = [];
+  const syncPlayerPanels = () => {
+    const groups = query("[data-player-groups]");
+    sides.forEach((side, index) => {
+      const entries = totalOn(side.dataset, side.date).values;
+      const key = `${side.dataset.id}|${side.date}|${entries.map((entry) => entry.company.id).join(",")}`;
+      if (!playerPanels[index] || playerPanelKeys[index] !== key) {
+        const fieldset = document.createElement("fieldset");
+        fieldset.dataset.playerPanel = String(index);
+        const legend = addText(fieldset, "legend", `${index === 0 ? "A" : "B"} · ${names[side.dataset.id]} · ${dayLabel(side.date)}`);
+        const toggle = document.createElement("button");
+        toggle.type = "button";
+        toggle.dataset.playerToggle = String(index);
+        legend.append(toggle);
+        const grid = document.createElement("div");
+        grid.className = "player-grid";
+        for (const entry of entries) {
+          const label = document.createElement("label");
+          const input = document.createElement("input");
+          input.type = "checkbox";
+          input.dataset.player = entry.company.id;
+          input.dataset.side = String(index);
+          label.append(input);
+          addText(label, "span", entry.company.name);
+          addText(label, "span", formatTotal(entry.value)).className = "amount";
+          grid.append(label);
+        }
+        fieldset.append(grid);
+        const previous = playerPanels[index];
+        playerPanels[index] = fieldset;
+        playerPanelKeys[index] = key;
+        if (previous) previous.replaceWith(fieldset);
+        else groups.append(fieldset);
+      }
+      const fieldset = playerPanels[index];
+      for (const input of fieldset.querySelectorAll<HTMLInputElement>("input[data-player]")) {
+        input.checked = !side.players || side.players.has(input.dataset.player!);
+      }
+      const toggle = fieldset.querySelector<HTMLButtonElement>("[data-player-toggle]")!;
+      const anySelected = totalOn(selectedDataset(side), side.date).values.length > 0;
+      toggle.textContent = anySelected ? "Clear" : "All";
+      toggle.setAttribute("aria-label", `${anySelected ? "Clear" : "Select all"} companies for ${index === 0 ? "A" : "B"}`);
+      if (groups.children[index] !== fieldset) groups.insertBefore(fieldset, groups.children[index] ?? null);
+    });
+    syncPlayers();
+    const inputs = Array.from(groups.querySelectorAll<HTMLInputElement>("input[data-player]"));
+    const available = inputs.length;
+    const checked = inputs.filter((input) => input.checked).length;
+    query('[data-open="players"]').textContent = phone.matches ? `Players ${checked}/${available}` : `Players: ${checked} of ${available}`;
+  };
+
+  // A source panel is rebuilt only when its side's frame or Start/Chosen choice changes.
+  const sourcePanels: HTMLElement[] = [];
+  const sourceFrames: (Frame | null)[] = [];
+  const sourceBaselines: (boolean | null)[] = [];
+  const syncSourcePanels = (frames: Frame[]) => {
+    const sources = query("[data-sources]");
+    frames.forEach((frame, index) => {
+      const baseline = sourcePeriod === "start";
+      if (sourcePanels[index] && sourceFrames[index] === frame && sourceBaselines[index] === baseline) return;
+      const section = document.createElement("section");
+      section.dataset.sourcePanel = String(index);
+      addText(section, "h3", `${index === 0 ? "A" : "B"} · ${names[sides[index].dataset.id]} · ${dayLabel(baseline ? frame.start : sides[index].date)}`);
+      const grid = document.createElement("div");
+      grid.className = "source-grid";
+      for (const entry of baseline ? frame.baseline.values : frame.values) {
+        const link = document.createElement("a");
+        link.className = "source";
+        link.href = entry.point.source;
+        link.target = "_blank";
+        link.rel = "noopener";
+        link.textContent = `${entry.company.name} · ${formatTotal(entry.value).replace("$", "")} · ${publisherName(entry.point.source)}, ${dayLabel(entry.point.date)} ↗`;
+        grid.append(link);
+      }
+      if (!grid.childElementCount) addText(grid, "p", "No recorded values selected.");
+      section.append(grid);
+      const previous = sourcePanels[index];
+      sourcePanels[index] = section;
+      sourceFrames[index] = frame;
+      sourceBaselines[index] = baseline;
+      if (previous) previous.replaceWith(section);
+      else sources.append(section);
+      if (sources.children[index] !== section) sources.insertBefore(section, sources.children[index] ?? null);
+    });
+  };
+
   function render(animate = true) {
     cancelAnimationFrame(animation);
-    const frames = sides.map((side) => {
-      const selected = selectedDataset(side);
-      const snapshot = totalOn(selected, side.date);
-      const start = moments(side.dataset).start!;
-      const baseline = totalOn(selected, start);
-      return { ...snapshot, selected, baseline, start, circles: packedOn(selected, side.date), change: percentDifference(snapshot.total, baseline.total) };
-    });
+    const frames = sides.map((side, index) => frameFor(side, index));
     query("[data-size]").toggleAttribute("hidden", measure !== "size");
     query("[data-size-legend]").toggleAttribute("hidden", measure !== "size");
     query("[data-change]").toggleAttribute("hidden", measure !== "change");
     for (const button of root!.querySelectorAll<HTMLButtonElement>("[data-measure]")) button.setAttribute("aria-pressed", String(button.dataset.measure === measure));
-    query("[data-result]").textContent = comparisonLine(frames[0].total, frames[1].total);
+    query("[data-result]").textContent = measure === "change"
+      ? changeLine(frames[0], frames[1])
+      : comparisonLine(frames[0].total, frames[1].total);
 
     // Animate the currently displayed geometry, including interrupted transitions.
     const tweens: { element: Element; attribute: string; from: number; to: number }[] = [];
@@ -196,66 +308,10 @@ if (root) {
       tween(bar, "width", width, 0);
     });
 
-    const groups = query("[data-player-groups]");
-    groups.replaceChildren();
-    let available = 0;
-    let checked = 0;
-    sides.forEach((side, index) => {
-      const fieldset = document.createElement("fieldset");
-      fieldset.dataset.playerPanel = String(index);
-      const legend = addText(fieldset, "legend", `${index === 0 ? "A" : "B"} · ${names[side.dataset.id]} · ${dayLabel(side.date)}`);
-      const toggle = document.createElement("button");
-      toggle.type = "button";
-      toggle.dataset.playerToggle = String(index);
-      const anySelected = totalOn(selectedDataset(side), side.date).values.length > 0;
-      toggle.textContent = anySelected ? "Clear" : "All";
-      toggle.setAttribute("aria-label", `${anySelected ? "Clear" : "Select all"} companies for ${index === 0 ? "A" : "B"}`);
-      legend.append(toggle);
-      const grid = document.createElement("div");
-      grid.className = "player-grid";
-      const entries = totalOn(side.dataset, side.date).values;
-      for (const entry of entries) {
-        const label = document.createElement("label");
-        const input = document.createElement("input");
-        input.type = "checkbox";
-        input.dataset.player = entry.company.id;
-        input.dataset.dataset = side.dataset.id;
-        input.checked = !side.players || side.players.has(entry.company.id);
-        available++;
-        if (input.checked) checked++;
-        label.append(input);
-        addText(label, "span", entry.company.name);
-        addText(label, "span", formatTotal(entry.value)).className = "amount";
-        grid.append(label);
-      }
-      fieldset.append(grid);
-      groups.append(fieldset);
-    });
-    syncPlayers();
-    query('[data-open="players"]').textContent = phone.matches ? `Players ${checked}/${available}` : `Players: ${checked} of ${available}`;
-    const sources = query("[data-sources]");
-    sources.replaceChildren();
+    syncPlayerPanels();
     if (measure !== "change") sourcePeriod = "chosen";
     query("[data-source-period-control]").toggleAttribute("hidden", measure !== "change");
-    frames.forEach((frame, index) => {
-      const baseline = sourcePeriod === "start";
-      const section = document.createElement("section");
-      section.dataset.sourcePanel = String(index);
-      addText(section, "h3", `${index === 0 ? "A" : "B"} · ${names[sides[index].dataset.id]} · ${dayLabel(baseline ? frame.start : sides[index].date)}`);
-      const grid = document.createElement("div");
-      grid.className = "source-grid";
-      for (const entry of baseline ? frame.baseline.values : frame.values) {
-        const link = document.createElement("a");
-        link.className = "source";
-        link.href = entry.point.source;
-        link.textContent = `${entry.company.name} · ${formatTotal(entry.value).replace("$", "")} ↗`;
-        link.title = `Recorded ${dayLabel(entry.point.date)}`;
-        grid.append(link);
-      }
-      if (!grid.childElementCount) addText(grid, "p", "No recorded values selected.");
-      section.append(grid);
-      sources.append(section);
-    });
+    syncSourcePanels(frames);
     syncSources();
     const missingValues = query("[data-missing]");
     missingValues.replaceChildren();
@@ -267,11 +323,20 @@ if (root) {
     });
     syncSources();
     query("[data-size]").setAttribute("aria-label", `A in blue: ${formatTotal(frames[0].total)}; B in orange: ${formatTotal(frames[1].total)}. Same area scale. ${comparisonLine(frames[0].total, frames[1].total)}`);
-    const start = performance.now();
+    // The first frame's own timestamp is the start, and progress never leaves 0..1: a frame
+    // timestamp can be earlier than the call that started the animation.
+    let start: number | null = null;
     const tick = (now: number) => {
-      const progress = !animate || reducedMotion.matches ? 1 : Math.min((now-start)/400, 1);
+      start ??= now;
+      const raw = !animate || reducedMotion.matches ? 1 : (now - start) / 400;
+      const progress = Math.max(0, Math.min(raw, 1));
       const eased = 1-Math.pow(1-progress, 3);
-      for (const t of tweens) t.element.setAttribute(t.attribute, String(t.from+(t.to-t.from)*eased));
+      for (const t of tweens) {
+        const value = t.from+(t.to-t.from)*eased;
+        // A radius or bar width can never be negative, even while an interrupted tween runs.
+        const safe = t.attribute === "r" || t.attribute === "width" ? Math.max(0, value) : value;
+        t.element.setAttribute(t.attribute, String(safe));
+      }
       const placedNames: LabelBox[] = [];
       for (const { label, circle, width } of nameLabels) {
         const radius = Number(circle.getAttribute("r"));
@@ -297,19 +362,18 @@ if (root) {
       if (progress < 1) animation = requestAnimationFrame(tick);
       else for (const element of root!.querySelectorAll("[data-exiting]")) element.remove();
     };
-    tick(start);
+    tick(performance.now());
   }
 
   root.addEventListener("change", (event) => {
     const input = event.target;
-    if (!(input instanceof HTMLInputElement)) return;
-    if (input instanceof HTMLInputElement && input.dataset.player) {
-      for (const side of sides.filter((side) => side.dataset.id === input.dataset.dataset)) {
-        if (!side.players) side.players = new Set(side.dataset.companies.map((company) => company.id));
-        if (input.checked) side.players.add(input.dataset.player);
-        else side.players.delete(input.dataset.player);
-      }
-    }
+    if (!(input instanceof HTMLInputElement) || !input.dataset.player) return;
+    // Each side keeps its own ticked set, even when both sides show the same bubble.
+    const side = sides[Number(input.dataset.side)];
+    if (!side) return;
+    if (!side.players) side.players = new Set(side.dataset.companies.map((company) => company.id));
+    if (input.checked) side.players.add(input.dataset.player);
+    else side.players.delete(input.dataset.player);
     render();
   });
   root.addEventListener("click", (event) => {
