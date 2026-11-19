@@ -30,6 +30,7 @@ import {
   timelineScale,
 } from "../lib/timeline.ts";
 import { chapterProblems, chapterSources, orderChapterFiles } from "../lib/story.ts";
+import { SITE_NAME } from "../lib/site.ts";
 
 type Props = { id: DatasetId };
 const { id } = Astro.props;
@@ -42,6 +43,16 @@ const isPast = id !== "ai";
 const STORY_ENABLED = false;
 // Everything below is taken now, while this set is the active one.
 const boomName = { ai: "AI boom", dotcom: "Dot-com boom", housing: "Housing boom" }[id];
+// What the browser tab calls each set, and the line a search result or link preview shows. The
+// past sets' years are their meta.json first and last days.
+const pageName = { ai: "AI", dotcom: "Dot-com", housing: "Housing" }[id];
+const descriptions = {
+  ai: "How the AI money bubble formed, day by day: company values, who paid whom, and the news behind it.",
+  dotcom: "The dot-com bubble, 1995 to 2002, day by day: company values, deals and the news behind them.",
+  housing: "The housing bubble, 2003 to 2009, day by day: bank values, deals and the news behind them.",
+};
+const pageTitle = `${pageName} | ${SITE_NAME}`;
+const description = descriptions[id];
 const setStatus = status;
 const setKinds = kinds;
 const firstDay = FIRST_DAY;
@@ -170,7 +181,10 @@ const ariaFor = (itemTitle: string, date: string) => `${dayLabel(date)}, ${itemT
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>AI Bubble</title>
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
   </head>
   <body data-mode="explore" data-dataset={id} data-story-enabled={isPast ? undefined : STORY_ENABLED}>
     <div class="layout-desktop">
