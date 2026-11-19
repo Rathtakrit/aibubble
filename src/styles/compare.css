@@ -31,6 +31,7 @@ button:disabled { cursor: default; color: var(--ink-2); }
 .picker summary { list-style: none; }
 .picker summary::-webkit-details-marker { display: none; }
 [data-tile] { display: none; }
+.phone-word { display: none; }
 .picker-fields { display: flex; flex-direction: column; gap: 8px; padding-top: 12px; }
 .picker label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--ink-2); }
 .picker-group > span { display: block; font-size: 13px; color: var(--ink-2); margin-bottom: 4px; }
@@ -107,15 +108,19 @@ dialog input { accent-color: var(--accent); width: 20px; height: 20px; flex-shri
   .segments { padding: 2px; }
   .segments button { font-size: 13px; padding: 0 10px; }
   .workbench { order: 1; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; align-items: start; }
-  .exposure { display: contents; }
-  .picker { grid-column: 1; grid-row: 2; background: #FBF7EF; padding: 0; }
-  .exposure-1 .picker { grid-column: 2; }
-  .picker summary { min-height: 52px; padding: 6px 10px; cursor: pointer; }
+  .exposure { display: flex; flex-direction: column; gap: 8px; border-left: 3px solid var(--exposure); padding-left: 8px; }
+  .exposure-1 { grid-column: 2; }
+  .picker { border-top: 0; padding: 0; background: transparent; }
+  .picker summary { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 44px; padding: 0 8px 0 0; font-size: 14px; cursor: pointer; }
+  .picker summary::after { content: "▾"; font-size: 12px; }
+  .picker[open] summary::after { content: "▴"; }
   [data-tile] { display: block; font-size: 14px; }
-  .picker[open] summary { border-bottom: 4px solid var(--exposure); }
-  .picker-fields { padding: 12px 6px; }
-  .bubble-pills { gap: 0; padding: 2px; }
-  .bubble-pills button { font-size: 11px; padding: 0 3px; }
+  .picker-fields { padding: 10px 0 0; }
+  .bubble-pills { flex-direction: column; gap: 6px; border: 0; border-radius: 0; padding: 0; }
+  .bubble-pills button { flex: none; width: 100%; min-height: 44px; padding: 0 10px; font-size: 13px; border: 1px solid var(--rule); border-radius: 12px; background: transparent; }
+  .moment-pills { flex-direction: column; gap: 6px; }
+  .moment-pills button { width: 100%; min-height: 44px; font-size: 13px; }
+  .drawing-legend { display: none; }
   [data-dialog="sources"], [data-dialog="players"] { padding: 12px; }
   [data-dialog="sources"] form, [data-dialog="players"] form { margin-bottom: 8px; }
   .player-side-switch { display: flex; width: fit-content; }
@@ -129,17 +134,18 @@ dialog input { accent-color: var(--accent); width: 20px; height: 20px; flex-shri
   .source-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 8px; }
   .source-grid .source { min-height: 44px; padding: 4px 0; font-size: 13px; line-height: 16px; }
   .source-controls .segments button { min-width: 44px; }
-  .drawing { grid-column: 1 / -1; grid-row: 3; width: 100%; }
+  .drawing { grid-column: 1 / -1; grid-row: 2; width: 100%; }
   .drawing svg { height: 330px; }
-  .caption { grid-column: 1; grid-row: 1; margin: 0; }
-  .exposure-1 .caption { grid-column: 2; }
-  .total { font-size: 32px; }
+  .caption { margin: 0; }
+  .total { font-size: 28px; }
   .caption p { font-size: 12px; }
   .result-row { display: contents; }
   .result { order: 2; border-top: 1px solid var(--ink); padding-top: 10px; font-size: 26px; min-width: 0; max-width: 100%; overflow-wrap: anywhere; line-height: 1.3; }
-  .quick-questions { order: 3; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: thin; padding-bottom: 3px; }
+  .quick-questions { order: 3; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
   .quick-questions > span { display: none; }
-  .quick-questions button { white-space: nowrap; flex-shrink: 0; font-size: 13px; padding: 0 12px; }
+  .quick-questions button { white-space: normal; min-height: 44px; padding: 4px 6px; font-size: 12px; line-height: 1.25; border-radius: 12px; }
+  .quick-questions [data-quick="biggest"] { display: none; }
+  .phone-word { display: block; }
   .actions { order: 4; flex-wrap: nowrap; }
   .actions button { flex: 1; padding: 0 8px; font-size: 13px; white-space: nowrap; }
   .desktop-word { display: none; }

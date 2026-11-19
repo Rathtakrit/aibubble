@@ -46,10 +46,10 @@ const dayLabel = (date: string) => new Intl.DateTimeFormat("en-GB", { day: "nume
         </div>
         <div class="quick-questions" role="group" aria-label="Quick questions">
           <span>Try</span>
-          <button type="button" data-quick="lowest">AI lowest vs Dot-com peak</button>
-          <button type="button" data-quick="peaks">AI current vs Dot-com peak</button>
+          <button type="button" data-quick="lowest"><span class="desktop-word">AI lowest vs Dot-com peak</span><span class="phone-word">AI lowest<br />vs Dot-com peak</span></button>
+          <button type="button" data-quick="peaks"><span class="desktop-word">AI current vs Dot-com peak</span><span class="phone-word">AI now<br />vs Dot-com peak</span></button>
           <button type="button" data-quick="biggest">Biggest company of each</button>
-          <button type="button" data-quick="then">AI then vs AI now</button>
+          <button type="button" data-quick="then"><span class="desktop-word">AI then vs AI now</span><span class="phone-word">AI then<br />vs AI now</span></button>
         </div>
         <div class="workbench">
           {frames.map((frame, index) => (
