@@ -3,6 +3,8 @@
 import test from "node:test";
 // @ts-expect-error node:assert has no types in this repo
 import assert from "node:assert";
+// @ts-expect-error node:fs has no types in this repo
+import { readdirSync, readFileSync } from "node:fs";
 import { chapterProblems, orderChapterFiles, parseChapter } from "./story.ts";
 
 const chapter = `---
@@ -77,4 +79,26 @@ test("a player that is not a company is a problem", () => {
   assert.deepEqual(chapterProblems(chapters, ["nvidia", "openai"]), [
     '01-unknown.md: player "someone" is not a company id in data/companies.json.',
   ]);
+});
+
+// The real files in docs/story. chapterSources() uses import.meta.glob, which only works inside
+// the Astro build, so the files are read from disk here instead. The site no longer stops when
+// Story is off, so this keeps the chapter check runnable.
+test("the real chapter files have no problems", () => {
+  const dir = "docs/story";
+  const files = readdirSync(dir).filter((file: string) => /^[0-9][0-9]-.*\.md$/.test(file));
+  assert.ok(files.length > 0, "docs/story has no chapter files.");
+  const sources: Record<string, string> = {};
+  for (const file of files) sources[`${dir}/${file}`] = readFileSync(`${dir}/${file}`, "utf8");
+  const chapters = orderChapterFiles(sources);
+  const companies = JSON.parse(readFileSync("data/companies.json", "utf8")).items as {
+    id: string;
+  }[];
+  assert.deepEqual(
+    chapterProblems(
+      chapters,
+      companies.map((company) => company.id),
+    ),
+    [],
+  );
 });

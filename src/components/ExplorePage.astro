@@ -30,6 +30,7 @@ import {
   timelineScale,
 } from "../lib/timeline.ts";
 import { chapterProblems, chapterSources, orderChapterFiles } from "../lib/story.ts";
+import type { Chapter } from "../lib/story.ts";
 
 type Props = { id: DatasetId };
 const { id } = Astro.props;
@@ -134,11 +135,12 @@ const stepSlots = [
   { step: "next", item: neighbour(ordered, current.id, 1) },
 ] as const;
 
-// Story mode's chapters, read from docs/story while the site is built, in file-name order. A day
-// before the site starts, or a company the data does not have, stops the build with the file
-// name. A past page has no Story mode, so it reads none.
-const chapters = isPast ? [] : orderChapterFiles(chapterSources());
-if (!isPast) {
+// Story mode's chapters, read from docs/story while the site is built, in file-name order. They
+// are read only while Story is on, so unfinished chapters cannot stop the site: the same checks
+// run in src/lib/story.test.ts. A day before the site starts, or a company the data does not
+// have, stops the build with the file name when Story is on. A past page has none.
+const chapters: Chapter[] = STORY_ENABLED && !isPast ? orderChapterFiles(chapterSources()) : [];
+if (STORY_ENABLED && !isPast) {
   const chapterProblemsFound = chapterProblems(
     chapters,
     allCompanies.map((company) => company.id),
@@ -154,7 +156,7 @@ const firstChapterNames = firstChapter
   : "";
 // The browser needs the chapter text too, so the page carries it as data rather than asking for
 // the files again.
-const chaptersJson = isPast ? "" : JSON.stringify(chapters).replace(/</g, "\\u003c");
+const chaptersJson = chapters.length > 0 ? JSON.stringify(chapters).replace(/</g, "\\u003c") : "";
 
 const statusLine =
   setStatus === "sample"

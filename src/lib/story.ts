@@ -70,7 +70,8 @@ export function orderChapterFiles(files: Record<string, string>): Chapter[] {
 }
 
 // What would stop a chapter from being shown, as one line each. The page stops the build with
-// these, so a bad chapter is fixed here rather than found on the site.
+// these while Story is on, and src/lib/story.test.ts checks the real files, so a bad chapter is
+// fixed here rather than found on the site.
 export function chapterProblems(
   chapters: readonly Chapter[],
   companyIds: readonly string[],
