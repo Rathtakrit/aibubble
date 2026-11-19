@@ -28,11 +28,11 @@ const dayLabel = (date: string) => new Intl.DateTimeFormat("en-GB", { day: "nume
     <div class="compare-page">
       <header class="site-header">
         <a class="wordmark" href="/">Bubble</a>
-        <nav class="site-nav" aria-label="Sections">
-          <a class="nav-item" href="/">AI</a>
-          <a class="nav-item" href="/past/dotcom/">Dot-com</a>
-          <a class="nav-item" href="/past/housing/">Housing</a>
-          <a class="nav-item nav-current" href="/compare/" aria-current="page">Compare</a>
+        <nav class="site-nav mode-switch" aria-label="Sections">
+          <a class="nav-item mode-button" href="/">AI</a>
+          <a class="nav-item mode-button" href="/past/dotcom/">Dot-com</a>
+          <a class="nav-item mode-button" href="/past/housing/">Housing</a>
+          <a class="nav-item mode-button nav-current" href="/compare/" aria-current="page">Compare</a>
         </nav>
       </header>
       <main id="compare">
