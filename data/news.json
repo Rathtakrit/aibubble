@@ -673,7 +673,7 @@
       "id": "2023-09-14-arm-s-shares-begin-trading-after-51-ipo",
       "date": "2023-09-14",
       "title": "Arm's shares begin trading after $51 IPO",
-      "summary": "Priced at $51.00 per ADS; trading began on Nasdaq under \"ARM\".",
+      "summary": "Priced at $51.00 per ADS in its IPO (the first sale of shares to the public); trading began on Nasdaq (a US stock market) under \"ARM\".",
       "players": [
         "g-chips",
         "softbank"
@@ -739,7 +739,7 @@
       "id": "2024-02-23-nvidia-passes-2-trillion",
       "date": "2024-02-23",
       "title": "Nvidia passes $2 trillion",
-      "summary": "Market value briefly reached $2tn, weeks after its results.",
+      "summary": "Market value (what all its shares are worth) briefly reached $2tn, weeks after its results.",
       "players": [
         "nvidia"
       ],
@@ -829,7 +829,7 @@
       "id": "2025-03-03-anthropic-raises-at-a-61-5bn-valuation",
       "date": "2025-03-03",
       "title": "Anthropic raises at a $61.5bn valuation",
-      "summary": "Series E.",
+      "summary": "Series E funding round at a valuation (what investors say the whole company is worth) of $61.5bn.",
       "players": [
         "anthropic"
       ],
@@ -905,7 +905,7 @@
       "id": "2025-07-16-slok-more-overvalued-than-1990s",
       "date": "2025-07-16",
       "title": "Apollo's Slok: AI more overvalued than in the 1990s",
-      "summary": "Apollo's chief economist wrote that the top 10 S&P 500 companies are more overvalued now than they were in the 1990s IT bubble.",
+      "summary": "Apollo's chief economist wrote that the top 10 S&P 500 companies (an index of 500 large US firms) are more overvalued now than they were in the 1990s IT bubble.",
       "players": [],
       "kind": "money",
       "key_date": false,
