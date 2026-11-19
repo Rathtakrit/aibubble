@@ -27,6 +27,8 @@ import type { CameraView } from "../lib/camera.ts";
 import type { Chapter } from "../lib/story.ts";
 import { SHEET_TAP_PX, snapSheet } from "../lib/sheet.ts";
 import type { SheetState } from "../lib/sheet.ts";
+import { readVisit, restoreTabLinks, tabStorage, writeVisit } from "../lib/visit.ts";
+import type { Visit } from "../lib/visit.ts";
 import {
   dateAt,
   dayIndex,
@@ -624,24 +626,47 @@ function drawBubble(immediate: boolean): void {
 // the reader pauses, which keeps phone browsers happy.
 let addressTimer: ReturnType<typeof setTimeout> | null = null;
 
+// The address that shows the page's state, used for the browser's address and for the tab's
+// saved place.
+function stateAddress(): string {
+  if (chapterIndex !== null) return `${window.location.pathname}?chapter=${chapterIndex + 1}`;
+  const params = new URLSearchParams({ date: day });
+  if (itemId !== null) params.set("news", itemId);
+  else if (companyId !== null) params.set("company", companyId);
+  return `${window.location.pathname}?${params.toString()}`;
+}
+
 function writeAddress(): void {
   if (addressTimer !== null) {
     clearTimeout(addressTimer);
     addressTimer = null;
   }
-  if (chapterIndex !== null) {
-    history.replaceState(null, "", `${window.location.pathname}?chapter=${chapterIndex + 1}`);
-    return;
-  }
-  const params = new URLSearchParams({ date: day });
-  if (itemId !== null) params.set("news", itemId);
-  else if (companyId !== null) params.set("company", companyId);
-  history.replaceState(null, "", `${window.location.pathname}?${params.toString()}`);
+  history.replaceState(null, "", stateAddress());
+  saveVisit();
 }
 
 function writeAddressSoon(): void {
   if (addressTimer !== null) clearTimeout(addressTimer);
   addressTimer = setTimeout(writeAddress, 200);
+}
+
+// The browser tab's own storage and the tab links on both layouts. A link with a query of its
+// own, like Story's ?chapter=1, says what it means and is not a tab link. With storage blocked
+// the page remembers nothing, exactly as on a first visit.
+const visitStorage = tabStorage();
+const visitLinks = Array.from(document.querySelectorAll<HTMLAnchorElement>(".site-nav a[href], .mode-switch a[href]"))
+  .filter((link) => link.search === "" && link.hash === "");
+
+// The page's saved place, written only when it changes; the tab links then lead back to it.
+let savedState = "";
+
+function saveVisit(): void {
+  const visit: Visit = { address: stateAddress(), zoom: fitPlayers || manual !== 1 ? "focused" : "whole" };
+  const value = JSON.stringify(visit);
+  if (value === savedState) return;
+  savedState = value;
+  writeVisit(visit, visitStorage);
+  restoreTabLinks(visitLinks, visitStorage);
 }
 
 // A chapter the reader can see: focus it, skipping the copy the other layout keeps hidden.
@@ -980,6 +1005,8 @@ for (const svg of document.querySelectorAll<SVGSVGElement>("[data-bubble]")) {
       pan = clampPan(base, { dx: next.cx - base.cx, dy: next.cy - base.cy });
     }
     drawBubble(true);
+    // A wheel or pinch zoom changes the saved whole/focused state without a render.
+    saveVisit();
   };
 
   svg.setAttribute("tabindex", "0");
@@ -1106,9 +1133,10 @@ for (const svg of document.querySelectorAll<SVGSVGElement>("[data-bubble]")) {
   });
 }
 
-// Read the address once, then draw. A chapter opens Story on its day; without one, ?news=,
-// ?company= or ?date= picks the view. Otherwise the opening item stays selected. A past page
-// has no Story mode, so it ignores ?chapter=.
+// The tab links lead to each page's saved place, and the address is read once, then the page is
+// drawn. A chapter opens Story on its day; without one, ?news=, ?company= or ?date= picks the
+// view. Otherwise the opening item stays selected. A past page has no Story mode, so it ignores
+// ?chapter=.
 function readAddress(): void {
   const params = new URLSearchParams(window.location.search);
   // ?chapter=3 opens chapter 3; a number that is not a chapter opens the first.
@@ -1160,7 +1188,19 @@ function readAddress(): void {
   }
 }
 
+restoreTabLinks(visitLinks, visitStorage);
+const savedVisit = readVisit(window.location.pathname, visitStorage);
 readAddress();
+// Back in this tab, the saved address brings back its zoom as well. An address of its own, such
+// as an outside link with ?news=, opens exactly what it says, as today.
+if (savedVisit && savedVisit.address === stateAddress()) {
+  if (savedVisit.zoom === "focused") {
+    resetZoom(true);
+    if (!fitPlayers) manual = 2;
+  } else if (savedVisit.zoom === "whole") {
+    resetZoom();
+  }
+}
 render();
 void prepareLayouts().catch((error: unknown) => console.error(error));
 
