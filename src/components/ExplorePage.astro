@@ -23,6 +23,8 @@ import {
   dayLabel,
   FIRST_DAY,
   inDateOrder,
+  monthYear,
+  neighbour,
   pillKind,
   placeLabels,
   publisherName,
@@ -124,9 +126,17 @@ const labels = placeLabels(
 );
 
 // The line runs from the set's first month to its last; only the AI page ends on "Today".
-const monthYear = new Intl.DateTimeFormat("en-GB", { month: "short", year: "numeric", timeZone: "UTC" });
-const firstEnd = monthYear.format(new Date(`${firstDay}T00:00:00Z`));
-const lastEnd = isPast ? monthYear.format(new Date(`${lastDay}T00:00:00Z`)) : "Today";
+const monthName = new Intl.DateTimeFormat("en-GB", { month: "short", year: "numeric", timeZone: "UTC" });
+const firstEnd = monthName.format(new Date(`${firstDay}T00:00:00Z`));
+const lastEnd = isPast ? monthName.format(new Date(`${lastDay}T00:00:00Z`)) : "Today";
+
+// The sheet's three-day row: the news before this one, this one and the next, with an empty slot
+// at either end so the current dot stays in the middle.
+const stepSlots = [
+  { step: "before", item: neighbour(ordered, current.id, -1) },
+  { step: "current", item: current },
+  { step: "next", item: neighbour(ordered, current.id, 1) },
+] as const;
 
 // Story mode's chapters, read from docs/story while the site is built, in file-name order. A day
 // before the site starts, or a company the data does not have, stops the build with the file
@@ -601,15 +611,6 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
             aria-label={`Source: ${publisher}, opens in a new tab`}
             >{publisher} · {dayLabel(current.date)} ↗</a
           >
-          <div class="pill-row">
-            <span class:list={["pill", `pill-${pillColour}`]} data-bind="pill"
-              ><span class="pill-line" aria-hidden="true"></span
-              ><span data-bind="pill-label">{pillName}</span></span
-            >
-            <span class="players-line" data-players-line>
-              Players: <strong data-bind="names-phone">{players}</strong>
-            </span>
-          </div>
         </div>
 
         <div data-block="quiet" hidden>
@@ -697,85 +698,28 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
           )
         }
 
-        <div class="timeline-row">
-        <button type="button" class="timeline-start" data-action="timeline-start" aria-label="Start at the first item">Start</button>
-        <div class="sheet-timeline">
-          <div class="timeline-axis" aria-hidden="true"></div>
-          {burst && (
-            <span
-              class="timeline-burst"
-              data-timeline-date={burst.date}
-              style={`left: ${scale.percentOf(burst.date)}%`}
-              aria-hidden="true"
-            />
-          )}
-          <input
-            class="day-range"
-            data-slider
-            type="range"
-            min="0"
-            max="10000"
-            step="1"
-            value={sliderValue}
-            aria-label="Day"
-            aria-valuetext={dayLabel(current.date)}
-          />
-          {
-            keyDates.map((item) => (
+        <div class="sheet-steps explore-only" data-steps>
+          {stepSlots.map((slot) => (
+            <div class="step-slot">
               <button
                 type="button"
-                class="timeline-dot"
-                data-dot="key"
-                data-news={item.id}
-                    data-timeline-date={item.date}
-                style={`left: ${scale.percentOf(item.date)}%`}
-                title={item.title}
-                aria-label={ariaFor(item.id, item.title, item.date)}
+                class="step-button"
+                data-step={slot.step}
+                data-news={slot.item?.id}
+                hidden={!slot.item}
+                aria-label={slot.item ? ariaFor(slot.item.id, slot.item.title, slot.item.date) : undefined}
               >
-                <span class="dot" />
+                <span class="sheet-kicker step-now" aria-hidden="true">
+                  {slot.step === "current" ? "Now" : ""}
+                </span>
+                <span class="step-mark" aria-hidden="true"><span class="step-dot" /></span>
+                <span class="step-date" aria-hidden="true">
+                  {slot.item ? monthYear(slot.item.date) : ""}
+                </span>
               </button>
-            ))
-          }
-          {
-            ordered.filter((item) => !item.key_date).map((item) => (
-              <button
-                type="button"
-                class="timeline-dot"
-                data-dot="small"
-                   data-zoom-only={!item.small_date || undefined}
-                data-news={item.id}
-                    data-timeline-date={item.date}
-                style={`left: ${scale.percentOf(item.date)}%`}
-                title={item.title}
-                aria-label={ariaFor(item.id, item.title, item.date)}
-              >
-                <span class="dot" />
-              </button>
-            ))
-          }
-          {
-            STORY_ENABLED && !isPast &&
-              chapters.map((chapter) => (
-                <button
-                  type="button"
-                  class="timeline-dot story-dot"
-                  data-chapter={chapter.number}
-                  style={`left: ${scale.percentOf(chapter.date)}%`}
-                  title={chapter.title}
-                  aria-label={`Chapter ${chapter.number} of ${chapters.length}: ${dayLabel(chapter.date)}, ${chapter.title}`}
-                >
-                  <span class="dot" />
-                </button>
-              ))
-          }
+            </div>
+          ))}
         </div>
-        <div class="zoom-buttons timeline-zoom">
-            <button type="button" class="zoom-button" data-action="timeline-zoom" aria-label="Zoom timeline out" aria-pressed="true">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"></path></svg>
-            </button>
-          </div>
-        </div>
-        <div class="timeline-ends" aria-hidden="true"><span>{firstEnd}</span><span>{lastEnd}</span></div>
 
         <div class="sheet-buttons explore-only">
           <button type="button" class="button" data-action="earlier">← Earlier</button>
