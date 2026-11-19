@@ -858,8 +858,12 @@ body:not([data-timeline-zoomed="true"]) [data-zoom-only="true"],
   flex: 1 1 0;
 }
 
+/* The line sits below the Earlier / Later buttons. The Report link's tap area is 44px tall but
+   its text is not, so the link is pulled up half of that extra height by its own margins (see the
+   next rule). The line is moved down by the same amount, plus 12px, so the link's box always
+   starts at least 12px below the buttons' boxes and the two never touch. */
 .sheet .status {
-  margin: 0;
+  margin: calc(12px + (44px - 1lh) / 2) 0 0;
   font-size: 11px;
   color: var(--ink-2);
 }
