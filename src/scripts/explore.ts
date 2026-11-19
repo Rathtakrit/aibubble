@@ -96,7 +96,7 @@ const nameOf = new Map(companies.map((company) => [company.id, company.name]));
 const companyById = new Map(companies.map((company) => [company.id, company]));
 const lastDate = defaultDate();
 const lastDay = dayIndex(lastDate);
-const newest: NewsItem | undefined = ordered[ordered.length - 1];
+const openingItem: NewsItem | undefined = ordered[isPast ? 0 : ordered.length - 1];
 // The timeline's day scale, built once from the days that carry a dot: busy months are wider.
 const scale = timelineScale(lastDate, {
   red: ordered.filter((item) => item.key_date),
@@ -118,8 +118,8 @@ const VALUE_NOTES: Record<Company["kind"], string> = {
 
 // The three things the page remembers: the day, the news item or company chosen for it, and the
 // chapter being read. A chapter is a mode: while one is open the page is Story, not Explore.
-let day = newest ? newest.date : lastDate;
-let itemId: string | null = newest ? newest.id : null;
+let day = openingItem?.date ?? lastDate;
+let itemId: string | null = openingItem?.id ?? null;
 let companyId: string | null = null;
 let chapterIndex: number | null = null;
 // Whether "Read the story" has the list of chapters open.
@@ -1063,8 +1063,8 @@ for (const svg of document.querySelectorAll<SVGSVGElement>("[data-bubble]")) {
 }
 
 // Read the address once, then draw. A chapter opens Story on its day; without one, ?news=,
-// ?company= or ?date= picks the view, and a plain page shows the newest item. A past page has
-// no Story mode, so it ignores ?chapter=.
+// ?company= or ?date= picks the view. Otherwise the opening item stays selected. A past page
+// has no Story mode, so it ignores ?chapter=.
 function readAddress(): void {
   const params = new URLSearchParams(window.location.search);
   // ?chapter=3 opens chapter 3; a number that is not a chapter opens the first.
@@ -1113,11 +1113,6 @@ function readAddress(): void {
     // for today.
     itemId = null;
     day = lastDate;
-    return;
-  }
-  if (newest) {
-    itemId = newest.id;
-    day = newest.date;
   }
 }
 

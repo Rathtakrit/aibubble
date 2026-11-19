@@ -49,7 +49,7 @@ const lastDay = LAST_DAY;
 const allCompanies = companies;
 const allDeals = deals;
 const ordered = inDateOrder(news.filter((item) => item.kind === "money" && item.date >= firstDay));
-const current = ordered[ordered.length - 1];
+const current = ordered[isPast ? 0 : ordered.length - 1];
 const pill = pillKind(current, allDeals);
 const pillColour = pillClass(pill);
 const pillName = pillLabel(pill);
