@@ -6,7 +6,6 @@ import "../styles/explore.css";
 import {
   burst,
   companies,
-  datasetTitle,
   deals,
   kindColour,
   kinds,
@@ -42,7 +41,7 @@ const isPast = id !== "ai";
 // Story is off for now because it is too close to Explore.
 const STORY_ENABLED = false;
 // Everything below is taken now, while this set is the active one.
-const title = datasetTitle;
+const boomName = { ai: "AI boom", dotcom: "Dot-com boom", housing: "Housing boom" }[id];
 const setStatus = status;
 const setKinds = kinds;
 const firstDay = FIRST_DAY;
@@ -51,8 +50,6 @@ const allCompanies = companies;
 const allDeals = deals;
 const ordered = inDateOrder(news.filter((item) => item.kind === "money" && item.date >= firstDay));
 const current = ordered[ordered.length - 1];
-const count = ordered.length;
-const position = count;
 const pill = pillKind(current, allDeals);
 const pillColour = pillClass(pill);
 const pillName = pillLabel(pill);
@@ -60,7 +57,6 @@ const nameOf = new Map(allCompanies.map((company) => [company.id, company.name])
 const players = current.players.map((player) => nameOf.get(player) ?? player).join(", ");
 const keyDates = ordered.filter((item) => item.key_date);
 const smallDates = ordered.filter((item) => item.small_date);
-const place = new Map(ordered.map((item, index) => [item.id, index + 1]));
 const publisher = publisherName(current.source);
 // One day scale for the dots, the ticks, the years and the slider, so busy months are wider.
 const scale = timelineScale(lastDay, { red: keyDates, blue: smallDates });
@@ -166,8 +162,7 @@ const statusLine =
     : setStatus === "draft"
       ? "Draft data: researched, not yet checked by the owner."
       : "";
-const ariaFor = (id: string, itemTitle: string, date: string) =>
-  `News ${place.get(id)} of ${count}: ${dayLabel(date)}, ${itemTitle}`;
+const ariaFor = (itemTitle: string, date: string) => `${dayLabel(date)}, ${itemTitle}`;
 ---
 
 <!doctype html>
@@ -205,7 +200,7 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
 
       <main class="explore-main">
         <div class="story-column">
-          <p class="kicker explore-only" data-bind="kicker-desktop">{title} · news {position} of {count}</p>
+          <p class="kicker boom-kicker explore-only" data-bind="kicker-desktop">{boomName}</p>
           {
             STORY_ENABLED && !isPast && (
               <p class="kicker story-only" data-bind="story-kicker">
@@ -213,14 +208,12 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
               </p>
             )
           }
-          <p class="big-date" data-bind="date">{dayLabel(current.date)}</p>
-
           <div data-block="item">
+            <h1 class="big-heading" data-bind="title">{current.title}</h1>
             <span class:list={["pill", `pill-${pillColour}`]} data-bind="pill"
               ><span class="pill-line" aria-hidden="true"></span
               ><span data-bind="pill-label">{pillName}</span></span
             >
-            <h1 class="headline" data-bind="title">{current.title}</h1>
             <p class="summary" data-bind="summary">{current.summary}</p>
             <a
               class="source"
@@ -239,14 +232,16 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
 
           <div data-block="quiet" hidden>
             <p class="latest-label">Latest before this day:</p>
-            <button type="button" class="latest-button" data-action="latest" data-bind="latest-title"
-              >{current.title}</button
-            >
+            <h1 class="big-heading">
+              <button type="button" class="latest-button" data-action="latest" data-bind="latest-title"
+                >{current.title}</button
+              >
+            </h1>
           </div>
 
           <div data-block="company" hidden>
+            <h1 class="big-heading" data-bind="company-name"></h1>
             <button type="button" class="company-back" data-action="company-back">← Back</button>
-            <h1 class="headline" data-bind="company-name"></h1>
             <p class="company-value" data-bind="company-value"></p>
             <p class="company-note" data-bind="company-note"></p>
             <a class="source" data-bind="company-source" target="_blank" rel="noopener"></a>
@@ -336,9 +331,8 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
             </div>
           </div>
           <div class="bubble-meta">
-            <span data-bind="companies"
-              >{isPast ? "All companies shown" : "All AI companies"} on {dayLabel(current.date)} · total {total}</span
-            >
+            <div data-bind="companies">Combined value of the companies shown: {total}</div>
+            {!isPast && <div>Whole-company values, so non-AI business counts too.</div>}
           </div>
           <div class="legend">
             <span class="legend-title">Money flow</span>
@@ -394,7 +388,7 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
                     data-timeline-date={item.date}
                     style={`left: ${left}%`}
                     title={item.title}
-                    aria-label={ariaFor(item.id, item.title, item.date)}
+                    aria-label={ariaFor(item.title, item.date)}
                   >
                     <span class="dot" />
                   </button>
@@ -428,7 +422,7 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
                     data-timeline-date={item.date}
                   style={`left: ${scale.percentOf(item.date)}%`}
                   title={item.title}
-                  aria-label={ariaFor(item.id, item.title, item.date)}
+                  aria-label={ariaFor(item.title, item.date)}
                 >
                   <span class="dot" />
                 </button>
@@ -595,9 +589,7 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
           <button type="button" class="dock-button" data-action="later" aria-label="Later">→</button>
         </div>
 
-        <p class="sheet-kicker explore-only" data-bind="kicker-phone">
-          News {position} of {count} · {dayLabel(current.date)}
-        </p>
+        <p class="sheet-kicker boom-kicker explore-only" data-bind="kicker-phone">{boomName}</p>
 
         <div data-block="item">
           <h1 class="sheet-title" data-bind="title">{current.title}</h1>
@@ -707,7 +699,7 @@ const ariaFor = (id: string, itemTitle: string, date: string) =>
                 data-step={slot.step}
                 data-news={slot.item?.id}
                 hidden={!slot.item}
-                aria-label={slot.item ? ariaFor(slot.item.id, slot.item.title, slot.item.date) : undefined}
+                aria-label={slot.item ? ariaFor(slot.item.title, slot.item.date) : undefined}
               >
                 <span class="sheet-kicker step-now" aria-hidden="true">
                   {slot.step === "current" ? "Now" : ""}

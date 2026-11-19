@@ -6,7 +6,6 @@ import {
   companies,
   burst,
   datasetId,
-  datasetTitle,
   deals,
   news,
   LAST_DAY,
@@ -91,7 +90,6 @@ const STORY_ENABLED = document.body.dataset.storyEnabled === "true";
 // Explore walks money news only, from the set's first day on; the other news waits for its own tab.
 const ordered = inDateOrder(news.filter((item) => item.kind === "money" && item.date >= FIRST_DAY));
 const byId = new Map(ordered.map((item) => [item.id, item]));
-const place = new Map(ordered.map((item, index) => [item.id, index + 1]));
 const nameOf = new Map(companies.map((company) => [company.id, company.name]));
 const companyById = new Map(companies.map((company) => [company.id, company]));
 const lastDate = defaultDate();
@@ -181,7 +179,7 @@ function drawTimeline(): void {
   const firstShown = scale.dateOf(visibleTimeline.start);
   const lastShown = scale.dateOf(visibleTimeline.end);
   const summary = document.querySelector<HTMLElement>("[data-timeline-summary]");
-  if (summary) summary.textContent = `${dayLabel(firstShown)} → ${dayLabel(lastShown)} · news ${anchor ? place.get(anchor.id) ?? 0 : 0} of ${ordered.length}`;
+  if (summary) summary.textContent = `${dayLabel(firstShown)} → ${dayLabel(lastShown)}`;
   const bracket = timelineZoomed ? strip.bracket(firstShown, lastShown) : { left: 0, width: 100 };
   const bracketElement = document.querySelector<HTMLElement>("[data-strip-bracket]");
   if (bracketElement) {
@@ -285,9 +283,9 @@ function namesOf(ids: readonly string[]): string {
   return ids.map((id) => nameOf.get(id) ?? id).join(", ");
 }
 
-// The label the sheet's dots and the timeline's dots carry for an item: its place, day and title.
-function ariaFor(id: string, itemTitle: string, date: string): string {
-  return `News ${place.get(id)} of ${ordered.length}: ${dayLabel(date)}, ${itemTitle}`;
+// The label for a news item shows its day and title.
+function ariaFor(itemTitle: string, date: string): string {
+  return `${dayLabel(date)}, ${itemTitle}`;
 }
 
 // The companies on the company's money lines that day: the ones the camera frames with it.
@@ -337,7 +335,7 @@ let rowsKey = "";
 function renderCompany(company: Company): void {
   setText("company-name", company.name);
   const value = valueOn(values, company.id, day);
-  setText("company-value", value === null ? "" : `${formatValue(value)} on ${dayLabel(day)}`);
+  setText("company-value", value === null ? "" : formatValue(value));
   setText("company-note", VALUE_NOTES[company.kind]);
 
   // The sourced point the value shown is drawn from.
@@ -363,13 +361,11 @@ function renderCompany(company: Company): void {
       button.type = "button";
       button.className = "company-news-row";
       button.dataset.news = one.id;
-      const date = document.createElement("span");
-      date.className = "company-news-date";
-      date.textContent = dayLabel(one.date);
+      button.setAttribute("aria-label", ariaFor(one.title, one.date));
       const title = document.createElement("span");
       title.className = "company-news-title";
       title.textContent = one.title;
-      button.append(date, title);
+      button.append(title);
       row.appendChild(button);
       list.appendChild(row);
     }
@@ -473,8 +469,6 @@ function render(soon = false): void {
       }
     }
   } else if (item) {
-    setText("kicker-desktop", `${datasetTitle} · news ${place.get(item.id)} of ${count}`);
-    setText("kicker-phone", `News ${place.get(item.id)} of ${count} · ${dayLabel(item.date)}`);
     setText("title", item.title);
     // The docked sheet's one line: the news title, ellipsed to the width it has.
     setText("dock-title", item.title);
@@ -495,25 +489,20 @@ function render(soon = false): void {
       link.setAttribute("aria-label", `Source: ${publisher}, opens in a new tab`);
     }
   } else if (company) {
-    setText("kicker-desktop", `${datasetTitle} · ${dayLabel(day)}`);
-    setText("kicker-phone", `${datasetTitle} · ${dayLabel(day)}`);
     renderCompany(company);
     setText("dock-title", company.name);
   } else {
-    setText("kicker-desktop", `${datasetTitle} · ${dayLabel(day)}`);
-    setText("kicker-phone", `${datasetTitle} · ${dayLabel(day)}`);
     setText("latest-title", anchor ? anchor.title : "");
     setText("dock-title", anchor ? anchor.title : "");
   }
 
-  setText("date", dayLabel(day));
   const total = totalForDate(day);
   const lossPercent = peak && peak.total > 0 ? Math.round((1 - total / peak.total) * 100) : 0;
   setText(
     "companies",
     peak && burst && day >= burst.date
-      ? `Peak ${dayLabel(peak.date)}: ${formatValue(peak.total)} · now ${formatValue(total)} (${lossPercent >= 0 ? "−" : "+"}${Math.abs(lossPercent)}%)`
-      : `${isPast ? "All companies shown" : "All AI companies"} on ${dayLabel(day)} · total ${formatValue(total)}`,
+      ? `Peak ${formatValue(peak.total)} · now ${formatValue(total)} (${lossPercent >= 0 ? "−" : "+"}${Math.abs(lossPercent)}%)`
+      : `Combined value of the companies shown: ${formatValue(total)}`,
   );
 
   for (const marker of document.querySelectorAll<HTMLElement>("[data-news]")) {
@@ -548,7 +537,7 @@ function render(soon = false): void {
     button.hidden = target === null;
     if (target === null) continue;
     button.dataset.news = target.id;
-    button.setAttribute("aria-label", ariaFor(target.id, target.title, target.date));
+    button.setAttribute("aria-label", ariaFor(target.title, target.date));
     const date = button.querySelector<HTMLElement>(".step-date");
     if (date) date.textContent = monthYear(target.date);
   }
