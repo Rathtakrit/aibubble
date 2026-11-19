@@ -38,7 +38,7 @@ import {
   pillKind,
   placeLabels,
   publisherName,
-  snapToFirstItemDate,
+  snapToItemDateRange,
   stepDateLabel,
   type LabelRect,
   timelineScale,
@@ -688,12 +688,14 @@ function selectItem(id: string): void {
   render();
 }
 
-function snapToFirstItem(date: string): boolean {
+function snapToEdgeItem(date: string): boolean {
   const first = ordered[0];
-  if (!first || snapToFirstItemDate(date, first.date) === date) return false;
+  if (!first || !newest) return false;
+  const snapped = snapToItemDateRange(date, first.date, newest.date);
+  if (snapped === date) return false;
   chapterIndex = null;
   storyListOpen = false;
-  setItem(first);
+  setItem(date < first.date ? first : newest);
   return true;
 }
 
@@ -809,7 +811,7 @@ document.addEventListener("keydown", (event) => {
 // One step of the value is not one day, so Left and Right (and Up and Down) move a day and Home
 // and End jump to the first and last day, handled here rather than by the browser.
 function sliderTo(date: string): void {
-  if (snapToFirstItem(date)) {
+  if (snapToEdgeItem(date)) {
     render(true);
     return;
   }
@@ -828,7 +830,7 @@ function sliderTo(date: string): void {
 for (const slider of document.querySelectorAll<HTMLInputElement>("[data-strip-slider]")) {
   const jump = (percent: number) => {
     const date = strip.dateOf(percent);
-    if (snapToFirstItem(date)) {
+    if (snapToEdgeItem(date)) {
       timelineZoomed = true;
       render();
       return;
@@ -1093,7 +1095,7 @@ function readAddress(): void {
     wantedDate && /^\d{4}-\d{2}-\d{2}$/.test(wantedDate) && !Number.isNaN(Date.parse(wantedDate))
       ? dateAt(Math.min(lastDay, Math.max(0, dayIndex(wantedDate))))
       : null;
-  if (calendarDate && snapToFirstItem(calendarDate)) return;
+  if (calendarDate && snapToEdgeItem(calendarDate)) return;
   const wantedCompany = params.get("company");
   const company = wantedCompany ? companyById.get(wantedCompany) : undefined;
   if (company) {
