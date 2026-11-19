@@ -100,22 +100,41 @@ dialog input { accent-color: var(--accent); width: 20px; height: 20px; flex-shri
   .compare-page { min-height: 844px; font-size: 15px; line-height: 1.45; background-image: radial-gradient(var(--paper-dot) 1px,transparent 1px); background-size: 20px 20px; }
   .site-header { padding: 12px; display: block; background: var(--paper); }
   .wordmark { border: 1px solid var(--ink); padding: 0 12px; font-size: 22px; }
-  .site-nav { gap: 0; justify-content: space-between; margin-top: 8px; }
-  .nav-item { padding: 0 8px; font-size: 13px; }
+  .mode-switch { flex-wrap: nowrap; gap: 0; padding: 0; margin: 8px 0 0; border: 1px solid var(--ink); border-radius: 999px; }
+  .mode-button { flex: 1 1 0; justify-content: center; min-height: 44px; height: 44px; border-radius: 999px; color: var(--ink); font-size: 13px; font-weight: 600; opacity: 1; }
+  .mode-switch .nav-current { background: var(--ink); color: var(--paper); text-decoration: none; }
   main { padding: 12px 16px 16px; gap: 12px; }
   .heading { order: 0; justify-content: flex-end; }
   .heading > div:first-child { display: none; }
   .segments { padding: 2px; }
   .segments button { font-size: 13px; padding: 0 10px; }
-  .workbench { order: 1; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; align-items: start; }
-  .exposure { display: flex; flex-direction: column; gap: 8px; border-left: 3px solid var(--exposure); padding-left: 8px; }
+  .workbench { order: 1; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; align-items: start; container-type: inline-size; }
+  .exposure { --side-inset: 11px; display: grid; grid-column: 1; grid-row: 1 / span 2; grid-template-rows: subgrid; padding-left: var(--side-inset); }
   .exposure-1 { grid-column: 2; }
+  .exposure .caption, .picker summary { position: relative; }
+  .exposure .caption::before, .picker summary::before { content: ""; position: absolute; inset: 0 auto 0 calc(-1 * var(--side-inset)); width: 3px; background: var(--exposure); }
+  .exposure .caption::before { bottom: -8px; }
   .picker { border-top: 0; padding: 0; background: transparent; }
   .picker summary { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 44px; padding: 0 8px 0 0; font-size: 14px; cursor: pointer; }
-  .picker summary::after { content: "▾"; font-size: 12px; }
-  .picker[open] summary::after { content: "▴"; }
+  .picker summary::after { content: "▾"; font-size: 12px; transition: transform 200ms ease-out; }
+  .picker[open] summary::after { transform: rotate(180deg); }
   [data-tile] { display: block; font-size: 14px; }
-  .picker-fields { padding: 10px 0 0; }
+  /* Keep the shelf in the picker's flow, but align it to the full workbench. */
+  .picker[open] .picker-fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    width: 100cqw;
+    margin-inline-start: calc(-1 * var(--side-inset));
+    padding: 10px 0 0;
+    animation: picker-reveal 200ms ease-out;
+  }
+  .exposure-1 .picker[open] .picker-fields { margin-inline-start: calc(100% - 100cqw); }
+  .picker-fields > .picker-group + .picker-group { border-left: 1px solid var(--exposure); padding-left: 8px; }
+  @keyframes picker-reveal {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
   .bubble-pills { flex-direction: column; gap: 6px; border: 0; border-radius: 0; padding: 0; }
   .bubble-pills button { flex: none; width: 100%; min-height: 44px; padding: 0 10px; font-size: 13px; border: 1px solid var(--rule); border-radius: 12px; background: transparent; }
   .moment-pills { flex-direction: column; gap: 6px; }
@@ -134,7 +153,7 @@ dialog input { accent-color: var(--accent); width: 20px; height: 20px; flex-shri
   .source-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 8px; }
   .source-grid .source { min-height: 44px; padding: 4px 0; font-size: 13px; line-height: 16px; }
   .source-controls .segments button { min-width: 44px; }
-  .drawing { grid-column: 1 / -1; grid-row: 2; width: 100%; }
+  .drawing { grid-column: 1 / -1; grid-row: 3; width: 100%; }
   .drawing svg { height: 330px; }
   .caption { margin: 0; }
   .total { font-size: 28px; }
