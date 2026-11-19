@@ -22,11 +22,11 @@ import {
   dayLabel,
   FIRST_DAY,
   inDateOrder,
-  monthYear,
   neighbour,
   pillKind,
   placeLabels,
   publisherName,
+  stepDateLabel,
   timelineScale,
 } from "../lib/timeline.ts";
 import { chapterProblems, chapterSources, orderChapterFiles } from "../lib/story.ts";
@@ -121,10 +121,10 @@ const labels = placeLabels(
   1280,
 );
 
-// The line runs from the set's first month to its last; only the AI page ends on "Today".
+// The line ends on the last day in the data, not the visitor's local date.
 const monthName = new Intl.DateTimeFormat("en-GB", { month: "short", year: "numeric", timeZone: "UTC" });
 const firstEnd = monthName.format(new Date(`${firstDay}T00:00:00Z`));
-const lastEnd = isPast ? monthName.format(new Date(`${lastDay}T00:00:00Z`)) : "Today";
+const lastEnd = dayLabel(lastDay);
 
 // The sheet's three-day row: the news before this one, this one and the next, with an empty slot
 // at either end so the current dot stays in the middle.
@@ -691,26 +691,28 @@ const ariaFor = (itemTitle: string, date: string) => `${dayLabel(date)}, ${itemT
         }
 
         <div class="sheet-steps explore-only" data-steps>
-          {stepSlots.map((slot) => (
-            <div class="step-slot">
-              <button
-                type="button"
-                class="step-button"
-                data-step={slot.step}
-                data-news={slot.item?.id}
-                hidden={!slot.item}
-                aria-label={slot.item ? ariaFor(slot.item.title, slot.item.date) : undefined}
-              >
-                <span class="sheet-kicker step-now" aria-hidden="true">
-                  {slot.step === "current" ? "Now" : ""}
-                </span>
-                <span class="step-mark" aria-hidden="true"><span class="step-dot" /></span>
-                <span class="step-date" aria-hidden="true">
-                  {slot.item ? monthYear(slot.item.date) : ""}
-                </span>
-              </button>
-            </div>
-          ))}
+          <div class="step-row">
+            {stepSlots.map((slot) => (
+              <div class="step-slot">
+                <button
+                  type="button"
+                  class="step-button"
+                  data-step={slot.step}
+                  data-news={slot.item?.id}
+                  hidden={!slot.item}
+                  aria-label={slot.item ? ariaFor(slot.item.title, slot.item.date) : undefined}
+                >
+                  <span class="sheet-kicker step-now" aria-hidden="true">
+                    {slot.step === "current" ? "Now" : ""}
+                  </span>
+                  <span class="step-mark" aria-hidden="true"><span class="step-dot" /></span>
+                  <span class="step-date" aria-hidden="true">
+                    {slot.item ? stepDateLabel(slot.item.date) : ""}
+                  </span>
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
 
         <div class="sheet-buttons explore-only">

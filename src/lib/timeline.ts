@@ -189,6 +189,17 @@ export function dayLabel(date: string): string {
   return shortDateFormat.format(new Date(`${date}T00:00:00Z`));
 }
 
+const stepDateFormat = new Intl.DateTimeFormat("en-GB", {
+  day: "numeric",
+  month: "short",
+  timeZone: "UTC",
+});
+
+// "10 Mar", without a year, for the three dots in the phone sheet.
+export function stepDateLabel(date: string): string {
+  return stepDateFormat.format(new Date(`${date}T00:00:00Z`));
+}
+
 // "10/02" for 9 October 2002: the month, then the year's last two digits.
 export function monthYear(date: string): string {
   return `${date.slice(5, 7)}/${date.slice(2, 4)}`;
@@ -303,7 +314,16 @@ export function pillKind(item: Pick<NewsItem, "date" | "players" | "kind">, deal
 
 // --- timeline labels: alternate sides, with two heights on each side ---
 
-export type LabelBox = { id: string; percent: number; width: number };
+export type LabelBox = { id: string; percent: number; width: number; height?: number };
+export type LabelRect = { left: number; right: number; top: number; bottom: number };
+
+type LabelBands = {
+  // Above rows end at these y coordinates; below rows start at them.
+  above: readonly [number, number];
+  below: readonly [number, number];
+  height: number;
+  reserved: readonly LabelRect[];
+};
 
 export type LabelPlacement = {
   side: "above" | "below";
@@ -320,19 +340,18 @@ export type LabelPlacement = {
 export function placeLabels(
   boxes: readonly LabelBox[],
   containerWidth: number,
-  gap = 8,
+  bands: LabelBands = { above: [64, 28], below: [92, 128], height: 156, reserved: [] },
 ): Map<string, LabelPlacement> {
   const out = new Map<string, LabelPlacement>();
   if (containerWidth <= 0) return out;
-  const taken: Record<LabelPlacement["side"], [number, number][][]> = {
-    above: [[], []],
-    below: [[], []],
-  };
+  const gap = 8;
+  const taken = [...bands.reserved];
 
   const ordered = [...boxes].sort((a, b) => a.percent - b.percent);
   for (const [index, box] of ordered.entries()) {
     const side = index % 2 === 0 ? "above" : "below";
     const width = Math.min(box.width, containerWidth);
+    const height = box.height ?? 28;
     const middle = (box.percent / 100) * containerWidth;
     // A label that would run off an end of the line is lined up with that end instead.
     const align: LabelPlacement["align"] =
@@ -342,8 +361,13 @@ export function placeLabels(
     const right = left + width;
 
     for (const row of [0, 1] as const) {
-      if (taken[side][row].some(([start, end]) => left < end + gap && right > start - gap)) continue;
-      taken[side][row].push([left, right]);
+      const edge = bands[side][row];
+      const top = side === "above" ? edge - height : edge;
+      const bottom = top + height;
+      if (top < 0 || bottom > bands.height || taken.some((other) =>
+        left < other.right + gap && right > other.left - gap &&
+        top < other.bottom + gap && bottom > other.top - gap)) continue;
+      taken.push({ left, right, top, bottom });
       out.set(box.id, { side, row, align, shift: left - alignedLeft });
       break;
     }
