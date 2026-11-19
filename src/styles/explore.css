@@ -355,14 +355,13 @@ body[data-timeline-zoomed="true"] .timeline-dot[data-dot="small"] .dot {
   box-shadow: 0 0 0 2px var(--ink);
 }
 
-/* A date dot is a button: 44px tall so it is easy to tap, as narrow as the dot itself, and
-   above the slider so a tap on it opens that item while the rest of the line still drags. */
+/* Date buttons sit above the Day slider. Neighbours divide the space between them. */
 .timeline-dot {
   position: absolute;
   top: 0;
-  width: 18px;
+  width: var(--dot-width, 44px);
   height: 44px;
-  margin-left: -9px;
+  margin-left: var(--dot-left, -22px);
   padding: 0;
   border: none;
   background: transparent;
@@ -727,9 +726,20 @@ body:not([data-timeline-zoomed="true"]) [data-zoom-only="true"],
    either end so the current dot keeps the middle. A side dot's half-line runs to the current dot,
    so the line stops where there is no dot to join. */
 .sheet-steps {
+  position: relative;
+  overflow: clip;
+  margin-top: 14px;
+}
+
+.step-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  margin-top: 14px;
+}
+
+.step-row-outgoing {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
 }
 
 .step-slot {
@@ -1399,8 +1409,13 @@ body[data-mode="story"] .sheet .read-story {
   }
 
   .timeline-inner {
+    --timeline-line: 64px;
+    --label-near-above: 50px;
+    --label-far-above: 28px;
+    --label-near-below: 78px;
+    --label-far-below: 114px;
     position: relative;
-    height: 128px;
+    height: 142px;
     max-width: 1360px;
     margin: 0 auto;
   }
@@ -1452,15 +1467,23 @@ body[data-mode="story"] .sheet .read-story {
 
   .timeline-row > .timeline-inner { flex-basis: 0; }
   .timeline-inner .timeline-axis {
-    top: 64px;
+    top: var(--timeline-line);
+    transform: translateY(-50%);
     border-top: 0;
     height: 2.5px;
     background: linear-gradient(to right, var(--ink) var(--timeline-current, 50%), transparent var(--timeline-current, 50%)), repeating-linear-gradient(to right, #CFC5B2 0 4px, transparent 4px 8px);
   }
-  .timeline-inner .day-range { top: 42px; z-index: 1; }
-  .timeline-inner .timeline-dot { top: 42px; }
-  .timeline-inner .day-range::-webkit-slider-thumb { background: transparent; border-color: transparent; }
-  .timeline-inner .day-range::-moz-range-thumb { background: transparent; border-color: transparent; }
+  .timeline-inner .day-range,
+  .timeline-inner .timeline-dot { top: calc(var(--timeline-line) - 22px); }
+  .timeline-inner .day-range { z-index: 1; }
+  .timeline-inner .timeline-dot { touch-action: none; }
+  .timeline-dot .dot {
+    position: absolute;
+    top: 50%;
+    left: var(--dot-center, 50%);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
   .timeline-inner .timeline-tick, .timeline-inner .timeline-year, .timeline-inner .timeline-ends { display: none; }
 
   .timeline-label {
@@ -1474,20 +1497,20 @@ body[data-mode="story"] .sheet .read-story {
   }
 
   .timeline-label[data-row="0"] {
-    bottom: calc(100% - 52px);
+    bottom: calc(100% - var(--label-near-above));
   }
 
   .timeline-label[data-row="1"] {
-    bottom: calc(100% - 20px);
+    bottom: calc(100% - var(--label-far-above));
   }
 
   .timeline-label[data-side="below"][data-row="0"] {
-    top: 80px;
+    top: var(--label-near-below);
     bottom: auto;
   }
 
   .timeline-label[data-side="below"][data-row="1"] {
-    top: 112px;
+    top: var(--label-far-below);
     bottom: auto;
   }
 
@@ -1672,14 +1695,15 @@ body[data-mode="story"] .sheet .read-story {
   .timeline-strip-bracket { top: 2px; }
   .timeline-strip-current { top: 0; }
   .timeline-strip-years span { top: 28px; }
-  .timeline-inner { height: 84px; }
-  .timeline-inner .timeline-axis { top: 48px; }
-  .timeline-inner .day-range, .timeline-inner .timeline-dot { top: 26px; }
+  .timeline-inner {
+    --timeline-line: 48px;
+    --label-near-above: 34px;
+    --label-near-below: 62px;
+    --label-far-below: 98px;
+    height: 126px;
+  }
   .timeline-current { height: 20px; }
   .timeline-current::after { top: 7px; }
-  .timeline-label[data-row="0"] { bottom: calc(100% - 36px); }
-  .timeline-label[data-side="below"][data-row="0"] { top: 64px; bottom: auto; }
-  .timeline-label[data-side="below"][data-row="1"] { top: 96px; bottom: auto; }
 }
 
 /* --- a short window: the same page, with less air between its lines --- */

@@ -15,6 +15,7 @@ import {
   placeLabels,
   publisherName,
   siteName,
+  stepDateLabel,
   timelineScale,
   timelineStrip,
   timelineWindow,
@@ -267,6 +268,37 @@ test("science news shows Science, money news the kind of its deal", () => {
   assert.equal(pillKind(plain, deals), "money");
   // Right players, wrong day: the deal is not on that day.
   assert.equal(pillKind(otherDay, deals), "money");
+});
+
+test("phone step dates distinguish events in the same month", () => {
+  assert.equal(stepDateLabel("2009-03-10"), "10 Mar");
+  assert.equal(stepDateLabel("2009-03-18"), "18 Mar");
+  assert.equal(stepDateLabel("2009-03-01"), "1 Mar");
+});
+
+test("label boxes stay eight pixels apart and clear the reserved flag", () => {
+  const boxes = Array.from({ length: 6 }, (_, index) => ({
+    id: String(index), percent: 50, width: 100, height: 20,
+  }));
+  const flag = { left: 150, right: 250, top: 36, bottom: 56 };
+  const bands = { above: [60, 28] as const, below: [90, 118] as const, height: 140, reserved: [flag] };
+  const placed = placeLabels(boxes, 400, bands);
+  assert.equal(placed.size, 3);
+  assert.equal(placed.get("0")?.row, 1);
+  const occupied = [flag];
+  for (const box of boxes) {
+    const spot = placed.get(box.id);
+    if (!spot) continue;
+    const edge = bands[spot.side][spot.row];
+    const top = spot.side === "above" ? edge - box.height : edge;
+    const left = 400 * box.percent / 100 - box.width / 2 + spot.shift;
+    const rect = { left, right: left + box.width, top, bottom: top + box.height };
+    for (const other of occupied) {
+      assert.ok(rect.left >= other.right + 8 || rect.right <= other.left - 8 ||
+        rect.top >= other.bottom + 8 || rect.bottom <= other.top - 8);
+    }
+    occupied.push(rect);
+  }
 });
 
 test("labels alternate sides and use the second height before hiding", () => {
