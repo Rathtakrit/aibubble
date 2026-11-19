@@ -33,7 +33,9 @@ export function totalOn(dataset: CompareDataset, date: string) {
     const previous = latest.get(point.company);
     if (!previous || previous.date <= point.date) latest.set(point.company, point);
   }
+  // Compare shows real market size, so companies drop out only after they end.
   const values = dataset.companies.flatMap((company) => {
+    if (company.ended && date > company.ended) return [];
     const point = latest.get(company.id);
     return point ? [{ company, value: point.value_usd_bn, point }] : [];
   });
@@ -53,7 +55,7 @@ export function moments(dataset: CompareDataset): Record<Moment, string | null> 
   }
   let lowest: string | null = null;
   let smallest = Infinity;
-  for (const date of dates.slice(1)) {
+  for (const date of dates) {
     const total = totalOn(dataset, date).total;
     if (total < smallest) { smallest = total; lowest = date; }
   }
@@ -80,6 +82,23 @@ export function comparisonLine(a: number, b: number): string {
   return `A is ${Math.round(Math.abs(percent))}% ${percent > 0 ? "bigger" : "smaller"} than B`;
 }
 
+export type SideChange = { total: number; change: number | null };
+
+// The Change mode sentence: each side measured against its own Start, never against the
+// other side. A Start of zero has no percentage, and says so.
+function changePart(side: "A" | "B", change: number | null): string {
+  if (change === null) return `${side}'s change cannot be worked out because its Start total is zero or missing`;
+  if (Math.abs(change) <= 1) return `${side} is about the same as its start`;
+  const percent = Math.round(Math.abs(change));
+  return change > 0 ? `${side} grew ${percent}% from its start` : `${side} fell ${percent}% from its start`;
+}
+
+export function changeLine(a: SideChange, b: SideChange): string {
+  if (a.total === 0) return "Pick at least one company for A";
+  if (b.total === 0) return "Pick at least one company for B";
+  return `${changePart("A", a.change)}; ${changePart("B", b.change)}`;
+}
+
 export function top5(dataset: CompareDataset, date: string) {
   return totalOn(dataset, date).values
     .filter((entry) => entry.company.kind !== "group")
@@ -96,6 +115,7 @@ export function formatTotal(value: number): string {
 // day and lifetimes are local copies, so Compare never changes the site's active dataset.
 export function packedOn(dataset: CompareDataset, date: string) {
   const snapshot = totalOn(dataset, date).values.filter((entry) => entry.value > 0);
+  // The whole snapshot is laid out on one artificial day, so every company in it starts there.
   const companies = snapshot.map(({ company }) => ({ ...company, first_mention: FIRST_DAY, ended: undefined }));
   const values = snapshot.map(({ point }) => ({ ...point, date: FIRST_DAY }));
   const layout = dayLayouts(companies, values, [], FIRST_DAY);
