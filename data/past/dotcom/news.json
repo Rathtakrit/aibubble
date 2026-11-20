@@ -5,7 +5,7 @@
       "id": "1995-07-17-nasdaq-1000",
       "date": "1995-07-17",
       "title": "Nasdaq closes above 1,000",
-      "summary": "The Nasdaq Composite closed at 1,005.89 on 17 July 1995, its first close above 1,000.",
+      "summary": "The Nasdaq Composite (a US stock market, heavy in technology shares) closed at 1,005.89 on 17 July 1995, its first close above 1,000.",
       "players": [],
       "kind": "money",
       "key_date": false,
@@ -179,7 +179,7 @@
       "id": "1999-06-21-worldcom-peak",
       "date": "1999-06-21",
       "title": "WorldCom worth $180bn",
-      "summary": "WorldCom reached a market value of $180.01bn on 21 June 1999, before its long slide.",
+      "summary": "WorldCom reached a market value (what all its shares are worth) of $180.01bn on 21 June 1999, before its long slide.",
       "players": [
         "worldcom"
       ],
