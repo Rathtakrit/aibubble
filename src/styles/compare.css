@@ -119,8 +119,10 @@ dialog input { accent-color: var(--accent); width: 20px; height: 20px; flex-shri
   .picker summary::after { content: "▾"; font-size: 12px; transition: transform 200ms ease-out; }
   .picker[open] summary::after { transform: rotate(180deg); }
   [data-tile] { display: block; font-size: 14px; }
-  /* Keep the shelf in the picker's flow, but align it to the full workbench. */
+  /* Keep the shelf in the picker's flow, but align it to the full workbench. It spans both columns, so lift it above the other side's picker. */
   .picker[open] .picker-fields {
+    position: relative;
+    z-index: 2;
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
