@@ -32,6 +32,11 @@ const HIT_RADIUS = 22;
 const HEAD_LENGTH = 1.4;
 const HEAD_HALF = 0.8;
 
+// The peak label's arc, just inside the dots. The phone one is mirrored to the upper-left,
+// because the Zoom button covers the upper-right edge there.
+const PEAK_ARC_DESKTOP = "M 66.07 5.84 A 47 47 0 0 1 96.82 45.90";
+const PEAK_ARC_PHONE = "M 3.18 45.90 A 47 47 0 0 1 33.93 5.84";
+
 function el<T extends SVGElement>(name: string): T {
   return document.createElementNS(SVG_NS, name) as T;
 }
@@ -242,8 +247,9 @@ function ensureScene(svg: SVGSVGElement): {
     const id = `bubble-peak-arc-${svg.dataset.bubble}`;
     const arc = el<SVGPathElement>("path");
     arc.id = id;
-    // Run clockwise along the upper-right edge, just inside the dots.
-    arc.setAttribute("d", "M 66.07 5.84 A 47 47 0 0 1 96.82 45.90");
+    // Run clockwise along the upper-right edge, just inside the dots (upper-left on the phone,
+    // where the arc is mirrored), so the text reads upright.
+    arc.setAttribute("d", svg.dataset.bubble === "phone" ? PEAK_ARC_PHONE : PEAK_ARC_DESKTOP);
     defs.appendChild(arc);
     const text = el<SVGTextElement>("text");
     text.setAttribute("class", "bubble-drop");
