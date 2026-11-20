@@ -322,6 +322,8 @@ function renderSteps(anchor: NewsItem | null, at: number): void {
 function setText(name: string, text: string): void {
   for (const element of document.querySelectorAll<HTMLElement>(`[data-bind="${name}"]`)) {
     element.textContent = text;
+    // The plain-day title is inside the heading; the other titles are the heading.
+    element.closest(".big-heading")?.toggleAttribute("data-long-heading", text.length > 34);
   }
 }
 

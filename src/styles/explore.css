@@ -1311,6 +1311,10 @@ body[data-mode="story"] .sheet .read-story {
     overflow-wrap: anywhere;
   }
 
+  .big-heading[data-long-heading] {
+    font-size: 52px;
+  }
+
   .big-heading .latest-button {
     font: inherit;
     letter-spacing: inherit;
