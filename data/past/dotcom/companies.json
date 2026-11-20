@@ -6,7 +6,7 @@
       "name": "Microsoft",
       "kind": "listed",
       "ticker": "MSFT",
-      "first_mention": "1996-12-31",
+      "first_mention": "1995-01-01",
       "source": "https://companiesmarketcap.com/microsoft/marketcap/"
     },
     {
@@ -14,7 +14,7 @@
       "name": "Cisco",
       "kind": "listed",
       "ticker": "CSCO",
-      "first_mention": "1996-12-31",
+      "first_mention": "1995-01-01",
       "source": "https://companiesmarketcap.com/cisco/marketcap/"
     },
     {
@@ -22,7 +22,7 @@
       "name": "Intel",
       "kind": "listed",
       "ticker": "INTC",
-      "first_mention": "1996-12-31",
+      "first_mention": "1995-01-01",
       "source": "https://companiesmarketcap.com/intel/marketcap/"
     },
     {
@@ -30,7 +30,7 @@
       "name": "Oracle",
       "kind": "listed",
       "ticker": "ORCL",
-      "first_mention": "1996-12-31",
+      "first_mention": "1995-01-01",
       "source": "https://companiesmarketcap.com/oracle/marketcap/"
     },
     {
@@ -38,7 +38,7 @@
       "name": "IBM",
       "kind": "listed",
       "ticker": "IBM",
-      "first_mention": "1996-12-31",
+      "first_mention": "1995-01-01",
       "source": "https://companiesmarketcap.com/ibm/marketcap/"
     },
     {
@@ -54,7 +54,7 @@
       "name": "Qualcomm",
       "kind": "listed",
       "ticker": "QCOM",
-      "first_mention": "1996-12-31",
+      "first_mention": "1995-01-01",
       "source": "https://companiesmarketcap.com/qualcomm/marketcap/"
     },
     {
@@ -162,7 +162,7 @@
       "name": "Apple",
       "kind": "listed",
       "ticker": "AAPL",
-      "first_mention": "1996-12-31",
+      "first_mention": "1995-01-01",
       "source": "https://companiesmarketcap.com/apple/marketcap/"
     },
     {

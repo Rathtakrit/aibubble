@@ -73,6 +73,20 @@
     },
     {
       "company": "apple",
+      "date": "1995-01-01",
+      "value_usd_bn": 4.663,
+      "what": "year end 1994",
+      "source": "https://www.finhacker.cz/en/stocks/apple-market-cap/"
+    },
+    {
+      "company": "apple",
+      "date": "1995-12-29",
+      "value_usd_bn": 3.919,
+      "what": "year end",
+      "source": "https://www.finhacker.cz/en/stocks/apple-market-cap/"
+    },
+    {
+      "company": "apple",
       "date": "1996-12-31",
       "value_usd_bn": 2.6,
       "what": "year end",
@@ -182,6 +196,20 @@
       "value_usd_bn": 89.94,
       "what": "year end",
       "source": "https://companiesmarketcap.com/att/marketcap/"
+    },
+    {
+      "company": "cisco",
+      "date": "1995-01-01",
+      "value_usd_bn": 8.957,
+      "what": "year end 1994",
+      "source": "https://www.finhacker.cz/en/stocks/cisco-systems-market-cap/"
+    },
+    {
+      "company": "cisco",
+      "date": "1995-12-29",
+      "value_usd_bn": 20.605,
+      "what": "year end",
+      "source": "https://www.finhacker.cz/en/stocks/cisco-systems-market-cap/"
     },
     {
       "company": "cisco",
@@ -353,6 +381,20 @@
     },
     {
       "company": "ibm",
+      "date": "1995-01-01",
+      "value_usd_bn": 41.228,
+      "what": "year end 1994",
+      "source": "https://www.finhacker.cz/en/stocks/international-business-machines-market-cap/"
+    },
+    {
+      "company": "ibm",
+      "date": "1995-12-29",
+      "value_usd_bn": 48.723,
+      "what": "year end",
+      "source": "https://www.finhacker.cz/en/stocks/international-business-machines-market-cap/"
+    },
+    {
+      "company": "ibm",
       "date": "1996-12-31",
       "value_usd_bn": 76.95,
       "what": "year end",
@@ -406,6 +448,20 @@
       "value_usd_bn": 133.48,
       "what": "year end",
       "source": "https://companiesmarketcap.com/ibm/marketcap/"
+    },
+    {
+      "company": "intel",
+      "date": "1995-01-01",
+      "value_usd_bn": 26.468,
+      "what": "year end 1994",
+      "source": "https://www.finhacker.cz/en/stocks/intel-market-cap/"
+    },
+    {
+      "company": "intel",
+      "date": "1995-12-29",
+      "value_usd_bn": 47.046,
+      "what": "year end",
+      "source": "https://www.finhacker.cz/en/stocks/intel-market-cap/"
     },
     {
       "company": "intel",
@@ -511,6 +567,20 @@
       "value_usd_bn": 4.54,
       "what": "year end",
       "source": "https://companiesmarketcap.com/lucent-technologies/marketcap/"
+    },
+    {
+      "company": "microsoft",
+      "date": "1995-01-01",
+      "value_usd_bn": 35.475,
+      "what": "year end 1994",
+      "source": "https://www.finhacker.cz/en/stocks/microsoft-market-cap/"
+    },
+    {
+      "company": "microsoft",
+      "date": "1995-12-29",
+      "value_usd_bn": 51.975,
+      "what": "year end",
+      "source": "https://www.finhacker.cz/en/stocks/microsoft-market-cap/"
     },
     {
       "company": "microsoft",
@@ -668,6 +738,20 @@
     },
     {
       "company": "oracle",
+      "date": "1995-01-01",
+      "value_usd_bn": 12.614,
+      "what": "year end 1994",
+      "source": "https://www.finhacker.cz/en/stocks/oracle-market-cap/"
+    },
+    {
+      "company": "oracle",
+      "date": "1995-12-29",
+      "value_usd_bn": 18.419,
+      "what": "year end",
+      "source": "https://www.finhacker.cz/en/stocks/oracle-market-cap/"
+    },
+    {
+      "company": "oracle",
       "date": "1996-12-31",
       "value_usd_bn": 27.44,
       "what": "year end",
@@ -721,6 +805,20 @@
       "value_usd_bn": 56.9,
       "what": "year end",
       "source": "https://companiesmarketcap.com/oracle/marketcap/"
+    },
+    {
+      "company": "qualcomm",
+      "date": "1995-01-01",
+      "value_usd_bn": 1.236,
+      "what": "year end 1994",
+      "source": "https://www.finhacker.cz/en/stocks/qualcomm-market-cap/"
+    },
+    {
+      "company": "qualcomm",
+      "date": "1995-12-29",
+      "value_usd_bn": 2.782,
+      "what": "year end",
+      "source": "https://www.finhacker.cz/en/stocks/qualcomm-market-cap/"
     },
     {
       "company": "qualcomm",
