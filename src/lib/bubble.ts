@@ -23,7 +23,7 @@ const FADE_MS = 700;
 
 // Opacity of a faint money line, and of a bubble that is not a player of the chosen item.
 const FAINT = "0.45";
-const DIM = "0.38";
+const DIM = "var(--bubble-dim-opacity, 0.38)";
 
 // Minimum hit radius in CSS pixels, not in the viewBox or scene.
 const HIT_RADIUS = 22;
@@ -31,6 +31,11 @@ const HIT_RADIUS = 22;
 // The small arrowhead at the end of a strong line.
 const HEAD_LENGTH = 1.4;
 const HEAD_HALF = 0.8;
+
+// The peak label's arc, just inside the dots. The phone one is mirrored to the upper-left,
+// because the Zoom button covers the upper-right edge there.
+const PEAK_ARC_DESKTOP = "M 66.07 5.84 A 47 47 0 0 1 96.82 45.90";
+const PEAK_ARC_PHONE = "M 3.18 45.90 A 47 47 0 0 1 33.93 5.84";
 
 function el<T extends SVGElement>(name: string): T {
   return document.createElementNS(SVG_NS, name) as T;
@@ -53,6 +58,7 @@ type BubbleNode = {
   group: SVGGElement;
   title: SVGTitleElement;
   hit: SVGCircleElement;
+  focusRing: SVGCircleElement;
   circle: SVGCircleElement;
   logo: SVGGElement;
   logoRect: SVGRectElement;
@@ -143,15 +149,33 @@ function nameWidth(name: SVGTextElement, text: string): number {
 // Before the font has loaded, a name is measured in the fallback font. Once the real one is ready
 // every width is measured again, and each drawing is painted once more, so a long name is split or
 // hidden on the width it is really drawn at.
-document.fonts.ready.then(() => {
+globalThis.document?.fonts.ready.then(() => {
   textWidths.clear();
   for (const drawing of liveDrawings) paintAll(drawing);
 });
 
-// The clip, the scene group the camera will transform, and the frame ring on top.
-function ensureScene(
-  svg: SVGSVGElement,
-): { bubbleLayer: SVGGElement; arrowLayer: SVGGElement; scene: SVGGElement } {
+function frameCircle(className: string): SVGCircleElement {
+  const circle = el<SVGCircleElement>("circle");
+  circle.setAttribute("class", className);
+  circle.setAttribute("cx", String(FRAME.cx));
+  circle.setAttribute("cy", String(FRAME.cy));
+  circle.setAttribute("r", String(FRAME.radius));
+  circle.style.fill = "none";
+  circle.style.stroke = "var(--ink)";
+  circle.style.strokeWidth = "1.5px";
+  circle.setAttribute("vector-effect", "non-scaling-stroke");
+  circle.style.pointerEvents = "none";
+  return circle;
+}
+
+// The clipped company scene and the ring overlay on top.
+function ensureScene(svg: SVGSVGElement): {
+  bubbleLayer: SVGGElement;
+  arrowLayer: SVGGElement;
+  scene: SVGGElement;
+  rings: SVGGElement;
+  edge: SVGCircleElement;
+} {
   let defs = svg.querySelector("defs");
   if (!defs) {
     defs = el("defs");
@@ -204,27 +228,28 @@ function ensureScene(
   // so no line is ever seen crossing a bubble's face.
   if (arrowLayer.nextSibling !== bubbleLayer) scene.insertBefore(arrowLayer, bubbleLayer);
 
-  let ring = svg.querySelector<SVGCircleElement>("circle.bubble-frame");
-  if (!ring) {
-    ring = el("circle");
-    ring.setAttribute("class", "bubble-frame");
-    ring.setAttribute("cx", String(FRAME.cx));
-    ring.setAttribute("cy", String(FRAME.cy));
-    ring.setAttribute("r", String(FRAME.radius));
-    ring.style.fill = "none";
-    ring.style.stroke = "var(--ink)";
-    ring.style.strokeWidth = "1.5px";
-    ring.setAttribute("vector-effect", "non-scaling-stroke");
-    ring.style.pointerEvents = "none";
-    svg.appendChild(ring);
+  let rings = svg.querySelector<SVGGElement>("g.burst-rings");
+  if (!rings) {
+    const ringClip = el<SVGGElement>("g");
+    rings = el<SVGGElement>("g");
+    rings.setAttribute("class", "burst-rings");
+    rings.style.setProperty("transform-box", "view-box");
+    rings.style.setProperty("transform-origin", "0 0");
+    ringClip.appendChild(rings);
+    svg.appendChild(ringClip);
+  }
+
+  if (!rings.querySelector("circle.bubble-frame")) {
+    rings.appendChild(frameCircle("bubble-frame"));
   }
 
   if (!svg.querySelector(".bubble-drop")) {
     const id = `bubble-peak-arc-${svg.dataset.bubble}`;
     const arc = el<SVGPathElement>("path");
     arc.id = id;
-    // Run clockwise along the upper-right edge, just inside the dots.
-    arc.setAttribute("d", "M 66.07 5.84 A 47 47 0 0 1 96.82 45.90");
+    // Run clockwise along the upper-right edge, just inside the dots (upper-left on the phone,
+    // where the arc is mirrored), so the text reads upright.
+    arc.setAttribute("d", svg.dataset.bubble === "phone" ? PEAK_ARC_PHONE : PEAK_ARC_DESKTOP);
     defs.appendChild(arc);
     const text = el<SVGTextElement>("text");
     text.setAttribute("class", "bubble-drop");
@@ -235,7 +260,7 @@ function ensureScene(
     label.setAttribute("startOffset", "50%");
     label.setAttribute("text-anchor", "middle");
     text.appendChild(label);
-    svg.appendChild(text);
+    rings.appendChild(text);
   }
 
   if (!svg.querySelector("circle.bubble-real-ring")) {
@@ -247,14 +272,45 @@ function ensureScene(
     realRing.style.strokeWidth = "1.5px";
     realRing.setAttribute("vector-effect", "non-scaling-stroke");
     realRing.style.pointerEvents = "none";
-    svg.appendChild(realRing);
+    rings.appendChild(realRing);
+  }
+
+  // Keep the edge outside both the camera transform and the clip, with its full stroke visible.
+  let edge = svg.querySelector<SVGCircleElement>("circle.bubble-zoom-edge");
+  if (!edge) {
+    edge = frameCircle("bubble-zoom-edge");
+    edge.style.display = "none";
+    svg.appendChild(edge);
   }
 
   return {
     bubbleLayer: bubbleLayer as SVGGElement,
     arrowLayer: arrowLayer as SVGGElement,
     scene: scene as SVGGElement,
+    rings,
+    edge,
   };
+}
+
+const ringFrames = new WeakMap<SVGGElement, number>();
+
+function paintRingCamera(rings: SVGGElement, transitioning: boolean): void {
+  const pending = ringFrames.get(rings);
+  if (pending !== undefined) cancelAnimationFrame(pending);
+  ringFrames.delete(rings);
+
+  // Counter-scale the label using the current scale, including during the camera glide.
+  const transform = getComputedStyle(rings).transform;
+  const matrix = new DOMMatrixReadOnly(transform === "none" ? undefined : transform);
+  rings.style.setProperty("--burst-zoom", String(matrix.a));
+  // At rest, leave the full stroke visible along the frame edge, as before.
+  const clip = rings.parentElement!;
+  if (matrix.isIdentity) clip.removeAttribute("clip-path");
+  else clip.setAttribute("clip-path", `url(#${CLIP_ID})`);
+
+  if (transitioning && rings.getAnimations().length > 0) {
+    ringFrames.set(rings, requestAnimationFrame(() => paintRingCamera(rings, true)));
+  }
 }
 
 function createBubbleNode(bubble: Bubble): BubbleNode {
@@ -279,6 +335,13 @@ function createBubbleNode(bubble: Bubble): BubbleNode {
   hit.style.fill = "transparent";
   hit.style.stroke = "none";
   group.appendChild(hit);
+
+  // Trace the same circle from behind so keyboard focus leaves the ink stroke intact.
+  const focusRing = el<SVGCircleElement>("circle");
+  focusRing.setAttribute("class", "bubble-focus-ring");
+  focusRing.setAttribute("aria-hidden", "true");
+  focusRing.setAttribute("vector-effect", "non-scaling-stroke");
+  group.appendChild(focusRing);
 
   const circle = el<SVGCircleElement>("circle");
   circle.setAttribute("class", "bubble-circle");
@@ -325,13 +388,13 @@ function createBubbleNode(bubble: Bubble): BubbleNode {
   value.setAttribute("dominant-baseline", "central");
   group.appendChild(value);
 
-  return { group, title, hit, circle, logo, logoRect, logoText, name, value };
+  return { group, title, hit, focusRing, circle, logo, logoRect, logoText, name, value };
 }
 
 // Paints one bubble where it is right now: circle, dashed group edge, logo slot, labels.
 function paintBubble(live: LiveBubble, drawing: Drawing): void {
   const { node, bubble, x, y, r } = live;
-  const { title, hit, circle, logo, logoRect, logoText, name, value } = node;
+  const { title, hit, focusRing, circle, logo, logoRect, logoText, name, value } = node;
   const isGroup = bubble.kind === "group";
   const isPlayer = drawing.players.has(bubble.id);
   // With a company panel open, only that company's bubble is ringed; with an item open, every
@@ -345,9 +408,11 @@ function paintBubble(live: LiveBubble, drawing: Drawing): void {
   node.group.setAttribute("aria-label", `${bubble.name}, ${formatValue(bubble.value)}: show its news`);
   title.textContent = `${bubble.name}, ${formatValue(bubble.value)}`;
 
-  circle.setAttribute("cx", fixed(x));
-  circle.setAttribute("cy", fixed(y));
-  circle.setAttribute("r", fixed(r));
+  for (const edge of [circle, focusRing]) {
+    edge.setAttribute("cx", fixed(x));
+    edge.setAttribute("cy", fixed(y));
+    edge.setAttribute("r", fixed(r));
+  }
   if (isGroup) {
     circle.style.fill = "none";
     circle.style.stroke = ringed ? "var(--ink)" : "var(--ink-2)";
@@ -756,6 +821,11 @@ export type BubbleOptions = {
   immediate?: boolean;
 };
 
+// The zoom control's 1x is the whole view, even when the peak fit has already scaled the scene.
+export function showZoomEdge(afterBurst: boolean, manualZoom: number): boolean {
+  return afterBurst && manualZoom > 1;
+}
+
 export function renderBubble(
   svg: SVGSVGElement,
   date: string,
@@ -775,15 +845,37 @@ export function renderBubble(
     options.focus !== undefined && bubbles.some((bubble) => bubble.id === options.focus)
       ? options.focus
       : null;
-  const view = dayView(bubbles, options.players ?? [], options.manual ?? 1, date, options.burstDate,
-    options.peak ? bubblesForDate(options.peak.date) : undefined);
+  const manual = options.manual ?? 1;
+  const peakBubbles = options.peak ? bubblesForDate(options.peak.date) : undefined;
+  const view = dayView(bubbles, options.players ?? [], manual, date, options.burstDate, peakBubbles);
   // Where the camera looks once the reader's drag is applied; clamped so the content stays
   // inside the round frame.
-  const shown = panView(view, clampPan(view, options.pan ?? { dx: 0, dy: 0 }));
+  const noPan = { dx: 0, dy: 0 };
+  const shown = panView(view, clampPan(view, options.pan ?? noPan));
 
-  const { bubbleLayer, arrowLayer, scene } = ensureScene(svg);
-  scene.style.transition = options.immediate ? "none" : cameraTransition();
+  const { bubbleLayer, arrowLayer, scene, rings, edge } = ensureScene(svg);
+  const transition = options.immediate ? "none" : cameraTransition();
+  scene.style.transition = transition;
   scene.style.transform = sceneTransform(shown);
+
+  const afterBurst = options.burstDate !== undefined && date >= options.burstDate;
+  edge.style.display = showZoomEdge(afterBurst, manual) ? "" : "none";
+  if (afterBurst) {
+    // The rings are already drawn in whole-bubble coordinates. Undo that baseline before
+    // applying the camera, so 1x keeps the old geometry even when the peak fit isn't 1.
+    const base = manual === 1 ? view : dayView(bubbles, [], 1, date, options.burstDate, peakBubbles);
+    const whole = panView(base, clampPan(base, noPan));
+    const z = shown.z / whole.z;
+    const tx = FRAME.cx * (1 - z) + (whole.cx - shown.cx) * shown.z;
+    const ty = FRAME.cy * (1 - z) + (whole.cy - shown.cy) * shown.z;
+    rings.style.transition = transition;
+    rings.style.transform = `translate(${fixed(tx)}px, ${fixed(ty)}px) scale(${fixed(z)})`;
+    paintRingCamera(rings, transition !== "none");
+  } else if (rings.style.transform) {
+    rings.style.transition = "none";
+    rings.style.removeProperty("transform");
+    paintRingCamera(rings, false);
+  }
 
   const existing = drawings.get(svg);
   if (options.immediate && existing?.day === date && existing.focus === focus
@@ -794,7 +886,6 @@ export function renderBubble(
   }
 
   const ring = svg.querySelector<SVGCircleElement>("circle.bubble-frame")!;
-  const afterBurst = options.burstDate !== undefined && date >= options.burstDate;
   ring.classList.toggle("burst", afterBurst);
   if (afterBurst) ring.setAttribute("stroke-dasharray", "0 4.5");
   else ring.removeAttribute("stroke-dasharray");
@@ -833,8 +924,7 @@ export function renderBubble(
       const width = svg.getBoundingClientRect().width;
       if (width === 0) return;
       live.pixelsPerUnit = width / 100;
-      // The label is in the fixed frame, not the zoomed scene, so it needs only viewBox scaling.
-      drop.style.fontSize = `calc(var(--bubble-caption-size) / ${live.pixelsPerUnit})`;
+      drop.style.fontSize = `calc(var(--bubble-caption-size) / ${live.pixelsPerUnit} / var(--burst-zoom, 1))`;
       paintAll(live);
     };
     resize();

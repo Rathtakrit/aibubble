@@ -27,6 +27,8 @@ import type { CameraView } from "../lib/camera.ts";
 import type { Chapter } from "../lib/story.ts";
 import { SHEET_TAP_PX, snapSheet } from "../lib/sheet.ts";
 import type { SheetState } from "../lib/sheet.ts";
+import { readVisit, restoreTabLinks, tabStorage, writeVisit } from "../lib/visit.ts";
+import type { Visit } from "../lib/visit.ts";
 import {
   dateAt,
   dayIndex,
@@ -131,12 +133,30 @@ let changeFromPeak: string | undefined;
 let pan = { dx: 0, dy: 0 };
 let beforeCompany: { itemId: string | null; fitPlayers: boolean; manual: number; pan: typeof pan } | null = null;
 let timelineZoomed = true;
-const fullTimeline: TimelineWindow = { start: 0, middle: 50, end: 100, ids: [] };
-let visibleTimeline = fullTimeline;
-let timelineTarget = fullTimeline;
-let timelineFrame: number | null = null;
+let visibleTimeline: TimelineWindow = [];
+let timelineAnchor: string | undefined;
+let timelineScrubPointer: number | null = null;
 const timelineMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 const stepRow = document.querySelector<HTMLElement>("[data-steps] > .step-row");
+const phoneTimeline = makePhoneTimeline();
+const timelineLines = Array.from(document.querySelectorAll<HTMLElement>("[data-timeline]"), (inner) => {
+  const items = new Map<string, {
+    dot: HTMLButtonElement;
+    elements: HTMLElement[];
+    home: Comment;
+    exit?: ReturnType<typeof setTimeout>;
+  }>();
+  for (const dot of inner.querySelectorAll<HTMLButtonElement>(".timeline-dot[data-news]")) {
+    const id = dot.dataset.news!;
+    const label = dot.nextElementSibling as HTMLElement | null;
+    const elements = label?.dataset.timelineId === id ? [dot, label] : [dot];
+    // Keep the original tab order and dot/label adjacency when restoring the whole timeline.
+    const home = document.createComment("");
+    dot.before(home);
+    items.set(id, { dot, elements, home });
+  }
+  return { inner, items };
+});
 let lastStep = -1;
 let stopStepGlide: (() => void) | undefined;
 const timelineEvents = ordered;
@@ -162,24 +182,116 @@ for (const tick of yearTicks) {
   stripYears?.append(label);
 }
 
-function drawTimeline(): void {
-  const current = Math.max(0, Math.min(100, windowPercent(scale.percentOf(day), visibleTimeline)));
-  const inner = document.querySelector<HTMLElement>("[data-timeline]");
-  inner?.style.setProperty("--timeline-current", `${current}%`);
-  const marker = document.querySelector<HTMLElement>("[data-timeline-current]");
-  if (marker) {
+// The phone sheet has a three-item stepper, not a copy of the desktop day line.
+// Reuse the range and news buttons there when zoomed, without the desktop labels.
+function makePhoneTimeline(): HTMLElement | null {
+  const source = document.querySelector<HTMLElement>("[data-timeline]");
+  if (!source || !stepRow) return null;
+  const line = document.createElement("div");
+  line.dataset.timeline = "";
+  line.style.cssText = "position:relative;height:44px;margin-inline:9px";
+  const axis = document.createElement("div");
+  axis.className = "timeline-axis";
+  axis.setAttribute("aria-hidden", "true");
+  axis.style.cssText = "top:21px;height:2.5px;border:0";
+  line.append(axis);
+  for (const control of source.querySelectorAll<HTMLElement>("[data-slider], .timeline-dot[data-news], .timeline-burst")) {
+    const copy = control.cloneNode(true) as HTMLElement;
+    if (copy.matches("[data-slider]")) copy.style.top = "0";
+    if (copy.matches(".timeline-dot")) {
+      copy.style.touchAction = "none";
+      const dot = copy.querySelector<HTMLElement>(".dot")!;
+      dot.style.cssText = "position:absolute;left:var(--dot-center,50%);top:50%;transform:translate(-50%,-50%);pointer-events:none";
+    }
+    line.append(copy);
+  }
+  const summary = document.createElement("span");
+  summary.className = "timeline-ends";
+  summary.dataset.timelineSummary = "";
+  summary.style.justifyContent = "center";
+  const panel = document.createElement("div");
+  panel.append(line, summary);
+  stepRow.after(panel);
+  return panel;
+}
+
+function drawTimelineItems(
+  { inner, items }: (typeof timelineLines)[number], positions: Map<string, number>, direction: number,
+): void {
+  const motion = inner.dataset.timelineMotion === "true";
+  const targets: { element: HTMLElement; left: string; leaving: boolean }[] = [];
+  let entering = false;
+  for (const [id, entry] of items) {
+    const { dot, elements, home } = entry;
+    const percent = positions.size ? positions.get(id) : scale.percentOf(dot.dataset.timelineDate!);
+    if (percent === undefined && motion && entry.exit !== undefined) continue;
+    clearTimeout(entry.exit);
+    entry.exit = undefined;
+    const connected = dot.parentElement === inner;
+    if (percent === undefined) {
+      if (!connected) continue;
+      if (!motion || !direction) {
+        elements.forEach((element) => element.remove());
+        continue;
+      }
+      dot.inert = true;
+      for (const element of elements) {
+        targets.push({ element, left: direction > 0 ? "-5%" : "105%", leaving: true });
+      }
+      entry.exit = setTimeout(() => {
+        elements.forEach((element) => element.remove());
+        entry.exit = undefined;
+      }, 320);
+      continue;
+    }
+    dot.inert = false;
+    dot.classList.toggle("is-current", id === itemId);
+    if (!connected) home.after(...elements);
+    for (const element of elements) {
+      if (!connected && motion && direction) {
+        element.dataset.timelineLeaving = "";
+        element.style.left = direction > 0 ? "105%" : "-5%";
+        // The incoming label needs a starting box even if its last layout hid it.
+        if (element !== dot) element.hidden = false;
+        entering = true;
+      }
+      targets.push({ element, left: `${percent}%`, leaving: false });
+    }
+  }
+  // Commit the off-line starting positions before moving any items.
+  if (entering) void inner.offsetWidth;
+  for (const { element, left, leaving } of targets) {
+    element.toggleAttribute("data-timeline-leaving", leaving);
+    element.style.left = left;
+  }
+}
+
+function drawTimeline(motion?: boolean, direction = 0): void {
+  const percentOf = (date: string, id?: string) => visibleTimeline.length
+    ? windowPercent(date, visibleTimeline, id)
+    : scale.percentOf(date);
+  const current = percentOf(day, itemId ?? undefined);
+  const positions = new Map(visibleTimeline.map(({ id, percent }) => [id, percent]));
+  for (const line of timelineLines) {
+    const { inner } = line;
+    if (motion !== undefined) inner.dataset.timelineMotion = String(motion);
+    drawTimelineItems(line, positions, direction);
+    inner.style.setProperty("--timeline-current", `${current}%`);
+    const marker = inner.querySelector<HTMLElement>("[data-timeline-current]");
+    if (!marker) continue;
     marker.style.left = `${current}%`;
     const flag = marker.querySelector<HTMLElement>("[data-current-flag]");
-    if (flag && inner) {
+    if (flag) {
       flag.textContent = `You are here · ${dayLabel(day)}`;
       const x = inner.clientWidth * current / 100;
       flag.style.left = `${Math.max(-x, Math.min(-flag.offsetWidth / 2, inner.clientWidth - x - flag.offsetWidth))}px`;
     }
   }
-  const firstShown = scale.dateOf(visibleTimeline.start);
-  const lastShown = scale.dateOf(visibleTimeline.end);
-  const summary = document.querySelector<HTMLElement>("[data-timeline-summary]");
-  if (summary) summary.textContent = `${dayLabel(firstShown)} → ${dayLabel(lastShown)}`;
+  const firstShown = visibleTimeline[0]?.date ?? scale.dateOf(0);
+  const lastShown = visibleTimeline[visibleTimeline.length - 1]?.date ?? scale.dateOf(100);
+  for (const summary of document.querySelectorAll<HTMLElement>("[data-timeline-summary]")) {
+    summary.textContent = `${dayLabel(firstShown)} → ${dayLabel(lastShown)}`;
+  }
   const bracket = timelineZoomed ? strip.bracket(firstShown, lastShown) : { left: 0, width: 100 };
   const bracketElement = document.querySelector<HTMLElement>("[data-strip-bracket]");
   if (bracketElement) {
@@ -193,37 +305,44 @@ function drawTimeline(): void {
     stripSlider.value = String(Math.round(strip.percentOf(day) * 100));
     stripSlider.setAttribute("aria-valuetext", dayLabel(day));
   }
-  const ids = new Set(timelineTarget.ids);
+  if (phoneTimeline && stepRow) {
+    phoneTimeline.hidden = !timelineZoomed;
+    stepRow.style.display = timelineZoomed ? "none" : "";
+  }
   for (const ends of document.querySelectorAll<HTMLElement>(".timeline-ends")) {
     for (const [index, end] of Array.from(ends.children).entries()) {
       const label = end as HTMLElement;
       label.dataset.fullEnd ??= label.textContent ?? "";
-      label.textContent = timelineZoomed
-        ? dayLabel(scale.dateOf(index === 0 ? visibleTimeline.start : visibleTimeline.end))
-        : label.dataset.fullEnd;
+      label.textContent = timelineZoomed ? dayLabel(index === 0 ? firstShown : lastShown) : label.dataset.fullEnd;
     }
   }
-  for (const element of document.querySelectorAll<HTMLElement>("[data-timeline-date]")) {
-    const percent = windowPercent(scale.percentOf(element.dataset.timelineDate!), visibleTimeline);
-    const id = element.dataset.timelineId ?? element.dataset.news;
-    const outside = percent < 0 || percent > 100 || (timelineZoomed && !!id && !ids.has(id));
+  for (const element of document.querySelectorAll<HTMLElement>("[data-timeline-date]:not([data-news], [data-timeline-id])")) {
+    const date = element.dataset.timelineDate!;
+    const outside = !!visibleTimeline.length && (date < firstShown || date > lastShown);
     element.dataset.outside = String(outside);
-    element.style.left = `${percent}%`;
+    element.style.left = `${percentOf(date)}%`;
   }
   for (const slider of document.querySelectorAll<HTMLInputElement>("[data-slider]")) {
     slider.value = String(Math.round(current * 100));
     slider.setAttribute("aria-valuetext", dayLabel(day));
   }
-  placeTimelineDots();
+  for (const inner of document.querySelectorAll<HTMLElement>("[data-timeline]")) placeTimelineDots(inner);
   placeTimelineLabels();
 }
 
-function updateTimeline(): void {
+function updateTimeline(immediate = false): void {
   document.body.dataset.timelineZoomed = String(timelineZoomed);
   const anchor = (itemId === null ? null : byId.get(itemId)) ?? latestOnOrBefore(ordered, day);
-  const target = timelineZoomed
-    ? timelineWindow(timelineEvents, anchor?.id ?? timelineEvents[0]?.id ?? "", scale)
-    : fullTimeline;
+  const previous = visibleTimeline;
+  // Keep the same dates under the pointer for the duration of a drag.
+  if (timelineScrubPointer === null) {
+    const id = anchor?.id ?? timelineEvents[0]?.id;
+    const slot = previous.findIndex((item) => item.id === timelineAnchor);
+    visibleTimeline = timelineZoomed && id !== undefined
+      ? timelineWindow(timelineEvents, id, immediate || slot < 0 ? undefined : slot)
+      : [];
+    timelineAnchor = id;
+  }
   for (const button of document.querySelectorAll<HTMLButtonElement>('[data-action="timeline-zoom"]')) {
     button.setAttribute("aria-pressed", String(timelineZoomed));
     const label = button.querySelector<HTMLElement>("[data-timeline-zoom-label]");
@@ -238,42 +357,20 @@ function updateTimeline(): void {
       button.querySelector("path")?.setAttribute("d", timelineZoomed ? "M5 12h14" : "M5 12h14M12 5v14");
     }
   }
-  if (JSON.stringify(target) === JSON.stringify(timelineTarget)) {
-    drawTimeline();
-    return;
-  }
-  timelineTarget = target;
-  if (timelineFrame !== null) cancelAnimationFrame(timelineFrame);
-  if (timelineMotion.matches) {
-    timelineFrame = null;
-    visibleTimeline = target;
-    drawTimeline();
-    return;
-  }
-  const from = visibleTimeline;
-  const start = performance.now();
-  function glide(now: number): void {
-    const t = Math.min(1, (now - start) / 900);
-    const eased = t * t * (3 - 2 * t);
-    visibleTimeline = {
-      start: from.start + (target.start - from.start) * eased,
-      middle: from.middle + (target.middle - from.middle) * eased,
-      end: from.end + (target.end - from.end) * eased,
-      ids: target.ids,
-    };
-    drawTimeline();
-    timelineFrame = t < 1 ? requestAnimationFrame(glide) : null;
-  }
-  timelineFrame = requestAnimationFrame(glide);
+  const direction = Math.sign(
+    timelineEvents.findIndex((item) => item.id === visibleTimeline[0]?.id) -
+    timelineEvents.findIndex((item) => item.id === previous[0]?.id),
+  );
+  const motion = !immediate && !timelineMotion.matches && timelineScrubPointer === null &&
+    previous.length > 0 && visibleTimeline.length > 0;
+  drawTimeline(motion, direction);
 }
 
 timelineMotion.addEventListener("change", () => {
-  if (!timelineMotion.matches) return;
-  stopStepGlide?.();
-  if (timelineFrame !== null) cancelAnimationFrame(timelineFrame);
-  timelineFrame = null;
-  visibleTimeline = timelineTarget;
-  drawTimeline();
+  if (timelineMotion.matches) {
+    stopStepGlide?.();
+    drawTimeline(false);
+  }
 });
 
 function renderSteps(anchor: NewsItem | null, at: number): void {
@@ -614,24 +711,47 @@ function drawBubble(immediate: boolean): void {
 // the reader pauses, which keeps phone browsers happy.
 let addressTimer: ReturnType<typeof setTimeout> | null = null;
 
+// The address that shows the page's state, used for the browser's address and for the tab's
+// saved place.
+function stateAddress(): string {
+  if (chapterIndex !== null) return `${window.location.pathname}?chapter=${chapterIndex + 1}`;
+  const params = new URLSearchParams({ date: day });
+  if (itemId !== null) params.set("news", itemId);
+  else if (companyId !== null) params.set("company", companyId);
+  return `${window.location.pathname}?${params.toString()}`;
+}
+
 function writeAddress(): void {
   if (addressTimer !== null) {
     clearTimeout(addressTimer);
     addressTimer = null;
   }
-  if (chapterIndex !== null) {
-    history.replaceState(null, "", `${window.location.pathname}?chapter=${chapterIndex + 1}`);
-    return;
-  }
-  const params = new URLSearchParams({ date: day });
-  if (itemId !== null) params.set("news", itemId);
-  else if (companyId !== null) params.set("company", companyId);
-  history.replaceState(null, "", `${window.location.pathname}?${params.toString()}`);
+  history.replaceState(null, "", stateAddress());
+  saveVisit();
 }
 
 function writeAddressSoon(): void {
   if (addressTimer !== null) clearTimeout(addressTimer);
   addressTimer = setTimeout(writeAddress, 200);
+}
+
+// The browser tab's own storage and the tab links on both layouts. A link with a query of its
+// own, like Story's ?chapter=1, says what it means and is not a tab link. With storage blocked
+// the page remembers nothing, exactly as on a first visit.
+const visitStorage = tabStorage();
+const visitLinks = Array.from(document.querySelectorAll<HTMLAnchorElement>(".site-nav a[href], .mode-switch a[href]"))
+  .filter((link) => link.search === "" && link.hash === "");
+
+// The page's saved place, written only when it changes; the tab links then lead back to it.
+let savedState = "";
+
+function saveVisit(): void {
+  const visit: Visit = { address: stateAddress(), zoom: fitPlayers || manual !== 1 ? "focused" : "whole" };
+  const value = JSON.stringify(visit);
+  if (value === savedState) return;
+  savedState = value;
+  writeVisit(visit, visitStorage);
+  restoreTabLinks(visitLinks, visitStorage);
 }
 
 // A chapter the reader can see: focus it, skipping the copy the other layout keeps hidden.
@@ -878,8 +998,14 @@ for (const slider of document.querySelectorAll<HTMLInputElement>("[data-strip-sl
 }
 
 for (const slider of document.querySelectorAll<HTMLInputElement>("[data-slider]")) {
-  const scrubTo = (percent: number) => sliderTo(scale.dateOf(windowPlace(percent, visibleTimeline)));
+  const scrubTo = (percent: number) => sliderTo(windowPlace(percent, visibleTimeline) ?? scale.dateOf(percent));
   slider.addEventListener("input", () => scrubTo(Number(slider.value) / 100));
+  slider.addEventListener("pointerdown", (event) => {
+    if (visibleTimeline.length && event.isPrimary && event.button === 0) {
+      timelineScrubPointer = event.pointerId;
+      drawTimeline(false);
+    }
+  });
   slider.addEventListener("keydown", (event) => {
     const at = dayIndex(day);
     let to: number;
@@ -908,6 +1034,7 @@ for (const slider of document.querySelectorAll<HTMLInputElement>("[data-slider]"
     if (!press.dragging) {
       if (Math.hypot(event.clientX - press.x, event.clientY - press.y) <= 6) return;
       press.dragging = true;
+      if (visibleTimeline.length) timelineScrubPointer = event.pointerId;
       // A synthetic pointerdown cannot start a native range drag. Transfer capture so the
       // release is not a dot click, and use the same date mapping as the range's input event.
       slider.setPointerCapture(event.pointerId);
@@ -917,9 +1044,13 @@ for (const slider of document.querySelectorAll<HTMLInputElement>("[data-slider]"
   });
   const endPress = (event: PointerEvent) => {
     if (event.pointerId === press?.id) press = null;
+    if (event.pointerId === timelineScrubPointer) {
+      timelineScrubPointer = null;
+      updateTimeline(true);
+    }
   };
-  line.addEventListener("pointerup", endPress);
-  line.addEventListener("pointercancel", endPress);
+  window.addEventListener("pointerup", endPress);
+  window.addEventListener("pointercancel", endPress);
   line.addEventListener("lostpointercapture", (event) => {
     // Losing the dot's capture is expected when the slider takes over.
     if (!slider.hasPointerCapture(event.pointerId)) endPress(event);
@@ -960,6 +1091,8 @@ for (const svg of document.querySelectorAll<SVGSVGElement>("[data-bubble]")) {
       pan = clampPan(base, { dx: next.cx - base.cx, dy: next.cy - base.cy });
     }
     drawBubble(true);
+    // A wheel or pinch zoom changes the saved whole/focused state without a render.
+    saveVisit();
   };
 
   svg.setAttribute("tabindex", "0");
@@ -968,7 +1101,13 @@ for (const svg of document.querySelectorAll<SVGSVGElement>("[data-bubble]")) {
     const id = event.detail === 0
       ? (event.target as Element).closest("[data-company]")?.getAttribute("data-company")
       : !suppressTap && bubbleAtPoint(svg, event.clientX, event.clientY);
-    if (id) chooseCompany(id);
+    if (!id) return;
+    // Clicking a bubble that already had keyboard focus can leave it focus-visible.
+    // Do not clear focus for keyboard or assistive-technology activation.
+    const focused = document.activeElement;
+    if (event.detail !== 0 && focused instanceof SVGElement
+      && focused.matches(".bubble") && svg.contains(focused)) focused.blur();
+    chooseCompany(id);
   });
   svg.addEventListener("wheel", (event) => {
     event.preventDefault();
@@ -1080,9 +1219,10 @@ for (const svg of document.querySelectorAll<SVGSVGElement>("[data-bubble]")) {
   });
 }
 
-// Read the address once, then draw. A chapter opens Story on its day; without one, ?news=,
-// ?company= or ?date= picks the view. Otherwise the opening item stays selected. A past page
-// has no Story mode, so it ignores ?chapter=.
+// The tab links lead to each page's saved place, and the address is read once, then the page is
+// drawn. A chapter opens Story on its day; without one, ?news=, ?company= or ?date= picks the
+// view. Otherwise the opening item stays selected. A past page has no Story mode, so it ignores
+// ?chapter=.
 function readAddress(): void {
   const params = new URLSearchParams(window.location.search);
   // ?chapter=3 opens chapter 3; a number that is not a chapter opens the first.
@@ -1134,16 +1274,27 @@ function readAddress(): void {
   }
 }
 
+restoreTabLinks(visitLinks, visitStorage);
+const savedVisit = readVisit(window.location.pathname, visitStorage);
 readAddress();
+// Back in this tab, the saved address brings back its zoom as well. An address of its own, such
+// as an outside link with ?news=, opens exactly what it says, as today.
+if (savedVisit && savedVisit.address === stateAddress()) {
+  if (savedVisit.zoom === "focused") {
+    resetZoom(true);
+    if (!fitPlayers) manual = 2;
+  } else if (savedVisit.zoom === "whole") {
+    resetZoom();
+  }
+}
 render();
 void prepareLayouts().catch((error: unknown) => console.error(error));
 
 // Keep isolated targets 44px wide and split crowded targets at their midpoint.
-function placeTimelineDots(): void {
-  const inner = document.querySelector<HTMLElement>("[data-timeline]");
-  if (!inner?.clientWidth) return;
+function placeTimelineDots(inner: HTMLElement): void {
+  if (!inner.clientWidth) return;
   const dots = Array.from(inner.querySelectorAll<HTMLButtonElement>(".timeline-dot"))
-    .filter((dot) => dot.offsetHeight > 0)
+    .filter((dot) => !dot.inert && dot.offsetHeight > 0)
     .map((dot) => ({ dot, x: Number.parseFloat(dot.style.left) * inner.clientWidth / 100 }))
     .sort((a, b) => a.x - b.x);
   // Fan out coincident or nearly coincident dots so each has its own reachable centre.
@@ -1177,7 +1328,7 @@ function placeTimelineLabels(): void {
   const currentChapter = chapterIndex === null ? null : chapters[chapterIndex];
   const labels = Array.from(inner.querySelectorAll<HTMLElement>(story
     ? "[data-story-label]"
-    : '[data-timeline-id]:not([data-outside="true"])'));
+    : '[data-timeline-id]:not([data-timeline-leaving])'));
   for (const label of labels) {
     label.hidden = story
       ? !!currentChapter && label.textContent?.trim() === currentChapter.title
@@ -1192,9 +1343,16 @@ function placeTimelineLabels(): void {
   });
   const bounds = inner.getBoundingClientRect();
   const reserved: LabelRect[] = [];
-  for (const element of inner.querySelectorAll("[data-current-flag], [data-timeline-current]")) {
-    const { left, right, top, bottom } = element.getBoundingClientRect();
-    reserved.push({ left: left - bounds.left, right: right - bounds.left, top: top - bounds.top, bottom: bottom - bounds.top });
+  const marker = inner.querySelector<HTMLElement>("[data-timeline-current]");
+  if (marker) {
+    // Reserve the destination, not the marker's position mid-glide.
+    const x = Number.parseFloat(marker.style.left) * bounds.width / 100;
+    for (const element of [marker, marker.querySelector<HTMLElement>("[data-current-flag]")]) {
+      if (!element) continue;
+      const { width, top, bottom } = element.getBoundingClientRect();
+      const left = element === marker ? x : x + marker.clientLeft + (Number.parseFloat(element.style.left) || 0);
+      reserved.push({ left, right: left + width, top: top - bounds.top, bottom: bottom - bounds.top });
+    }
   }
   const style = getComputedStyle(inner);
   const row = (name: string) => Number.parseFloat(style.getPropertyValue(`--label-${name}`));
@@ -1215,8 +1373,8 @@ function placeTimelineLabels(): void {
   });
 }
 
-window.addEventListener("resize", drawTimeline);
-document.fonts.ready.then(drawTimeline, () => {});
+window.addEventListener("resize", () => drawTimeline());
+document.fonts.ready.then(() => drawTimeline(), () => {});
 
 // The phone's map is sized from the visible area: the room above the bottom sheet, minus 12px on
 // each side, never wider than the window, and 560px at most; it is centred in that space. The

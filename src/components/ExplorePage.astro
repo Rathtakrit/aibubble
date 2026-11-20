@@ -42,7 +42,7 @@ const isPast = id !== "ai";
 // Story is off for now because it is too close to Explore.
 const STORY_ENABLED = false;
 // Everything below is taken now, while this set is the active one.
-const boomName = { ai: "AI boom", dotcom: "Dot-com boom", housing: "Housing boom" }[id];
+const bubbleName = { ai: "AI bubble", dotcom: "Dot-com bubble", housing: "Housing bubble" }[id];
 // What the browser tab calls each set, and the line a search result or link preview shows. The
 // past sets' years are their meta.json first and last days.
 const pageName = { ai: "AI", dotcom: "Dot-com", housing: "Housing" }[id];
@@ -211,7 +211,7 @@ const ariaFor = (itemTitle: string, date: string) => `${dayLabel(date)}, ${itemT
 
       <main class="explore-main">
         <div class="story-column">
-          <p class="kicker boom-kicker explore-only" data-bind="kicker-desktop">{boomName}</p>
+          <p class="kicker boom-kicker explore-only" data-bind="kicker-desktop">{bubbleName}</p>
           {
             STORY_ENABLED && !isPast && (
               <p class="kicker story-only" data-bind="story-kicker">
@@ -600,7 +600,7 @@ const ariaFor = (itemTitle: string, date: string) => `${dayLabel(date)}, ${itemT
           <button type="button" class="dock-button" data-action="later" aria-label="Later">→</button>
         </div>
 
-        <p class="sheet-kicker boom-kicker explore-only" data-bind="kicker-phone">{boomName}</p>
+        <p class="sheet-kicker boom-kicker explore-only" data-bind="kicker-phone">{bubbleName}</p>
 
         <div data-block="item">
           <h1 class="sheet-title" data-bind="title">{current.title}</h1>

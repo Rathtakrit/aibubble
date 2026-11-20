@@ -136,7 +136,7 @@ export function timelineScale(lastDate: string, dots: ScaleDots): TimelineScale 
   return { percentOf, dateOf };
 }
 
-// The overview uses calendar time, independent of the weighted, zoomed news line.
+// The overview uses calendar time, independent of the news line.
 export function timelineStrip(first: string, last: string): TimelineScale & {
   bracket(start: string, end: string): { left: number; width: number };
 } {
@@ -153,35 +153,44 @@ export function timelineStrip(first: string, last: string): TimelineScale & {
   };
 }
 
-export type TimelineWindow = { start: number; middle: number; end: number; ids: string[] };
+export type TimelineWindow = readonly (Dated & { percent: number })[];
 
-// Keep up to three neighbours on either side, shifting the window at the ends to retain seven.
-// The selected date stays at the centre of the zoomed line.
-export function timelineWindow(items: readonly Dated[], id: string, scale: TimelineScale): TimelineWindow {
+// Start with three neighbours on either side. When stepping, keep the reader's previous slot
+// if possible, so even a step from the first item moves the window.
+export function timelineWindow(items: readonly Dated[], id: string, slot = 3): TimelineWindow {
   const ordered = inDateOrder(items);
   const at = ordered.findIndex((item) => item.id === id);
-  if (at < 0) return { start: 0, middle: 50, end: 100, ids: [] };
+  if (at < 0) return [];
   const count = Math.min(7, ordered.length);
-  const first = clamp(0, at - 3, ordered.length - count);
-  const visible = ordered.slice(first, first + count);
-  const low = scale.percentOf(visible[0].date);
-  const high = scale.percentOf(visible[visible.length - 1].date);
-  const margin = Math.max((high - low) / 10, 0.01);
-  const middle = scale.percentOf(ordered[at].date);
-  const half = Math.max(middle - low, high - middle, 0.01) + margin;
-  return { start: middle - half, middle, end: middle + half, ids: visible.map((item) => item.id) };
+  const first = clamp(0, at - slot, ordered.length - count);
+  return ordered.slice(first, first + count).map(({ id, date }, index) => ({
+    id, date, percent: ((index + 0.5) / count) * 100,
+  }));
 }
 
-export function windowPercent(percent: number, window: TimelineWindow): number {
-  return percent <= window.middle
-    ? 50 * (percent - window.start) / (window.middle - window.start)
-    : 50 + 50 * (percent - window.middle) / (window.end - window.middle);
+export function windowPercent(date: string, window: TimelineWindow, id?: string): number {
+  if (!window.length) return 0;
+  if (date < window[0].date) return 0;
+  if (date > window[window.length - 1].date) return 100;
+  // An item ID distinguishes same-day dots. For a bare date, use the last dot on that day.
+  const exact = window.find((item) => item.id === id && item.date === date);
+  if (exact) return exact.percent;
+  const next = window.findIndex((item) => item.date > date);
+  if (next === -1) return window[window.length - 1].percent;
+  const left = window[next - 1];
+  const right = window[next];
+  return left.percent + (right.percent - left.percent) *
+    ((midnight(date) - midnight(left.date)) / (midnight(right.date) - midnight(left.date)));
 }
 
-export function windowPlace(percent: number, window: TimelineWindow): number {
-  return percent <= 50
-    ? window.start + (percent / 50) * (window.middle - window.start)
-    : window.middle + ((percent - 50) / 50) * (window.end - window.middle);
+export function windowPlace(percent: number, window: TimelineWindow): string | undefined {
+  const rightIndex = window.findIndex((item) => item.percent > percent);
+  if (rightIndex === -1) return window[window.length - 1]?.date;
+  if (rightIndex === 0) return window[0].date;
+  const left = window[rightIndex - 1];
+  const right = window[rightIndex];
+  const fraction = (percent - left.percent) / (right.percent - left.percent);
+  return dateAt(dayIndex(left.date) + Math.round(fraction * (dayIndex(right.date) - dayIndex(left.date))));
 }
 
 const shortDateFormat = new Intl.DateTimeFormat("en-GB", {

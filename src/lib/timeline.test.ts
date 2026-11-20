@@ -86,15 +86,10 @@ test("the whole-range strip maps dates and a zoom bracket in calendar time", () 
   assert.equal(strip.dateOf(50), "2017-06-17");
   assert.deepEqual(strip.bracket("2017-06-14", "2017-06-20"), { left: 20, width: 60 });
   assert.deepEqual(strip.bracket("2017-06-01", "2017-07-01"), { left: 0, width: 100 });
-  const scale = timelineScale(last, dots);
-  const window = timelineWindow(busyDots, "m2", scale);
-  const first = scale.dateOf(window.start);
-  const end = scale.dateOf(window.end);
+  const window = timelineWindow(busyDots, "m2");
   const overview = timelineStrip("2017-06-12", last);
-  assert.deepEqual(overview.bracket(first, end), {
-    left: overview.percentOf(first),
-    width: overview.percentOf(end) - overview.percentOf(first),
-  });
+  assert.deepEqual(overview.bracket(window[0].date, window[window.length - 1].date),
+    overview.bracket("2025-03-03", "2025-03-24"));
 });
 
 test("the first day of the scale sits at 0% and the last at 100%", () => {
@@ -396,39 +391,83 @@ test("an end-aligned label at the right edge is measured from its own left edge"
   assert.equal(placed.get("edge")?.row, 0);
 });
 
-test("timeline zoom centres the selected item in a seven-item window", () => {
-  const events = inDateOrder([...busyDots, ...smallDots]);
-  const scale = timelineScale(last, dots);
-  const window = timelineWindow(events, "m4", scale);
-  assert.deepEqual(window.ids, events.map((item) => item.id));
-  assert.equal(windowPercent(scale.percentOf("2025-03-24"), window), 50);
-  for (const id of window.ids) {
-    const event = events.find((item) => item.id === id)!;
-    const percent = scale.percentOf(event.date);
-    const position = windowPercent(percent, window);
-    assert.ok(position > 0 && position < 100);
-    assert.ok(Math.abs(windowPlace(position, window) - percent) < 1e-10);
+const clusteredEvents = [
+  ...Array.from({ length: 6 }, (_, index) => ({ id: `c${index}`, date: `2025-03-0${index + 1}` })),
+  { id: "c6", date: "2025-05-06" },
+];
+
+test("neighbouring zoom dots are at least 10 percentage points apart even across uneven dates", () => {
+  const window = timelineWindow(clusteredEvents, "c3");
+  const places = clusteredEvents.map(({ date }) => windowPercent(date, window));
+  assert.equal(places[3], 50);
+  for (let index = 1; index < places.length; index += 1) {
+    const gap = places[index] - places[index - 1];
+    assert.ok(gap >= 10, `dots ${index - 1} and ${index} are only ${gap}% apart`);
   }
+});
+
+test("zoom scrubbing follows calendar days between dot positions", () => {
+  const window = timelineWindow(clusteredEvents, "c3");
+  for (const [index, { date, percent }] of window.entries()) {
+    assert.equal(percent, ((index + 0.5) / 7) * 100);
+    assert.equal(windowPlace(percent, window), date);
+  }
+  const first = window[0];
+  const end = window[6];
+  const april6 = window[5].percent + (end.percent - window[5].percent) * (31 / 61);
+  assert.ok(Math.abs(windowPercent("2025-04-06", window) - april6) < 1e-10);
+  assert.equal(windowPlace(april6, window), "2025-04-06");
+  for (let index = dayIndex(first.date); index <= dayIndex(end.date); index += 1) {
+    const date = dateAt(index);
+    assert.equal(windowPlace(windowPercent(date, window), window), date);
+  }
+  assert.equal(windowPercent("2025-02-28", window), 0);
+  assert.equal(windowPercent("2025-05-07", window), 100);
+  assert.equal(windowPlace(0, window), first.date);
+  assert.equal(windowPlace(100, window), end.date);
 });
 
 test("timeline zoom fills a seven-item window from the other side at either end", () => {
   const events = inDateOrder(Array.from({ length: 10 }, (_, index) => ({
     id: `e${index}`, date: dateAt(index * 30),
   })));
-  const scale = timelineScale(dateAt(300), { red: events, blue: [] });
-  const first = timelineWindow(events, "e0", scale);
-  const last = timelineWindow(events, "e9", scale);
-  assert.deepEqual(first.ids, events.slice(0, 7).map((item) => item.id));
-  assert.deepEqual(last.ids, events.slice(3).map((item) => item.id));
-  assert.equal(windowPercent(scale.percentOf(events[0].date), first), 50);
-  assert.equal(windowPercent(scale.percentOf(events[9].date), last), 50);
+  const first = timelineWindow(events, "e0");
+  const middle = timelineWindow(events, "e5");
+  const last = timelineWindow(events, "e9");
+  assert.deepEqual(first.map(({ id }) => id), events.slice(0, 7).map(({ id }) => id));
+  assert.deepEqual(middle.map(({ id }) => id), events.slice(2, 9).map(({ id }) => id));
+  assert.deepEqual(last.map(({ id }) => id), events.slice(3).map(({ id }) => id));
+  assert.equal(windowPercent(events[0].date, first), (0.5 / 7) * 100);
+  assert.equal(windowPercent(events[5].date, middle), 50);
+  assert.equal(windowPercent(events[9].date, last), (6.5 / 7) * 100);
+});
+
+test("timeline zoom steps and jumps by keeping the previous slot when possible", () => {
+  const events = Array.from({ length: 14 }, (_, index) => ({
+    id: `e${index}`, date: dateAt(index * 30),
+  }));
+  const first = timelineWindow(events, "e0");
+  const later = timelineWindow(events, "e1", first.findIndex(({ id }) => id === "e0"));
+  assert.deepEqual(later.map(({ id }) => id), events.slice(1, 8).map(({ id }) => id));
+  const slot = later.findIndex(({ id }) => id === "e1");
+  assert.deepEqual(timelineWindow(events, "e0", slot), first);
+  const jumped = timelineWindow(events, "e4", slot);
+  assert.deepEqual(jumped.map(({ id }) => id), events.slice(4, 11).map(({ id }) => id));
+  assert.equal(later[3].id, jumped[0].id);
+  assert.ok(later[3].percent > jumped[0].percent);
+  assert.deepEqual(timelineWindow(events, "e13", slot), timelineWindow(events, "e13"));
 });
 
 test("timeline zoom handles coincident dates and short or empty lists", () => {
-  const scale = timelineScale(last, dots);
-  for (const events of [[], items.slice(0, 1), items.filter((item) => item.date === "2023-06-01")]) {
-    const window = timelineWindow(events, events[0]?.id ?? "missing", scale);
-    assert.ok(window.start < window.middle && window.middle < window.end);
-    for (const event of events) assert.ok(Number.isFinite(windowPercent(scale.percentOf(event.date), window)));
-  }
+  const empty = timelineWindow([], "missing");
+  assert.deepEqual(empty, []);
+  assert.equal(windowPlace(50, empty), undefined);
+  const single = timelineWindow(items, "missing");
+  assert.deepEqual(single, []);
+  const one = timelineWindow(items.slice(0, 1), "c");
+  assert.equal(windowPercent("2023-06-01", one), 50);
+  const sameDay = timelineWindow(items.filter((item) => item.date === "2023-06-01"), "b");
+  assert.equal(windowPercent("2023-06-01", sameDay, "b"), 25);
+  assert.equal(windowPercent("2023-06-01", sameDay, "c"), 75);
+  for (const { percent, date } of sameDay) assert.equal(windowPlace(percent, sameDay), date);
 });

@@ -47,6 +47,27 @@ body { --bubble-caption-size: 13px; }
   transition: opacity 700ms ease;
 }
 
+/* Replace the browser's box outline on bubble groups, not on the picture or other controls. */
+.bubble:focus {
+  outline: none;
+}
+
+.bubble:focus-visible {
+  --bubble-dim-opacity: 1;
+}
+
+.bubble-focus-ring {
+  display: none;
+  fill: none;
+  pointer-events: none;
+  stroke: var(--accent);
+  stroke-width: 6px;
+}
+
+.bubble:focus-visible > .bubble-focus-ring {
+  display: inline;
+}
+
 .bubble-arrow {
   transition: opacity 700ms ease;
 }
@@ -273,16 +294,11 @@ body { --bubble-caption-size: 13px; }
   margin: 16px 0 0;
 }
 
-/* The company's news: one button a row, a rule between rows, the list scrolling where the
-   column or the sheet is short so the timeline never moves off screen. */
+/* The company's news: one button a row, with a rule between rows. */
 .company-news {
   list-style: none;
   margin: 0;
   padding: 0;
-  min-height: 0;
-  max-height: 40vh;
-  overflow-y: auto;
-  overscroll-behavior: contain;
 }
 
 .company-news li + li {
@@ -292,6 +308,7 @@ body { --bubble-caption-size: 13px; }
 .company-news-row {
   display: block;
   width: 100%;
+  box-sizing: border-box;
   min-height: 44px;
   padding: 8px 0;
   border: none;
@@ -381,6 +398,59 @@ body[data-timeline-zoomed="true"] .timeline-dot[data-dot="small"] .dot {
   border-top: 1px solid var(--ink);
 }
 
+/* Move the solid portion of the axis and the visible range handle with the selection. */
+[data-timeline] > .timeline-axis {
+  background: repeating-linear-gradient(to right, var(--timeline-dash, var(--rule)) 0 4px, transparent 4px 8px);
+}
+
+[data-timeline] > .timeline-axis::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--timeline-current, 50%);
+  background: var(--ink);
+}
+
+[data-timeline]::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  top: var(--timeline-line, 22px);
+  left: var(--timeline-current, 50%);
+  transform: translate(-50%, -50%);
+  width: 18px;
+  height: 18px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--paper);
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-timeline-motion="true"] {
+    --timeline-glide: 300ms ease-out;
+  }
+
+  [data-timeline-motion="true"] :is(.timeline-dot[data-news], [data-timeline-id]) {
+    transition: left var(--timeline-glide), opacity var(--timeline-glide);
+  }
+
+  [data-timeline-motion="true"] :is([data-timeline-current], [data-current-flag], .timeline-burst),
+  [data-timeline-motion="true"]::after {
+    transition: left var(--timeline-glide);
+  }
+
+  [data-timeline-motion="true"] > .timeline-axis::before {
+    transition: width var(--timeline-glide);
+  }
+}
+
+[data-timeline-leaving] {
+  opacity: 0;
+  pointer-events: none;
+}
+
 /* --- the day slider: its track is the timeline line, the handle rides on it --- */
 
 /* The slider's value is a place on the line, so the handle has to sit exactly on the dot of the
@@ -415,19 +485,13 @@ body[data-timeline-zoomed="true"] .timeline-dot[data-dot="small"] .dot {
   width: 18px;
   height: 18px;
   margin-top: -8.5px;
-  box-sizing: border-box;
-  border-radius: 50%;
-  background: var(--accent);
-  border: 2px solid var(--paper);
+  opacity: 0;
 }
 
 .day-range::-moz-range-thumb {
   width: 18px;
   height: 18px;
-  box-sizing: border-box;
-  border-radius: 50%;
-  background: var(--accent);
-  border: 2px solid var(--paper);
+  opacity: 0;
 }
 
 /* Both ends of the line: the first day on the left, today on the right. */
@@ -625,8 +689,15 @@ body:not([data-timeline-zoomed="true"]) [data-zoom-only="true"],
   /* The panel is as tall as its three rows and no taller; on a very short screen that is a few
      pixels over 40%, and the rows are the smallest they can be with 44px arrows. */
   max-height: none;
-  padding-top: 10px;
+  overflow: visible;
+  padding-top: 0;
   padding-bottom: 10px;
+}
+
+/* Keep the 44px target, with 20px above the sheet and the bar below its edge. */
+.sheet[data-sheet-state="docked"] > .sheet-handle {
+  margin-top: -21px;
+  padding: 16px 0 0;
 }
 
 .sheet[data-sheet-state="docked"] > :not(.sheet-handle):not(.mode-switch):not(.dock-row) {
@@ -885,30 +956,17 @@ body:not([data-timeline-zoomed="true"]) [data-zoom-only="true"],
   color: var(--accent);
 }
 
-/* With a company chosen the sheet keeps to the same height as the news sheet, and the news list
-   scrolls inside it, so the kicker, Back, the name and value and the legend, day line and Earlier /
-   Later stay in view without the page scrolling. */
-.sheet:has([data-block="company"]:not([hidden])) {
-  display: flex;
-  flex-direction: column;
-  max-height: 40vh;
-  max-height: 40dvh;
-}
-
-.sheet:has([data-block="company"]:not([hidden])) > * {
-  flex: 0 0 auto;
-}
-
-.sheet:has([data-block="company"]:not([hidden])) [data-block="company"] {
-  flex: 1 1 auto;
-  min-height: 0;
+/* Keep the news sheet's height cap and let the sheet scroll the whole company view.
+   The timeline and buttons follow the full company block in normal flow. */
+.sheet:not([data-sheet-state="docked"]) > [data-block="company"]:not([hidden]) {
   display: flex;
   flex-direction: column;
 }
 
-.sheet:has([data-block="company"]:not([hidden])) .company-news {
-  flex: 1 1 auto;
-  min-height: 0;
+/* Give wrapped value sources room for every line while keeping the existing tap area and gap. */
+.sheet [data-block="company"] .source:not([hidden]) {
+  box-sizing: border-box;
+  padding-block: calc((44px - 1lh) / 2);
 }
 
 /* --- story mode: the chapter in the text panel or the bottom sheet --- */
@@ -1362,12 +1420,11 @@ body[data-mode="story"] .sheet .read-story {
     margin: 10px 0 0;
   }
 
-  /* The company panel keeps its news inside the column, so the timeline keeps its place: the list
-     takes the room the window has left over after the header, the panel's own lines and
-     the timeline, and scrolls inside it. */
+  /* Keep room for two rows even in short windows, and let the remaining space scroll. */
   .story-column .company-news {
-    max-height: min(32vh, calc(100vh - 700px));
-    max-height: min(32vh, calc(100dvh - 700px));
+    max-height: max(98px, min(32vh, 100vh - 700px));
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
 
   .latest-label {
@@ -1486,7 +1543,7 @@ body[data-mode="story"] .sheet .read-story {
     transform: translateY(-50%);
     border-top: 0;
     height: 2.5px;
-    background: linear-gradient(to right, var(--ink) var(--timeline-current, 50%), transparent var(--timeline-current, 50%)), repeating-linear-gradient(to right, #CFC5B2 0 4px, transparent 4px 8px);
+    --timeline-dash: #CFC5B2;
   }
   .timeline-inner .day-range,
   .timeline-inner .timeline-dot { top: calc(var(--timeline-line) - 22px); }

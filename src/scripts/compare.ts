@@ -1,6 +1,8 @@
 import { datasets, changeLine, comparisonLine, formatTotal, labelsOverlap, moments, momentOptions, packedOn, percentDifference, totalOn } from "../lib/compare.ts";
 import type { CompareDataset, LabelBox, Moment } from "../lib/compare.ts";
 import { publisherName } from "../lib/timeline.ts";
+import { readVisit, restoreTabLinks, tabStorage, writeVisit } from "../lib/visit.ts";
+import type { Visit } from "../lib/visit.ts";
 
 type Side = { dataset: CompareDataset; moment: Moment; date: string; players: Set<string> | null };
 type Frame = {
@@ -34,6 +36,24 @@ if (root) {
   phone.addEventListener("change", syncPickers);
   syncPickers();
   let measure = "size";
+  // The browser tab's own storage: coming back to Compare in the same visit puts back the two
+  // picks and the measure. With storage blocked it starts exactly as it does today.
+  const visitStorage = tabStorage();
+  // The links that stand for a page itself: Story's ?chapter=1 says what it means and is not one.
+  const visitLinks = Array.from(root.querySelectorAll<HTMLAnchorElement>(".site-nav a[href], .mode-switch a[href]"))
+    .filter((link) => link.search === "" && link.hash === "");
+  restoreTabLinks(visitLinks, visitStorage);
+  const savedCompare = readVisit(window.location.pathname, visitStorage)?.compare;
+  for (const [index, pick] of (savedCompare?.sides ?? []).slice(0, 2).entries()) {
+    const side = sides[index];
+    const dataset = datasets.find((one) => one.id === pick.dataset);
+    const moment = dataset && momentOptions(dataset.id).find((option) => option.id === pick.moment)?.id;
+    if (!side || !dataset || !moment) continue;
+    side.dataset = dataset;
+    side.moment = moment;
+    side.date = moments(dataset)[moment] ?? moments(dataset).start!;
+  }
+  if (savedCompare?.measure === "size" || savedCompare?.measure === "change") measure = savedCompare.measure;
   let playerSide = "0";
   const syncPlayers = () => {
     for (const panel of root.querySelectorAll<HTMLElement>("[data-player-panel]")) panel.hidden = phone.matches && panel.dataset.playerPanel !== playerSide;
@@ -180,8 +200,27 @@ if (root) {
     });
   };
 
+  // The tab's record of Compare's picks, written only when they change; its tab links then lead
+  // back to them.
+  let savedState = "";
+  const saveVisit = (): void => {
+    const visit: Visit = {
+      address: `${window.location.pathname}${window.location.search}`,
+      compare: {
+        sides: sides.map((side) => ({ dataset: side.dataset.id, moment: side.moment })),
+        measure,
+      },
+    };
+    const value = JSON.stringify(visit);
+    if (value === savedState) return;
+    savedState = value;
+    writeVisit(visit, visitStorage);
+    restoreTabLinks(visitLinks, visitStorage);
+  };
+
   function render(animate = true) {
     cancelAnimationFrame(animation);
+    saveVisit();
     const frames = sides.map((side, index) => frameFor(side, index));
     query("[data-size]").toggleAttribute("hidden", measure !== "size");
     query("[data-size-legend]").toggleAttribute("hidden", measure !== "size");
