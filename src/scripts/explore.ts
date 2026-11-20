@@ -129,6 +129,7 @@ let manual = 1;
 let changeFromPeak: string | undefined;
 // The picture's pan, in the bubble's own units (the 0–100 viewBox).
 let pan = { dx: 0, dy: 0 };
+let beforeCompany: { itemId: string | null; fitPlayers: boolean; manual: number; pan: typeof pan } | null = null;
 let timelineZoomed = true;
 const fullTimeline: TimelineWindow = { start: 0, middle: 50, end: 100, ids: [] };
 let visibleTimeline = fullTimeline;
@@ -430,6 +431,7 @@ function render(soon = false): void {
     companyId = null;
     resetZoom();
   }
+  if (companyId === null) beforeCompany = null;
   const storyAt = chapterIndex;
   const storyChapter = storyAt === null ? null : (chapters[storyAt] ?? null);
   if (storyAt !== null && storyChapter === null) chapterIndex = null;
@@ -675,10 +677,16 @@ function openStoryList(open: boolean): void {
 }
 
 function setItem(item: NewsItem): void {
+  const focused = fitPlayers || manual !== 1;
+  const fallback = manual > 1 ? manual : 2;
   itemId = item.id;
   companyId = null;
   day = item.date;
-  resetZoom(true);
+  resetZoom(focused);
+  // Refit to the new players, but stay zoomed even when there is no tighter fit.
+  if (focused && (!fitPlayers || (layoutsReady && cameraView(1).z <= cameraView(1, []).z))) {
+    manual = fallback;
+  }
 }
 
 function selectItem(id: string): void {
@@ -697,24 +705,31 @@ function snapToFirstItem(date: string): boolean {
   return true;
 }
 
-// A bubble opens its company; the same company again, or Back, goes to the quiet day. In Story it
-// also leaves the chapter, as Explore's own company panel does.
+// Opening a company temporarily frames it. Back or tapping it again restores the previous view.
 function chooseCompany(id: string): void {
   if (!companyById.has(id)) return;
+  if (companyId === id) {
+    clearCompany();
+    return;
+  }
+  if (companyId === null) beforeCompany = { itemId, fitPlayers, manual, pan };
   chapterIndex = null;
   storyListOpen = false;
-  companyId = companyId === id ? null : id;
+  companyId = id;
   itemId = null;
-  // The button's state follows the view: a company open frames it, the quiet day shows the whole
-  // frame.
-  resetZoom(companyId !== null);
+  resetZoom(true);
   render();
 }
 
 function clearCompany(): void {
   companyId = null;
-  itemId = null;
-  resetZoom();
+  if (beforeCompany) {
+    ({ itemId, fitPlayers, manual, pan } = beforeCompany);
+    beforeCompany = null;
+  } else {
+    itemId = null;
+    resetZoom();
+  }
   render();
 }
 
