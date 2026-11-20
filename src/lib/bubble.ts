@@ -23,7 +23,7 @@ const FADE_MS = 700;
 
 // Opacity of a faint money line, and of a bubble that is not a player of the chosen item.
 const FAINT = "0.45";
-const DIM = "0.38";
+const DIM = "var(--bubble-dim-opacity, 0.38)";
 
 // Minimum hit radius in CSS pixels, not in the viewBox or scene.
 const HIT_RADIUS = 22;
@@ -53,6 +53,7 @@ type BubbleNode = {
   group: SVGGElement;
   title: SVGTitleElement;
   hit: SVGCircleElement;
+  focusRing: SVGCircleElement;
   circle: SVGCircleElement;
   logo: SVGGElement;
   logoRect: SVGRectElement;
@@ -313,6 +314,13 @@ function createBubbleNode(bubble: Bubble): BubbleNode {
   hit.style.stroke = "none";
   group.appendChild(hit);
 
+  // Trace the same circle from behind so keyboard focus leaves the ink stroke intact.
+  const focusRing = el<SVGCircleElement>("circle");
+  focusRing.setAttribute("class", "bubble-focus-ring");
+  focusRing.setAttribute("aria-hidden", "true");
+  focusRing.setAttribute("vector-effect", "non-scaling-stroke");
+  group.appendChild(focusRing);
+
   const circle = el<SVGCircleElement>("circle");
   circle.setAttribute("class", "bubble-circle");
   circle.style.fill = "var(--muted)";
@@ -358,13 +366,13 @@ function createBubbleNode(bubble: Bubble): BubbleNode {
   value.setAttribute("dominant-baseline", "central");
   group.appendChild(value);
 
-  return { group, title, hit, circle, logo, logoRect, logoText, name, value };
+  return { group, title, hit, focusRing, circle, logo, logoRect, logoText, name, value };
 }
 
 // Paints one bubble where it is right now: circle, dashed group edge, logo slot, labels.
 function paintBubble(live: LiveBubble, drawing: Drawing): void {
   const { node, bubble, x, y, r } = live;
-  const { title, hit, circle, logo, logoRect, logoText, name, value } = node;
+  const { title, hit, focusRing, circle, logo, logoRect, logoText, name, value } = node;
   const isGroup = bubble.kind === "group";
   const isPlayer = drawing.players.has(bubble.id);
   // With a company panel open, only that company's bubble is ringed; with an item open, every
@@ -378,9 +386,11 @@ function paintBubble(live: LiveBubble, drawing: Drawing): void {
   node.group.setAttribute("aria-label", `${bubble.name}, ${formatValue(bubble.value)}: show its news`);
   title.textContent = `${bubble.name}, ${formatValue(bubble.value)}`;
 
-  circle.setAttribute("cx", fixed(x));
-  circle.setAttribute("cy", fixed(y));
-  circle.setAttribute("r", fixed(r));
+  for (const edge of [circle, focusRing]) {
+    edge.setAttribute("cx", fixed(x));
+    edge.setAttribute("cy", fixed(y));
+    edge.setAttribute("r", fixed(r));
+  }
   if (isGroup) {
     circle.style.fill = "none";
     circle.style.stroke = ringed ? "var(--ink)" : "var(--ink-2)";

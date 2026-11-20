@@ -47,6 +47,27 @@ body { --bubble-caption-size: 13px; }
   transition: opacity 700ms ease;
 }
 
+/* Replace the browser's box outline on bubble groups, not on the picture or other controls. */
+.bubble:focus {
+  outline: none;
+}
+
+.bubble:focus-visible {
+  --bubble-dim-opacity: 1;
+}
+
+.bubble-focus-ring {
+  display: none;
+  fill: none;
+  pointer-events: none;
+  stroke: var(--accent);
+  stroke-width: 6px;
+}
+
+.bubble:focus-visible > .bubble-focus-ring {
+  display: inline;
+}
+
 .bubble-arrow {
   transition: opacity 700ms ease;
 }

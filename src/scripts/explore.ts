@@ -968,7 +968,13 @@ for (const svg of document.querySelectorAll<SVGSVGElement>("[data-bubble]")) {
     const id = event.detail === 0
       ? (event.target as Element).closest("[data-company]")?.getAttribute("data-company")
       : !suppressTap && bubbleAtPoint(svg, event.clientX, event.clientY);
-    if (id) chooseCompany(id);
+    if (!id) return;
+    // Clicking a bubble that already had keyboard focus can leave it focus-visible.
+    // Do not clear focus for keyboard or assistive-technology activation.
+    const focused = document.activeElement;
+    if (event.detail !== 0 && focused instanceof SVGElement
+      && focused.matches(".bubble") && svg.contains(focused)) focused.blur();
+    chooseCompany(id);
   });
   svg.addEventListener("wheel", (event) => {
     event.preventDefault();
