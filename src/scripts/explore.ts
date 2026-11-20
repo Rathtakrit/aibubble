@@ -698,12 +698,13 @@ function selectItem(id: string): void {
 
 function snapToEdgeItem(date: string): boolean {
   const first = ordered[0];
-  if (!first || !newest) return false;
-  const snapped = snapToItemDateRange(date, first.date, newest.date);
+  const last = ordered[ordered.length - 1];
+  if (!first || !last) return false;
+  const snapped = snapToItemDateRange(date, first.date, last.date);
   if (snapped === date) return false;
   chapterIndex = null;
   storyListOpen = false;
-  setItem(date < first.date ? first : newest);
+  setItem(date < first.date ? first : last);
   return true;
 }
 
