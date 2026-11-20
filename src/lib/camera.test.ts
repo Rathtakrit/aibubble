@@ -3,6 +3,7 @@
 import test from "node:test";
 // @ts-expect-error node:assert has no types in this repo
 import assert from "node:assert";
+import { showZoomEdge } from "./bubble.ts";
 import { clampPan, dayView, fitView, panView, peakDay, ringRatio, sceneTransform, zoomBy } from "./camera.ts";
 import { bubblesForDate, enclosingCircle, FRAME, totalForDate } from "./layout.ts";
 import type { Bubble } from "./layout.ts";
@@ -102,6 +103,15 @@ test("the burst day and later fit all bubbles; earlier days and AI keep the old 
   }
   assert.deepEqual(dayView(shown, [], 1, "2026-11-17"), fitView(shown, [], 1));
   assert.deepEqual(dayView([], [], 1, "2002-10-09", "2000-03-10"), fitView([], [], 1));
+});
+
+test("the fixed frame edge only shows after a burst above whole-view zoom", () => {
+  for (const zoom of [1.001, 2, 4]) {
+    assert.equal(showZoomEdge(true, zoom), true);
+    assert.equal(showZoomEdge(false, zoom), false);
+  }
+  assert.equal(showZoomEdge(true, 1), false);
+  assert.equal(showZoomEdge(true, 0.5), false);
 });
 
 test("shrinking bubbles cannot increase the post-burst zoom, even with no bubbles left", () => {

@@ -144,15 +144,33 @@ function nameWidth(name: SVGTextElement, text: string): number {
 // Before the font has loaded, a name is measured in the fallback font. Once the real one is ready
 // every width is measured again, and each drawing is painted once more, so a long name is split or
 // hidden on the width it is really drawn at.
-document.fonts.ready.then(() => {
+globalThis.document?.fonts.ready.then(() => {
   textWidths.clear();
   for (const drawing of liveDrawings) paintAll(drawing);
 });
 
+function frameCircle(className: string): SVGCircleElement {
+  const circle = el<SVGCircleElement>("circle");
+  circle.setAttribute("class", className);
+  circle.setAttribute("cx", String(FRAME.cx));
+  circle.setAttribute("cy", String(FRAME.cy));
+  circle.setAttribute("r", String(FRAME.radius));
+  circle.style.fill = "none";
+  circle.style.stroke = "var(--ink)";
+  circle.style.strokeWidth = "1.5px";
+  circle.setAttribute("vector-effect", "non-scaling-stroke");
+  circle.style.pointerEvents = "none";
+  return circle;
+}
+
 // The clipped company scene and the ring overlay on top.
-function ensureScene(
-  svg: SVGSVGElement,
-): { bubbleLayer: SVGGElement; arrowLayer: SVGGElement; scene: SVGGElement; rings: SVGGElement } {
+function ensureScene(svg: SVGSVGElement): {
+  bubbleLayer: SVGGElement;
+  arrowLayer: SVGGElement;
+  scene: SVGGElement;
+  rings: SVGGElement;
+  edge: SVGCircleElement;
+} {
   let defs = svg.querySelector("defs");
   if (!defs) {
     defs = el("defs");
@@ -216,19 +234,8 @@ function ensureScene(
     svg.appendChild(ringClip);
   }
 
-  let ring = svg.querySelector<SVGCircleElement>("circle.bubble-frame");
-  if (!ring) {
-    ring = el("circle");
-    ring.setAttribute("class", "bubble-frame");
-    ring.setAttribute("cx", String(FRAME.cx));
-    ring.setAttribute("cy", String(FRAME.cy));
-    ring.setAttribute("r", String(FRAME.radius));
-    ring.style.fill = "none";
-    ring.style.stroke = "var(--ink)";
-    ring.style.strokeWidth = "1.5px";
-    ring.setAttribute("vector-effect", "non-scaling-stroke");
-    ring.style.pointerEvents = "none";
-    rings.appendChild(ring);
+  if (!rings.querySelector("circle.bubble-frame")) {
+    rings.appendChild(frameCircle("bubble-frame"));
   }
 
   if (!svg.querySelector(".bubble-drop")) {
@@ -262,11 +269,20 @@ function ensureScene(
     rings.appendChild(realRing);
   }
 
+  // Keep the edge outside both the camera transform and the clip, with its full stroke visible.
+  let edge = svg.querySelector<SVGCircleElement>("circle.bubble-zoom-edge");
+  if (!edge) {
+    edge = frameCircle("bubble-zoom-edge");
+    edge.style.display = "none";
+    svg.appendChild(edge);
+  }
+
   return {
     bubbleLayer: bubbleLayer as SVGGElement,
     arrowLayer: arrowLayer as SVGGElement,
     scene: scene as SVGGElement,
     rings,
+    edge,
   };
 }
 
@@ -799,6 +815,11 @@ export type BubbleOptions = {
   immediate?: boolean;
 };
 
+// The zoom control's 1x is the whole view, even when the peak fit has already scaled the scene.
+export function showZoomEdge(afterBurst: boolean, manualZoom: number): boolean {
+  return afterBurst && manualZoom > 1;
+}
+
 export function renderBubble(
   svg: SVGSVGElement,
   date: string,
@@ -826,12 +847,13 @@ export function renderBubble(
   const noPan = { dx: 0, dy: 0 };
   const shown = panView(view, clampPan(view, options.pan ?? noPan));
 
-  const { bubbleLayer, arrowLayer, scene, rings } = ensureScene(svg);
+  const { bubbleLayer, arrowLayer, scene, rings, edge } = ensureScene(svg);
   const transition = options.immediate ? "none" : cameraTransition();
   scene.style.transition = transition;
   scene.style.transform = sceneTransform(shown);
 
   const afterBurst = options.burstDate !== undefined && date >= options.burstDate;
+  edge.style.display = showZoomEdge(afterBurst, manual) ? "" : "none";
   if (afterBurst) {
     // The rings are already drawn in whole-bubble coordinates. Undo that baseline before
     // applying the camera, so 1x keeps the old geometry even when the peak fit isn't 1.
