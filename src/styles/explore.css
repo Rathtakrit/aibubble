@@ -294,16 +294,11 @@ body { --bubble-caption-size: 13px; }
   margin: 16px 0 0;
 }
 
-/* The company's news: one button a row, a rule between rows, the list scrolling where the
-   column or the sheet is short so the timeline never moves off screen. */
+/* The company's news: one button a row, with a rule between rows. */
 .company-news {
   list-style: none;
   margin: 0;
   padding: 0;
-  min-height: 0;
-  max-height: 40vh;
-  overflow-y: auto;
-  overscroll-behavior: contain;
 }
 
 .company-news li + li {
@@ -313,6 +308,7 @@ body { --bubble-caption-size: 13px; }
 .company-news-row {
   display: block;
   width: 100%;
+  box-sizing: border-box;
   min-height: 44px;
   padding: 8px 0;
   border: none;
@@ -906,30 +902,17 @@ body:not([data-timeline-zoomed="true"]) [data-zoom-only="true"],
   color: var(--accent);
 }
 
-/* With a company chosen the sheet keeps to the same height as the news sheet, and the news list
-   scrolls inside it, so the kicker, Back, the name and value and the legend, day line and Earlier /
-   Later stay in view without the page scrolling. */
-.sheet:has([data-block="company"]:not([hidden])) {
-  display: flex;
-  flex-direction: column;
-  max-height: 40vh;
-  max-height: 40dvh;
-}
-
-.sheet:has([data-block="company"]:not([hidden])) > * {
-  flex: 0 0 auto;
-}
-
-.sheet:has([data-block="company"]:not([hidden])) [data-block="company"] {
-  flex: 1 1 auto;
-  min-height: 0;
+/* Keep the news sheet's height cap and let the sheet scroll the whole company view.
+   The timeline and buttons follow the full company block in normal flow. */
+.sheet:not([data-sheet-state="docked"]) > [data-block="company"]:not([hidden]) {
   display: flex;
   flex-direction: column;
 }
 
-.sheet:has([data-block="company"]:not([hidden])) .company-news {
-  flex: 1 1 auto;
-  min-height: 0;
+/* Give wrapped value sources room for every line while keeping the existing tap area and gap. */
+.sheet [data-block="company"] .source:not([hidden]) {
+  box-sizing: border-box;
+  padding-block: calc((44px - 1lh) / 2);
 }
 
 /* --- story mode: the chapter in the text panel or the bottom sheet --- */
@@ -1383,12 +1366,11 @@ body[data-mode="story"] .sheet .read-story {
     margin: 10px 0 0;
   }
 
-  /* The company panel keeps its news inside the column, so the timeline keeps its place: the list
-     takes the room the window has left over after the header, the panel's own lines and
-     the timeline, and scrolls inside it. */
+  /* Keep room for two rows even in short windows, and let the remaining space scroll. */
   .story-column .company-news {
-    max-height: min(32vh, calc(100vh - 700px));
-    max-height: min(32vh, calc(100dvh - 700px));
+    max-height: max(98px, min(32vh, 100vh - 700px));
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
 
   .latest-label {
