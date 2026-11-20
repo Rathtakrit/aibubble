@@ -148,10 +148,10 @@ document.fonts.ready.then(() => {
   for (const drawing of liveDrawings) paintAll(drawing);
 });
 
-// The clipped company scene and the ring overlay on top.
+// The clip, the scene group the camera will transform, and the frame ring on top.
 function ensureScene(
   svg: SVGSVGElement,
-): { bubbleLayer: SVGGElement; arrowLayer: SVGGElement; scene: SVGGElement; rings: SVGGElement } {
+): { bubbleLayer: SVGGElement; arrowLayer: SVGGElement; scene: SVGGElement } {
   let defs = svg.querySelector("defs");
   if (!defs) {
     defs = el("defs");
@@ -204,17 +204,6 @@ function ensureScene(
   // so no line is ever seen crossing a bubble's face.
   if (arrowLayer.nextSibling !== bubbleLayer) scene.insertBefore(arrowLayer, bubbleLayer);
 
-  let rings = svg.querySelector<SVGGElement>("g.burst-rings");
-  if (!rings) {
-    const ringClip = el<SVGGElement>("g");
-    rings = el<SVGGElement>("g");
-    rings.setAttribute("class", "burst-rings");
-    rings.style.setProperty("transform-box", "view-box");
-    rings.style.setProperty("transform-origin", "0 0");
-    ringClip.appendChild(rings);
-    svg.appendChild(ringClip);
-  }
-
   let ring = svg.querySelector<SVGCircleElement>("circle.bubble-frame");
   if (!ring) {
     ring = el("circle");
@@ -227,7 +216,7 @@ function ensureScene(
     ring.style.strokeWidth = "1.5px";
     ring.setAttribute("vector-effect", "non-scaling-stroke");
     ring.style.pointerEvents = "none";
-    rings.appendChild(ring);
+    svg.appendChild(ring);
   }
 
   if (!svg.querySelector(".bubble-drop")) {
@@ -246,7 +235,7 @@ function ensureScene(
     label.setAttribute("startOffset", "50%");
     label.setAttribute("text-anchor", "middle");
     text.appendChild(label);
-    rings.appendChild(text);
+    svg.appendChild(text);
   }
 
   if (!svg.querySelector("circle.bubble-real-ring")) {
@@ -258,36 +247,14 @@ function ensureScene(
     realRing.style.strokeWidth = "1.5px";
     realRing.setAttribute("vector-effect", "non-scaling-stroke");
     realRing.style.pointerEvents = "none";
-    rings.appendChild(realRing);
+    svg.appendChild(realRing);
   }
 
   return {
     bubbleLayer: bubbleLayer as SVGGElement,
     arrowLayer: arrowLayer as SVGGElement,
     scene: scene as SVGGElement,
-    rings,
   };
-}
-
-const ringFrames = new WeakMap<SVGGElement, number>();
-
-function paintRingCamera(rings: SVGGElement, transitioning: boolean): void {
-  const pending = ringFrames.get(rings);
-  if (pending !== undefined) cancelAnimationFrame(pending);
-  ringFrames.delete(rings);
-
-  // Counter-scale the label using the current scale, including during the camera glide.
-  const transform = getComputedStyle(rings).transform;
-  const matrix = new DOMMatrixReadOnly(transform === "none" ? undefined : transform);
-  rings.style.setProperty("--burst-zoom", String(matrix.a));
-  // At rest, leave the full stroke visible along the frame edge, as before.
-  const clip = rings.parentElement!;
-  if (matrix.isIdentity) clip.removeAttribute("clip-path");
-  else clip.setAttribute("clip-path", `url(#${CLIP_ID})`);
-
-  if (transitioning && rings.getAnimations().length > 0) {
-    ringFrames.set(rings, requestAnimationFrame(() => paintRingCamera(rings, true)));
-  }
 }
 
 function createBubbleNode(bubble: Bubble): BubbleNode {
@@ -808,36 +775,15 @@ export function renderBubble(
     options.focus !== undefined && bubbles.some((bubble) => bubble.id === options.focus)
       ? options.focus
       : null;
-  const manual = options.manual ?? 1;
-  const peakBubbles = options.peak ? bubblesForDate(options.peak.date) : undefined;
-  const view = dayView(bubbles, options.players ?? [], manual, date, options.burstDate, peakBubbles);
+  const view = dayView(bubbles, options.players ?? [], options.manual ?? 1, date, options.burstDate,
+    options.peak ? bubblesForDate(options.peak.date) : undefined);
   // Where the camera looks once the reader's drag is applied; clamped so the content stays
   // inside the round frame.
-  const noPan = { dx: 0, dy: 0 };
-  const shown = panView(view, clampPan(view, options.pan ?? noPan));
+  const shown = panView(view, clampPan(view, options.pan ?? { dx: 0, dy: 0 }));
 
-  const { bubbleLayer, arrowLayer, scene, rings } = ensureScene(svg);
-  const transition = options.immediate ? "none" : cameraTransition();
-  scene.style.transition = transition;
+  const { bubbleLayer, arrowLayer, scene } = ensureScene(svg);
+  scene.style.transition = options.immediate ? "none" : cameraTransition();
   scene.style.transform = sceneTransform(shown);
-
-  const afterBurst = options.burstDate !== undefined && date >= options.burstDate;
-  if (afterBurst) {
-    // The rings are already drawn in whole-bubble coordinates. Undo that baseline before
-    // applying the camera, so 1x keeps the old geometry even when the peak fit isn't 1.
-    const base = manual === 1 ? view : dayView(bubbles, [], 1, date, options.burstDate, peakBubbles);
-    const whole = panView(base, clampPan(base, noPan));
-    const z = shown.z / whole.z;
-    const tx = FRAME.cx * (1 - z) + (whole.cx - shown.cx) * shown.z;
-    const ty = FRAME.cy * (1 - z) + (whole.cy - shown.cy) * shown.z;
-    rings.style.transition = transition;
-    rings.style.transform = `translate(${fixed(tx)}px, ${fixed(ty)}px) scale(${fixed(z)})`;
-    paintRingCamera(rings, transition !== "none");
-  } else if (rings.style.transform) {
-    rings.style.transition = "none";
-    rings.style.removeProperty("transform");
-    paintRingCamera(rings, false);
-  }
 
   const existing = drawings.get(svg);
   if (options.immediate && existing?.day === date && existing.focus === focus
@@ -848,6 +794,7 @@ export function renderBubble(
   }
 
   const ring = svg.querySelector<SVGCircleElement>("circle.bubble-frame")!;
+  const afterBurst = options.burstDate !== undefined && date >= options.burstDate;
   ring.classList.toggle("burst", afterBurst);
   if (afterBurst) ring.setAttribute("stroke-dasharray", "0 4.5");
   else ring.removeAttribute("stroke-dasharray");
@@ -886,7 +833,8 @@ export function renderBubble(
       const width = svg.getBoundingClientRect().width;
       if (width === 0) return;
       live.pixelsPerUnit = width / 100;
-      drop.style.fontSize = `calc(var(--bubble-caption-size) / ${live.pixelsPerUnit} / var(--burst-zoom, 1))`;
+      // The label is in the fixed frame, not the zoomed scene, so it needs only viewBox scaling.
+      drop.style.fontSize = `calc(var(--bubble-caption-size) / ${live.pixelsPerUnit})`;
       paintAll(live);
     };
     resize();
