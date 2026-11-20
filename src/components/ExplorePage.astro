@@ -43,6 +43,16 @@ const isPast = id !== "ai";
 const STORY_ENABLED = false;
 // Everything below is taken now, while this set is the active one.
 const boomName = { ai: "AI boom", dotcom: "Dot-com boom", housing: "Housing boom" }[id];
+// What the browser tab calls each set, and the line a search result or link preview shows. The
+// past sets' years are their meta.json first and last days.
+const pageName = { ai: "AI", dotcom: "Dot-com", housing: "Housing" }[id];
+const descriptions = {
+  ai: "How the AI money bubble formed, day by day: company values, who paid whom, and the news behind it.",
+  dotcom: "The dot-com bubble, 1995 to 2002, day by day: company values, deals and the news behind them.",
+  housing: "The housing bubble, 2003 to 2009, day by day: bank values, deals and the news behind them.",
+};
+const pageTitle = `${pageName} | ${SITE_NAME}`;
+const description = descriptions[id];
 const setStatus = status;
 const setKinds = kinds;
 const firstDay = FIRST_DAY;
@@ -50,7 +60,7 @@ const lastDay = LAST_DAY;
 const allCompanies = companies;
 const allDeals = deals;
 const ordered = inDateOrder(news.filter((item) => item.kind === "money" && item.date >= firstDay));
-const current = ordered[ordered.length - 1];
+const current = ordered[isPast ? 0 : ordered.length - 1];
 const pill = pillKind(current, allDeals);
 const pillColour = pillClass(pill);
 const pillName = pillLabel(pill);
@@ -158,12 +168,9 @@ const firstChapterNames = firstChapter
 // the files again.
 const chaptersJson = chapters.length > 0 ? JSON.stringify(chapters).replace(/</g, "\\u003c") : "";
 
-const statusLine =
-  setStatus === "sample"
-    ? "Sample data, for testing only."
-    : setStatus === "draft"
-      ? "Draft data: researched, not yet checked by the owner."
-      : "";
+// A sample set says so. Any other set carries no sentence of its own; the Report a problem link
+// below shows on every set either way.
+const statusLine = setStatus === "sample" ? "Sample data, for testing only." : "";
 const ariaFor = (itemTitle: string, date: string) => `${dayLabel(date)}, ${itemTitle}`;
 ---
 
@@ -172,7 +179,10 @@ const ariaFor = (itemTitle: string, date: string) => `${dayLabel(date)}, ${itemT
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>AI Bubble</title>
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
   </head>
   <body data-mode="explore" data-dataset={id} data-story-enabled={isPast ? undefined : STORY_ENABLED}>
     <div class="layout-desktop">
@@ -515,7 +525,7 @@ const ariaFor = (itemTitle: string, date: string) => `${dayLabel(date)}, ${itemT
             </button>
           </div>
         </div>
-        {statusLine && <p class="status">{statusLine} <a href="https://github.com/Rathtakrit/aibubble/issues/new/choose">Report a problem</a></p>}
+        <p class="status">{statusLine && `${statusLine} `}<a href="https://github.com/Rathtakrit/aibubble/issues/new/choose">Report a problem</a></p>
       </section>
     </div>
 
@@ -722,7 +732,7 @@ const ariaFor = (itemTitle: string, date: string) => `${dayLabel(date)}, ${itemT
           <button type="button" class="button button-primary" data-action="later">Later →</button>
         </div>
 
-        {statusLine && <p class="status">{statusLine} <a href="https://github.com/Rathtakrit/aibubble/issues/new/choose">Report a problem</a></p>}
+        <p class="status">{statusLine && `${statusLine} `}<a href="https://github.com/Rathtakrit/aibubble/issues/new/choose">Report a problem</a></p>
       </section>
     </div>
 

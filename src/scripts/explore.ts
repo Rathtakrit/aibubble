@@ -38,7 +38,7 @@ import {
   pillKind,
   placeLabels,
   publisherName,
-  snapToFirstItemDate,
+  snapToItemDateRange,
   stepDateLabel,
   type LabelRect,
   timelineScale,
@@ -96,7 +96,7 @@ const nameOf = new Map(companies.map((company) => [company.id, company.name]));
 const companyById = new Map(companies.map((company) => [company.id, company]));
 const lastDate = defaultDate();
 const lastDay = dayIndex(lastDate);
-const newest: NewsItem | undefined = ordered[ordered.length - 1];
+const openingItem: NewsItem | undefined = ordered[isPast ? 0 : ordered.length - 1];
 // The timeline's day scale, built once from the days that carry a dot: busy months are wider.
 const scale = timelineScale(lastDate, {
   red: ordered.filter((item) => item.key_date),
@@ -118,8 +118,8 @@ const VALUE_NOTES: Record<Company["kind"], string> = {
 
 // The three things the page remembers: the day, the news item or company chosen for it, and the
 // chapter being read. A chapter is a mode: while one is open the page is Story, not Explore.
-let day = newest ? newest.date : lastDate;
-let itemId: string | null = newest ? newest.id : null;
+let day = openingItem?.date ?? lastDate;
+let itemId: string | null = openingItem?.id ?? null;
 let companyId: string | null = null;
 let chapterIndex: number | null = null;
 // Whether "Read the story" has the list of chapters open.
@@ -129,6 +129,7 @@ let manual = 1;
 let changeFromPeak: string | undefined;
 // The picture's pan, in the bubble's own units (the 0–100 viewBox).
 let pan = { dx: 0, dy: 0 };
+let beforeCompany: { itemId: string | null; fitPlayers: boolean; manual: number; pan: typeof pan } | null = null;
 let timelineZoomed = true;
 const fullTimeline: TimelineWindow = { start: 0, middle: 50, end: 100, ids: [] };
 let visibleTimeline = fullTimeline;
@@ -430,6 +431,7 @@ function render(soon = false): void {
     companyId = null;
     resetZoom();
   }
+  if (companyId === null) beforeCompany = null;
   const storyAt = chapterIndex;
   const storyChapter = storyAt === null ? null : (chapters[storyAt] ?? null);
   if (storyAt !== null && storyChapter === null) chapterIndex = null;
@@ -675,10 +677,16 @@ function openStoryList(open: boolean): void {
 }
 
 function setItem(item: NewsItem): void {
+  const focused = fitPlayers || manual !== 1;
+  const fallback = manual > 1 ? manual : 2;
   itemId = item.id;
   companyId = null;
   day = item.date;
-  resetZoom(true);
+  resetZoom(focused);
+  // Refit to the new players, but stay zoomed even when there is no tighter fit.
+  if (focused && (!fitPlayers || (layoutsReady && cameraView(1).z <= cameraView(1, []).z))) {
+    manual = fallback;
+  }
 }
 
 function selectItem(id: string): void {
@@ -688,33 +696,42 @@ function selectItem(id: string): void {
   render();
 }
 
-function snapToFirstItem(date: string): boolean {
+function snapToEdgeItem(date: string): boolean {
   const first = ordered[0];
-  if (!first || snapToFirstItemDate(date, first.date) === date) return false;
+  if (!first || !newest) return false;
+  const snapped = snapToItemDateRange(date, first.date, newest.date);
+  if (snapped === date) return false;
   chapterIndex = null;
   storyListOpen = false;
-  setItem(first);
+  setItem(date < first.date ? first : newest);
   return true;
 }
 
-// A bubble opens its company; the same company again, or Back, goes to the quiet day. In Story it
-// also leaves the chapter, as Explore's own company panel does.
+// Opening a company temporarily frames it. Back or tapping it again restores the previous view.
 function chooseCompany(id: string): void {
   if (!companyById.has(id)) return;
+  if (companyId === id) {
+    clearCompany();
+    return;
+  }
+  if (companyId === null) beforeCompany = { itemId, fitPlayers, manual, pan };
   chapterIndex = null;
   storyListOpen = false;
-  companyId = companyId === id ? null : id;
+  companyId = id;
   itemId = null;
-  // The button's state follows the view: a company open frames it, the quiet day shows the whole
-  // frame.
-  resetZoom(companyId !== null);
+  resetZoom(true);
   render();
 }
 
 function clearCompany(): void {
   companyId = null;
-  itemId = null;
-  resetZoom();
+  if (beforeCompany) {
+    ({ itemId, fitPlayers, manual, pan } = beforeCompany);
+    beforeCompany = null;
+  } else {
+    itemId = null;
+    resetZoom();
+  }
   render();
 }
 
@@ -809,7 +826,7 @@ document.addEventListener("keydown", (event) => {
 // One step of the value is not one day, so Left and Right (and Up and Down) move a day and Home
 // and End jump to the first and last day, handled here rather than by the browser.
 function sliderTo(date: string): void {
-  if (snapToFirstItem(date)) {
+  if (snapToEdgeItem(date)) {
     render(true);
     return;
   }
@@ -828,7 +845,7 @@ function sliderTo(date: string): void {
 for (const slider of document.querySelectorAll<HTMLInputElement>("[data-strip-slider]")) {
   const jump = (percent: number) => {
     const date = strip.dateOf(percent);
-    if (snapToFirstItem(date)) {
+    if (snapToEdgeItem(date)) {
       timelineZoomed = true;
       render();
       return;
@@ -1063,8 +1080,8 @@ for (const svg of document.querySelectorAll<SVGSVGElement>("[data-bubble]")) {
 }
 
 // Read the address once, then draw. A chapter opens Story on its day; without one, ?news=,
-// ?company= or ?date= picks the view, and a plain page shows the newest item. A past page has
-// no Story mode, so it ignores ?chapter=.
+// ?company= or ?date= picks the view. Otherwise the opening item stays selected. A past page
+// has no Story mode, so it ignores ?chapter=.
 function readAddress(): void {
   const params = new URLSearchParams(window.location.search);
   // ?chapter=3 opens chapter 3; a number that is not a chapter opens the first.
@@ -1093,7 +1110,7 @@ function readAddress(): void {
     wantedDate && /^\d{4}-\d{2}-\d{2}$/.test(wantedDate) && !Number.isNaN(Date.parse(wantedDate))
       ? dateAt(Math.min(lastDay, Math.max(0, dayIndex(wantedDate))))
       : null;
-  if (calendarDate && snapToFirstItem(calendarDate)) return;
+  if (calendarDate && snapToEdgeItem(calendarDate)) return;
   const wantedCompany = params.get("company");
   const company = wantedCompany ? companyById.get(wantedCompany) : undefined;
   if (company) {
@@ -1113,11 +1130,6 @@ function readAddress(): void {
     // for today.
     itemId = null;
     day = lastDate;
-    return;
-  }
-  if (newest) {
-    itemId = newest.id;
-    day = newest.date;
   }
 }
 

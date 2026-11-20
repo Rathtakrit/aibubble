@@ -4,6 +4,9 @@ import "@fontsource-variable/instrument-sans/index.css";
 import "../styles/tokens.css";
 import "../styles/compare.css";
 import { datasets, comparisonLine, formatTotal, moments, momentOptions, packedOn, totalOn } from "../lib/compare.ts";
+import { SITE_NAME } from "../lib/site.ts";
+const pageTitle = `Compare | ${SITE_NAME}`;
+const description = "Compare the AI, dot-com and housing bubbles side by side, by size and by change.";
 const names = { ai: "AI", dotcom: "Dot-com", housing: "Housing" };
 const choices = { start: "Start", lowest: "Lowest recorded", peak: "Peak recorded", latest: "Latest" };
 const defaults = [
@@ -22,7 +25,10 @@ const dayLabel = (date: string) => new Intl.DateTimeFormat("en-GB", { day: "nume
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Compare the bubbles | AI Bubble</title>
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
   </head>
   <body>
     <div class="compare-page">

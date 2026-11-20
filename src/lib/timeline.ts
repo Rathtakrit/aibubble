@@ -33,8 +33,10 @@ export function dateAt(index: number): string {
 }
 
 // Dates are YYYY-MM-DD, so they sort in calendar order.
-export function snapToFirstItemDate(date: string, firstItemDate: string): string {
-  return date < firstItemDate ? firstItemDate : date;
+export function snapToItemDateRange(date: string, firstItemDate: string, lastItemDate: string): string {
+  if (date < firstItemDate) return firstItemDate;
+  if (date > lastItemDate) return lastItemDate;
+  return date;
 }
 
 // --- the day scale: busy months get more room, empty ones less ---

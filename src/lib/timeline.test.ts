@@ -15,7 +15,7 @@ import {
   placeLabels,
   publisherName,
   siteName,
-  snapToFirstItemDate,
+  snapToItemDateRange,
   stepDateLabel,
   timelineScale,
   timelineStrip,
@@ -68,11 +68,14 @@ test("dateAt turns a day count back into a date", () => {
   }
 });
 
-test("dates before the first news item snap to its date", () => {
+test("dates outside the news range snap to the first or last item", () => {
   const first = "2003-03-04";
-  assert.equal(snapToFirstItemDate("2003-01-01", first), first);
-  assert.equal(snapToFirstItemDate(first, first), first);
-  assert.equal(snapToFirstItemDate("2003-03-05", first), "2003-03-05");
+  const last = "2009-06-30";
+  assert.equal(snapToItemDateRange("2003-01-01", first, last), first);
+  assert.equal(snapToItemDateRange("2009-12-31", first, last), last);
+  for (const date of [first, "2003-03-05", last]) {
+    assert.equal(snapToItemDateRange(date, first, last), date);
+  }
 });
 
 test("the whole-range strip maps dates and a zoom bracket in calendar time", () => {

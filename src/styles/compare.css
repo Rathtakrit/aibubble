@@ -109,7 +109,8 @@ dialog input { accent-color: var(--accent); width: 20px; height: 20px; flex-shri
   .segments { padding: 2px; }
   .segments button { font-size: 13px; padding: 0 10px; }
   .workbench { order: 1; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; align-items: start; container-type: inline-size; }
-  .exposure { --side-inset: 11px; display: grid; grid-column: 1; grid-row: 1 / span 2; grid-template-rows: subgrid; padding-left: var(--side-inset); }
+  /* One column that never widens: an open shelf overflows it, so the side's bar stays in its own column. */
+  .exposure { --side-inset: 11px; display: grid; grid-column: 1; grid-row: 1 / span 2; grid-template-columns: minmax(0, 1fr); grid-template-rows: subgrid; padding-left: var(--side-inset); }
   .exposure-1 { grid-column: 2; }
   .exposure .caption, .picker summary { position: relative; }
   .exposure .caption::before, .picker summary::before { content: ""; position: absolute; inset: 0 auto 0 calc(-1 * var(--side-inset)); width: 3px; background: var(--exposure); }
@@ -119,8 +120,10 @@ dialog input { accent-color: var(--accent); width: 20px; height: 20px; flex-shri
   .picker summary::after { content: "▾"; font-size: 12px; transition: transform 200ms ease-out; }
   .picker[open] summary::after { transform: rotate(180deg); }
   [data-tile] { display: block; font-size: 14px; }
-  /* Keep the shelf in the picker's flow, but align it to the full workbench. */
+  /* Keep the shelf in the picker's flow, but align it to the full workbench. It spans both columns, so lift it above the other side's picker. */
   .picker[open] .picker-fields {
+    position: relative;
+    z-index: 2;
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
