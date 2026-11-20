@@ -155,13 +155,14 @@ export function timelineStrip(first: string, last: string): TimelineScale & {
 
 export type TimelineWindow = readonly (Dated & { percent: number })[];
 
-// Keep up to three neighbours on either side, shifting the window at the ends to retain seven.
-export function timelineWindow(items: readonly Dated[], id: string): TimelineWindow {
+// Start with three neighbours on either side. When stepping, keep the reader's previous slot
+// if possible, so even a step from the first item moves the window.
+export function timelineWindow(items: readonly Dated[], id: string, slot = 3): TimelineWindow {
   const ordered = inDateOrder(items);
   const at = ordered.findIndex((item) => item.id === id);
   if (at < 0) return [];
   const count = Math.min(7, ordered.length);
-  const first = clamp(0, at - 3, ordered.length - count);
+  const first = clamp(0, at - slot, ordered.length - count);
   return ordered.slice(first, first + count).map(({ id, date }, index) => ({
     id, date, percent: ((index + 0.5) / count) * 100,
   }));

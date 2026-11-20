@@ -398,6 +398,59 @@ body[data-timeline-zoomed="true"] .timeline-dot[data-dot="small"] .dot {
   border-top: 1px solid var(--ink);
 }
 
+/* Move the solid portion of the axis and the visible range handle with the selection. */
+[data-timeline] > .timeline-axis {
+  background: repeating-linear-gradient(to right, var(--timeline-dash, var(--rule)) 0 4px, transparent 4px 8px);
+}
+
+[data-timeline] > .timeline-axis::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--timeline-current, 50%);
+  background: var(--ink);
+}
+
+[data-timeline]::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  top: var(--timeline-line, 22px);
+  left: var(--timeline-current, 50%);
+  transform: translate(-50%, -50%);
+  width: 18px;
+  height: 18px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--paper);
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-timeline-motion="true"] {
+    --timeline-glide: 300ms ease-out;
+  }
+
+  [data-timeline-motion="true"] :is(.timeline-dot[data-news], [data-timeline-id]) {
+    transition: left var(--timeline-glide), opacity var(--timeline-glide);
+  }
+
+  [data-timeline-motion="true"] :is([data-timeline-current], [data-current-flag], .timeline-burst),
+  [data-timeline-motion="true"]::after {
+    transition: left var(--timeline-glide);
+  }
+
+  [data-timeline-motion="true"] > .timeline-axis::before {
+    transition: width var(--timeline-glide);
+  }
+}
+
+[data-timeline-leaving] {
+  opacity: 0;
+  pointer-events: none;
+}
+
 /* --- the day slider: its track is the timeline line, the handle rides on it --- */
 
 /* The slider's value is a place on the line, so the handle has to sit exactly on the dot of the
@@ -432,19 +485,13 @@ body[data-timeline-zoomed="true"] .timeline-dot[data-dot="small"] .dot {
   width: 18px;
   height: 18px;
   margin-top: -8.5px;
-  box-sizing: border-box;
-  border-radius: 50%;
-  background: var(--accent);
-  border: 2px solid var(--paper);
+  opacity: 0;
 }
 
 .day-range::-moz-range-thumb {
   width: 18px;
   height: 18px;
-  box-sizing: border-box;
-  border-radius: 50%;
-  background: var(--accent);
-  border: 2px solid var(--paper);
+  opacity: 0;
 }
 
 /* Both ends of the line: the first day on the left, today on the right. */
@@ -1496,7 +1543,7 @@ body[data-mode="story"] .sheet .read-story {
     transform: translateY(-50%);
     border-top: 0;
     height: 2.5px;
-    background: linear-gradient(to right, var(--ink) var(--timeline-current, 50%), transparent var(--timeline-current, 50%)), repeating-linear-gradient(to right, #CFC5B2 0 4px, transparent 4px 8px);
+    --timeline-dash: #CFC5B2;
   }
   .timeline-inner .day-range,
   .timeline-inner .timeline-dot { top: calc(var(--timeline-line) - 22px); }

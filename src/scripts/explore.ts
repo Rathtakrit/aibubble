@@ -134,10 +134,29 @@ let pan = { dx: 0, dy: 0 };
 let beforeCompany: { itemId: string | null; fitPlayers: boolean; manual: number; pan: typeof pan } | null = null;
 let timelineZoomed = true;
 let visibleTimeline: TimelineWindow = [];
+let timelineAnchor: string | undefined;
 let timelineScrubPointer: number | null = null;
 const timelineMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 const stepRow = document.querySelector<HTMLElement>("[data-steps] > .step-row");
 const phoneTimeline = makePhoneTimeline();
+const timelineLines = Array.from(document.querySelectorAll<HTMLElement>("[data-timeline]"), (inner) => {
+  const items = new Map<string, {
+    dot: HTMLButtonElement;
+    elements: HTMLElement[];
+    home: Comment;
+    exit?: ReturnType<typeof setTimeout>;
+  }>();
+  for (const dot of inner.querySelectorAll<HTMLButtonElement>(".timeline-dot[data-news]")) {
+    const id = dot.dataset.news!;
+    const label = dot.nextElementSibling as HTMLElement | null;
+    const elements = label?.dataset.timelineId === id ? [dot, label] : [dot];
+    // Keep the original tab order and dot/label adjacency when restoring the whole timeline.
+    const home = document.createComment("");
+    dot.before(home);
+    items.set(id, { dot, elements, home });
+  }
+  return { inner, items };
+});
 let lastStep = -1;
 let stopStepGlide: (() => void) | undefined;
 const timelineEvents = ordered;
@@ -174,7 +193,7 @@ function makePhoneTimeline(): HTMLElement | null {
   const axis = document.createElement("div");
   axis.className = "timeline-axis";
   axis.setAttribute("aria-hidden", "true");
-  axis.style.cssText = "top:21px;height:2.5px;border:0;background:linear-gradient(to right,var(--ink) var(--timeline-current),transparent var(--timeline-current)),repeating-linear-gradient(to right,var(--rule) 0 4px,transparent 4px 8px)";
+  axis.style.cssText = "top:21px;height:2.5px;border:0";
   line.append(axis);
   for (const control of source.querySelectorAll<HTMLElement>("[data-slider], .timeline-dot[data-news], .timeline-burst")) {
     const copy = control.cloneNode(true) as HTMLElement;
@@ -196,12 +215,67 @@ function makePhoneTimeline(): HTMLElement | null {
   return panel;
 }
 
-function drawTimeline(): void {
+function drawTimelineItems(
+  { inner, items }: (typeof timelineLines)[number], positions: Map<string, number>, direction: number,
+): void {
+  const motion = inner.dataset.timelineMotion === "true";
+  const targets: { element: HTMLElement; left: string; leaving: boolean }[] = [];
+  let entering = false;
+  for (const [id, entry] of items) {
+    const { dot, elements, home } = entry;
+    const percent = positions.size ? positions.get(id) : scale.percentOf(dot.dataset.timelineDate!);
+    if (percent === undefined && motion && entry.exit !== undefined) continue;
+    clearTimeout(entry.exit);
+    entry.exit = undefined;
+    const connected = dot.parentElement === inner;
+    if (percent === undefined) {
+      if (!connected) continue;
+      if (!motion || !direction) {
+        elements.forEach((element) => element.remove());
+        continue;
+      }
+      dot.inert = true;
+      for (const element of elements) {
+        targets.push({ element, left: direction > 0 ? "-5%" : "105%", leaving: true });
+      }
+      entry.exit = setTimeout(() => {
+        elements.forEach((element) => element.remove());
+        entry.exit = undefined;
+      }, 320);
+      continue;
+    }
+    dot.inert = false;
+    dot.classList.toggle("is-current", id === itemId);
+    if (!connected) home.after(...elements);
+    for (const element of elements) {
+      if (!connected && motion && direction) {
+        element.dataset.timelineLeaving = "";
+        element.style.left = direction > 0 ? "105%" : "-5%";
+        // The incoming label needs a starting box even if its last layout hid it.
+        if (element !== dot) element.hidden = false;
+        entering = true;
+      }
+      targets.push({ element, left: `${percent}%`, leaving: false });
+    }
+  }
+  // Commit the off-line starting positions before moving any items.
+  if (entering) void inner.offsetWidth;
+  for (const { element, left, leaving } of targets) {
+    element.toggleAttribute("data-timeline-leaving", leaving);
+    element.style.left = left;
+  }
+}
+
+function drawTimeline(motion?: boolean, direction = 0): void {
   const percentOf = (date: string, id?: string) => visibleTimeline.length
     ? windowPercent(date, visibleTimeline, id)
     : scale.percentOf(date);
   const current = percentOf(day, itemId ?? undefined);
-  for (const inner of document.querySelectorAll<HTMLElement>("[data-timeline]")) {
+  const positions = new Map(visibleTimeline.map(({ id, percent }) => [id, percent]));
+  for (const line of timelineLines) {
+    const { inner } = line;
+    if (motion !== undefined) inner.dataset.timelineMotion = String(motion);
+    drawTimelineItems(line, positions, direction);
     inner.style.setProperty("--timeline-current", `${current}%`);
     const marker = inner.querySelector<HTMLElement>("[data-timeline-current]");
     if (!marker) continue;
@@ -235,7 +309,6 @@ function drawTimeline(): void {
     phoneTimeline.hidden = !timelineZoomed;
     stepRow.style.display = timelineZoomed ? "none" : "";
   }
-  const ids = new Set(visibleTimeline.map((item) => item.id));
   for (const ends of document.querySelectorAll<HTMLElement>(".timeline-ends")) {
     for (const [index, end] of Array.from(ends.children).entries()) {
       const label = end as HTMLElement;
@@ -243,12 +316,11 @@ function drawTimeline(): void {
       label.textContent = timelineZoomed ? dayLabel(index === 0 ? firstShown : lastShown) : label.dataset.fullEnd;
     }
   }
-  for (const element of document.querySelectorAll<HTMLElement>("[data-timeline-date]")) {
+  for (const element of document.querySelectorAll<HTMLElement>("[data-timeline-date]:not([data-news], [data-timeline-id])")) {
     const date = element.dataset.timelineDate!;
-    const id = element.dataset.timelineId ?? element.dataset.news;
-    const outside = !!visibleTimeline.length && (id ? !ids.has(id) : date < firstShown || date > lastShown);
+    const outside = !!visibleTimeline.length && (date < firstShown || date > lastShown);
     element.dataset.outside = String(outside);
-    element.style.left = `${percentOf(date, id)}%`;
+    element.style.left = `${percentOf(date)}%`;
   }
   for (const slider of document.querySelectorAll<HTMLInputElement>("[data-slider]")) {
     slider.value = String(Math.round(current * 100));
@@ -258,14 +330,18 @@ function drawTimeline(): void {
   placeTimelineLabels();
 }
 
-function updateTimeline(): void {
+function updateTimeline(immediate = false): void {
   document.body.dataset.timelineZoomed = String(timelineZoomed);
   const anchor = (itemId === null ? null : byId.get(itemId)) ?? latestOnOrBefore(ordered, day);
+  const previous = visibleTimeline;
   // Keep the same dates under the pointer for the duration of a drag.
   if (timelineScrubPointer === null) {
-    visibleTimeline = timelineZoomed
-      ? timelineWindow(timelineEvents, anchor?.id ?? timelineEvents[0]?.id ?? "")
+    const id = anchor?.id ?? timelineEvents[0]?.id;
+    const slot = previous.findIndex((item) => item.id === timelineAnchor);
+    visibleTimeline = timelineZoomed && id !== undefined
+      ? timelineWindow(timelineEvents, id, immediate || slot < 0 ? undefined : slot)
       : [];
+    timelineAnchor = id;
   }
   for (const button of document.querySelectorAll<HTMLButtonElement>('[data-action="timeline-zoom"]')) {
     button.setAttribute("aria-pressed", String(timelineZoomed));
@@ -281,11 +357,20 @@ function updateTimeline(): void {
       button.querySelector("path")?.setAttribute("d", timelineZoomed ? "M5 12h14" : "M5 12h14M12 5v14");
     }
   }
-  drawTimeline();
+  const direction = Math.sign(
+    timelineEvents.findIndex((item) => item.id === visibleTimeline[0]?.id) -
+    timelineEvents.findIndex((item) => item.id === previous[0]?.id),
+  );
+  const motion = !immediate && !timelineMotion.matches && timelineScrubPointer === null &&
+    previous.length > 0 && visibleTimeline.length > 0;
+  drawTimeline(motion, direction);
 }
 
 timelineMotion.addEventListener("change", () => {
-  if (timelineMotion.matches) stopStepGlide?.();
+  if (timelineMotion.matches) {
+    stopStepGlide?.();
+    drawTimeline(false);
+  }
 });
 
 function renderSteps(anchor: NewsItem | null, at: number): void {
@@ -918,6 +1003,7 @@ for (const slider of document.querySelectorAll<HTMLInputElement>("[data-slider]"
   slider.addEventListener("pointerdown", (event) => {
     if (visibleTimeline.length && event.isPrimary && event.button === 0) {
       timelineScrubPointer = event.pointerId;
+      drawTimeline(false);
     }
   });
   slider.addEventListener("keydown", (event) => {
@@ -960,7 +1046,7 @@ for (const slider of document.querySelectorAll<HTMLInputElement>("[data-slider]"
     if (event.pointerId === press?.id) press = null;
     if (event.pointerId === timelineScrubPointer) {
       timelineScrubPointer = null;
-      updateTimeline();
+      updateTimeline(true);
     }
   };
   window.addEventListener("pointerup", endPress);
@@ -1208,7 +1294,7 @@ void prepareLayouts().catch((error: unknown) => console.error(error));
 function placeTimelineDots(inner: HTMLElement): void {
   if (!inner.clientWidth) return;
   const dots = Array.from(inner.querySelectorAll<HTMLButtonElement>(".timeline-dot"))
-    .filter((dot) => dot.offsetHeight > 0)
+    .filter((dot) => !dot.inert && dot.offsetHeight > 0)
     .map((dot) => ({ dot, x: Number.parseFloat(dot.style.left) * inner.clientWidth / 100 }))
     .sort((a, b) => a.x - b.x);
   // Fan out coincident or nearly coincident dots so each has its own reachable centre.
@@ -1242,7 +1328,7 @@ function placeTimelineLabels(): void {
   const currentChapter = chapterIndex === null ? null : chapters[chapterIndex];
   const labels = Array.from(inner.querySelectorAll<HTMLElement>(story
     ? "[data-story-label]"
-    : '[data-timeline-id]:not([data-outside="true"])'));
+    : '[data-timeline-id]:not([data-timeline-leaving])'));
   for (const label of labels) {
     label.hidden = story
       ? !!currentChapter && label.textContent?.trim() === currentChapter.title
@@ -1257,9 +1343,16 @@ function placeTimelineLabels(): void {
   });
   const bounds = inner.getBoundingClientRect();
   const reserved: LabelRect[] = [];
-  for (const element of inner.querySelectorAll("[data-current-flag], [data-timeline-current]")) {
-    const { left, right, top, bottom } = element.getBoundingClientRect();
-    reserved.push({ left: left - bounds.left, right: right - bounds.left, top: top - bounds.top, bottom: bottom - bounds.top });
+  const marker = inner.querySelector<HTMLElement>("[data-timeline-current]");
+  if (marker) {
+    // Reserve the destination, not the marker's position mid-glide.
+    const x = Number.parseFloat(marker.style.left) * bounds.width / 100;
+    for (const element of [marker, marker.querySelector<HTMLElement>("[data-current-flag]")]) {
+      if (!element) continue;
+      const { width, top, bottom } = element.getBoundingClientRect();
+      const left = element === marker ? x : x + marker.clientLeft + (Number.parseFloat(element.style.left) || 0);
+      reserved.push({ left, right: left + width, top: top - bounds.top, bottom: bottom - bounds.top });
+    }
   }
   const style = getComputedStyle(inner);
   const row = (name: string) => Number.parseFloat(style.getPropertyValue(`--label-${name}`));
@@ -1280,8 +1373,8 @@ function placeTimelineLabels(): void {
   });
 }
 
-window.addEventListener("resize", drawTimeline);
-document.fonts.ready.then(drawTimeline, () => {});
+window.addEventListener("resize", () => drawTimeline());
+document.fonts.ready.then(() => drawTimeline(), () => {});
 
 // The phone's map is sized from the visible area: the room above the bottom sheet, minus 12px on
 // each side, never wider than the window, and 560px at most; it is centred in that space. The

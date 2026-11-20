@@ -442,6 +442,22 @@ test("timeline zoom fills a seven-item window from the other side at either end"
   assert.equal(windowPercent(events[9].date, last), (6.5 / 7) * 100);
 });
 
+test("timeline zoom steps and jumps by keeping the previous slot when possible", () => {
+  const events = Array.from({ length: 14 }, (_, index) => ({
+    id: `e${index}`, date: dateAt(index * 30),
+  }));
+  const first = timelineWindow(events, "e0");
+  const later = timelineWindow(events, "e1", first.findIndex(({ id }) => id === "e0"));
+  assert.deepEqual(later.map(({ id }) => id), events.slice(1, 8).map(({ id }) => id));
+  const slot = later.findIndex(({ id }) => id === "e1");
+  assert.deepEqual(timelineWindow(events, "e0", slot), first);
+  const jumped = timelineWindow(events, "e4", slot);
+  assert.deepEqual(jumped.map(({ id }) => id), events.slice(4, 11).map(({ id }) => id));
+  assert.equal(later[3].id, jumped[0].id);
+  assert.ok(later[3].percent > jumped[0].percent);
+  assert.deepEqual(timelineWindow(events, "e13", slot), timelineWindow(events, "e13"));
+});
+
 test("timeline zoom handles coincident dates and short or empty lists", () => {
   const empty = timelineWindow([], "missing");
   assert.deepEqual(empty, []);
