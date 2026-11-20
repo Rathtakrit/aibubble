@@ -642,8 +642,15 @@ body:not([data-timeline-zoomed="true"]) [data-zoom-only="true"],
   /* The panel is as tall as its three rows and no taller; on a very short screen that is a few
      pixels over 40%, and the rows are the smallest they can be with 44px arrows. */
   max-height: none;
-  padding-top: 10px;
+  overflow: visible;
+  padding-top: 0;
   padding-bottom: 10px;
+}
+
+/* Keep the 44px target, with 20px above the sheet and the bar below its edge. */
+.sheet[data-sheet-state="docked"] > .sheet-handle {
+  margin-top: -21px;
+  padding: 16px 0 0;
 }
 
 .sheet[data-sheet-state="docked"] > :not(.sheet-handle):not(.mode-switch):not(.dock-row) {
