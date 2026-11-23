@@ -53,7 +53,7 @@ npm run check   # data checks, tests and a production build
 ```
 
 Built with [Astro](https://astro.build) and TypeScript. Page code is in `src/`, the plan and every design decision in
-[`docs/briefs/2026-11-15-aibubble.md`](docs/briefs/2026-11-15-aibubble.md), the design in `design/`.
+[`docs/briefs/2026-11-23-aibubble.md`](docs/briefs/2026-11-23-aibubble.md), the design in `design/`.
 
 ## How it's made
 
