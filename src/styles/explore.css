@@ -427,30 +427,6 @@ body[data-timeline-zoomed="true"] .timeline-dot[data-dot="small"] .dot {
   pointer-events: none;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  [data-timeline-motion="true"] {
-    --timeline-glide: 300ms ease-out;
-  }
-
-  [data-timeline-motion="true"] :is(.timeline-dot[data-news], [data-timeline-id]) {
-    transition: left var(--timeline-glide), opacity var(--timeline-glide);
-  }
-
-  [data-timeline-motion="true"] :is([data-timeline-current], [data-current-flag], .timeline-burst),
-  [data-timeline-motion="true"]::after {
-    transition: left var(--timeline-glide);
-  }
-
-  [data-timeline-motion="true"] > .timeline-axis::before {
-    transition: width var(--timeline-glide);
-  }
-}
-
-[data-timeline-leaving] {
-  opacity: 0;
-  pointer-events: none;
-}
-
 /* --- the day slider: its track is the timeline line, the handle rides on it --- */
 
 /* The slider's value is a place on the line, so the handle has to sit exactly on the dot of the
@@ -634,15 +610,14 @@ body:not([data-timeline-zoomed="true"]) [data-zoom-only="true"],
   gap: 6px;
 }
 
-/* The cap is on the whole box: the sheet's padding and top border count inside the 40dvh, so
-   the panel never takes more than 40% of the screen. */
+/* The cap includes the sheet padding and border. Longer content scrolls inside the sheet. */
 .sheet {
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
-  max-height: 40vh;
-  max-height: 40dvh;
+  max-height: 65vh;
+  max-height: 65dvh;
   overflow-y: auto;
   box-sizing: border-box;
   padding: 4px 16px 8px;
@@ -793,107 +768,7 @@ body:not([data-timeline-zoomed="true"]) [data-zoom-only="true"],
   color: var(--text-body);
 }
 
-/* The sheet's three dots: the news before this one, this one and the next, with an empty slot at
-   either end so the current dot keeps the middle. A side dot's half-line runs to the current dot,
-   so the line stops where there is no dot to join. */
-.sheet-steps {
-  position: relative;
-  overflow: clip;
-  margin-top: 14px;
-}
-
-.step-row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-}
-
-.step-row-outgoing {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-
-.step-slot {
-  min-width: 0;
-}
-
-.step-button {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-  min-width: 44px;
-  min-height: 44px;
-  padding: 0;
-  border: none;
-  background: transparent;
-  color: var(--ink);
-  font: inherit;
-  cursor: pointer;
-}
-
-.step-button[hidden] {
-  display: none;
-}
-
-.step-button::before {
-  content: "";
-  position: absolute;
-  top: 24px;
-  border-top: 1px solid var(--ink);
-}
-
-.step-button[data-step="before"]::before {
-  left: 50%;
-  right: -100%;
-}
-
-.step-button[data-step="next"]::before {
-  right: 50%;
-  left: -100%;
-}
-
-/* Every dot keeps the label line, so the three dots stay on one level; only Now has words. */
-.step-now {
-  display: block;
-  height: 14px;
-  line-height: 14px;
-}
-
-.step-mark {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 20px;
-}
-
-.step-dot {
-  box-sizing: border-box;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--ink-2);
-  border: 1.5px solid var(--paper);
-}
-
-.step-button[data-step="current"] .step-dot {
-  width: 16px;
-  height: 16px;
-  background: var(--accent);
-  box-shadow: 0 0 0 2px var(--ink);
-}
-
-.step-date {
-  margin-top: 2px;
-  font-size: 12px;
-  line-height: 1.2;
-  color: var(--ink-2);
-  font-variant-numeric: tabular-nums;
-}
-
-/* The open dock gives its lines room: tab row to kicker, kicker to title, title to summary,
-   summary to source, source to the three dots and dots to Earlier / Later. */
+/* Keep the existing news spacing above the shared timeline. */
 .sheet > .sheet-kicker {
   margin-top: 12px;
 }
@@ -1247,6 +1122,215 @@ body[data-mode="story"] .sheet .read-story {
   font-size: 23px;
 }
 
+/* Shared timeline rail, labels and controls. */
+.timeline-inner {
+  --timeline-line: 64px;
+  --label-near-above: 50px;
+  --label-far-above: 28px;
+  --label-near-below: 78px;
+  --label-far-below: 114px;
+  position: relative;
+  height: 142px;
+  max-width: 1360px;
+  margin: 0 auto;
+}
+
+/* Four compact label bands stay inside the line's box, clear of the footer controls. */
+.timeline-row {
+  max-width: 1360px;
+  margin: 0 auto;
+}
+
+.timeline-overview, .timeline-footer {
+  max-width: 1360px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: var(--ink-2);
+  font-size: 13px;
+}
+
+.timeline-overview { margin-bottom: 4px; }
+.timeline-overview-title {
+  flex: 0 0 auto;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.timeline-strip { position: relative; flex: 1; height: 56px; min-width: 0; }
+.timeline-strip-line { position: absolute; top: 21px; width: 100%; border-top: 2px solid #57534B; }
+.timeline-strip-dots span { position: absolute; top: 19.5px; width: 5px; height: 5px; border-radius: 50%; background: #57534B; transform: translateX(-50%); }
+.timeline-strip-bracket { position: absolute; top: 10px; height: 24px; box-sizing: border-box; border: 1.5px solid #1E3A8A; border-radius: 3px; background: rgb(30 58 138 / 12%); }
+.timeline-strip-current { position: absolute; top: 8px; height: 28px; border-left: 2px solid #B42318; }
+.timeline-strip input { position: absolute; inset: 0; width: 100%; height: 44px; margin: 0; opacity: 0; cursor: pointer; }
+.timeline-strip:focus-within { outline: 2px solid #1E3A8A; outline-offset: 3px; }
+.timeline-strip-years span { position: absolute; top: 36px; font-size: 12px; line-height: 14px; transform: translateX(-50%); white-space: nowrap; }
+.timeline-strip-years span::before { content: ""; position: absolute; top: -10px; left: 50%; height: 5px; border-left: 1px solid #CFC5B2; }
+.timeline-strip-years span:first-child { transform: none; }
+.timeline-strip-years span:last-child { transform: translateX(-100%); }
+.timeline-footer { justify-content: space-between; gap: 24px; }
+.timeline-controls { display: flex; gap: 8px; flex-shrink: 0; }
+.timeline-controls button { min-height: 44px; padding: 0 16px; border: 1px solid var(--ink); background: transparent; color: var(--ink); border-radius: 999px; font: 500 14px "Instrument Sans", sans-serif; display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.timeline-controls [data-action="timeline-zoom"] { background: var(--ink); color: var(--paper); }
+.timeline-controls button:disabled { opacity: .45; cursor: default; }
+.timeline-current { position: absolute; top: 28px; height: 36px; border-left: 2px solid var(--ink); pointer-events: none; }
+.timeline-current::after { content: ""; position: absolute; top: 23px; left: -15px; width: 26px; height: 26px; box-sizing: border-box; border: 3px solid #B42318; border-radius: 50%; background: var(--paper); }
+.timeline-inner .is-current .dot { box-shadow: 0 0 0 3px var(--paper), 0 0 0 6px #B42318; }
+.timeline-current span { position: absolute; top: -28px; width: max-content; padding: 5px 10px; border-radius: 3px; background: var(--ink); color: var(--paper); font-size: 13px; font-weight: 600; }
+
+.timeline-row > .timeline-inner { flex-basis: 0; }
+.timeline-inner .timeline-axis {
+  top: var(--timeline-line);
+  transform: translateY(-50%);
+  border-top: 0;
+  height: 2.5px;
+  background: linear-gradient(to right, var(--ink) var(--timeline-current, 50%), transparent var(--timeline-current, 50%)), repeating-linear-gradient(to right, #CFC5B2 0 4px, transparent 4px 8px);
+}
+.timeline-inner::after,
+.timeline-inner .timeline-axis::before { content: none; }
+.timeline-inner .day-range::-webkit-slider-thumb {
+  opacity: 1;
+  box-sizing: border-box;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--paper);
+}
+.timeline-inner .day-range::-moz-range-thumb {
+  opacity: 1;
+  box-sizing: border-box;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--paper);
+}
+.timeline-inner .day-range,
+.timeline-inner .timeline-dot { top: calc(var(--timeline-line) - 22px); }
+.timeline-inner .day-range { z-index: 1; }
+.timeline-inner .timeline-dot { touch-action: none; }
+.timeline-dot .dot {
+  position: absolute;
+  top: 50%;
+  left: var(--dot-center, 50%);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.timeline-inner .timeline-tick, .timeline-inner .timeline-year, .timeline-inner .timeline-ends { display: none; }
+
+.timeline-label {
+  position: absolute;
+  width: max-content;
+  max-width: 120px;
+  font-size: 13px;
+  line-height: 14px;
+  color: var(--ink-2);
+  pointer-events: none;
+}
+
+.timeline-label[data-row="0"] {
+  bottom: calc(100% - var(--label-near-above));
+}
+
+.timeline-label[data-row="1"] {
+  bottom: calc(100% - var(--label-far-above));
+}
+
+.timeline-label[data-side="below"][data-row="0"] {
+  top: var(--label-near-below);
+  bottom: auto;
+}
+
+.timeline-label[data-side="below"][data-row="1"] {
+  top: var(--label-far-below);
+  bottom: auto;
+}
+
+/* A blue dot's text waits until the dot is hovered or focused. It keeps its box while hidden,
+   so explore.ts can line it up against the ends of the line, and sits on the paper so it stays
+   readable where it crosses a red date's text. */
+.timeline-label-hover {
+  visibility: hidden;
+  background: var(--paper);
+}
+
+body[data-timeline-zoomed="true"] .timeline-label[data-timeline-id] {
+  visibility: visible;
+  max-width: min(320px, 100%);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
+}
+
+/* The zoomed labels' explicit display must not override the hidden attribute. */
+.timeline-inner .timeline-label[hidden],
+.timeline-inner .timeline-label.is-current {
+  display: none !important;
+}
+
+.timeline-dot:hover + .timeline-label-hover,
+.timeline-dot:focus-visible + .timeline-label-hover {
+  visibility: visible;
+}
+
+.timeline-label[data-align="center"] {
+  transform: translateX(-50%);
+}
+
+.timeline-label[data-align="end"] {
+  transform: translateX(-100%);
+}
+
+.timeline-tick {
+  position: absolute;
+  border-left: 1px solid var(--ink);
+}
+
+.timeline-tick-year {
+  top: 70px;
+  height: 9px;
+}
+
+.timeline-tick-quarter {
+  top: 70px;
+  height: 5px;
+  border-left-color: var(--ink-2);
+}
+
+.timeline-year {
+  position: absolute;
+  top: calc(100px + var(--timeline-extra));
+  transform: translateX(-50%);
+  font-size: 12px;
+  line-height: 14px;
+  color: var(--ink-2);
+}
+
+.timeline-inner .timeline-ends {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(115px + var(--timeline-extra));
+  line-height: 14px;
+}
+
+@media (width < 900px) {
+  .sheet > .timeline {
+    margin-top: 14px;
+    overflow-anchor: none;
+  }
+
+  .timeline-row { padding-inline: 22px; }
+  .sheet .timeline-overview { display: none; }
+  .sheet .timeline-dot { pointer-events: none; }
+  .timeline-footer { flex-wrap: wrap; gap: 4px 16px; }
+  .timeline-controls { margin-left: auto; }
+  .desktop-timeline-status { display: none; }
+  .timeline-inner .day-range { touch-action: none; }
+}
+
 /* --- desktop: news beside the bubble, one-line timeline below (layout B) --- */
 
 @media (min-width: 900px) {
@@ -1478,183 +1562,6 @@ body[data-mode="story"] .sheet .read-story {
     padding: 8px 40px;
     flex: 0 0 auto;
     overflow-anchor: none;
-  }
-
-  .timeline-inner {
-    --timeline-line: 64px;
-    --label-near-above: 50px;
-    --label-far-above: 28px;
-    --label-near-below: 78px;
-    --label-far-below: 114px;
-    position: relative;
-    height: 142px;
-    max-width: 1360px;
-    margin: 0 auto;
-  }
-
-  /* Four compact label bands stay inside the line's box, clear of the footer controls. */
-  .timeline-row {
-    max-width: 1360px;
-    margin: 0 auto;
-  }
-
-  .timeline-overview, .timeline-footer {
-    max-width: 1360px;
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    color: var(--ink-2);
-    font-size: 13px;
-  }
-
-  .timeline-overview { margin-bottom: 4px; }
-  .timeline-overview-title {
-    flex: 0 0 auto;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: .08em;
-    text-transform: uppercase;
-  }
-  .timeline-strip { position: relative; flex: 1; height: 56px; min-width: 0; }
-  .timeline-strip-line { position: absolute; top: 21px; width: 100%; border-top: 2px solid #57534B; }
-  .timeline-strip-dots span { position: absolute; top: 19.5px; width: 5px; height: 5px; border-radius: 50%; background: #57534B; transform: translateX(-50%); }
-  .timeline-strip-bracket { position: absolute; top: 10px; height: 24px; box-sizing: border-box; border: 1.5px solid #1E3A8A; border-radius: 3px; background: rgb(30 58 138 / 12%); }
-  .timeline-strip-current { position: absolute; top: 8px; height: 28px; border-left: 2px solid #B42318; }
-  .timeline-strip input { position: absolute; inset: 0; width: 100%; height: 44px; margin: 0; opacity: 0; cursor: pointer; }
-  .timeline-strip:focus-within { outline: 2px solid #1E3A8A; outline-offset: 3px; }
-  .timeline-strip-years span { position: absolute; top: 36px; font-size: 12px; line-height: 14px; transform: translateX(-50%); white-space: nowrap; }
-  .timeline-strip-years span::before { content: ""; position: absolute; top: -10px; left: 50%; height: 5px; border-left: 1px solid #CFC5B2; }
-  .timeline-strip-years span:first-child { transform: none; }
-  .timeline-strip-years span:last-child { transform: translateX(-100%); }
-  .timeline-footer { justify-content: space-between; gap: 24px; }
-  .timeline-controls { display: flex; gap: 8px; flex-shrink: 0; }
-  .timeline-controls button { min-height: 44px; padding: 0 16px; border: 1px solid var(--ink); background: transparent; color: var(--ink); border-radius: 999px; font: 500 14px "Instrument Sans", sans-serif; display: flex; align-items: center; gap: 8px; cursor: pointer; }
-  .timeline-controls [data-action="timeline-zoom"] { background: var(--ink); color: var(--paper); }
-  .timeline-controls button:disabled { opacity: .45; cursor: default; }
-  .timeline-current { position: absolute; top: 28px; height: 36px; border-left: 2px solid var(--ink); pointer-events: none; }
-  .timeline-current::after { content: ""; position: absolute; top: 23px; left: -15px; width: 26px; height: 26px; box-sizing: border-box; border: 3px solid #B42318; border-radius: 50%; background: var(--paper); }
-  .timeline-inner .is-current .dot { box-shadow: 0 0 0 3px var(--paper), 0 0 0 6px #B42318; }
-  .timeline-current span { position: absolute; top: -28px; width: max-content; padding: 5px 10px; border-radius: 3px; background: var(--ink); color: var(--paper); font-size: 13px; font-weight: 600; }
-
-  .timeline-row > .timeline-inner { flex-basis: 0; }
-  .timeline-inner .timeline-axis {
-    top: var(--timeline-line);
-    transform: translateY(-50%);
-    border-top: 0;
-    height: 2.5px;
-    --timeline-dash: #CFC5B2;
-  }
-  .timeline-inner .day-range,
-  .timeline-inner .timeline-dot { top: calc(var(--timeline-line) - 22px); }
-  .timeline-inner .day-range { z-index: 1; }
-  .timeline-inner .timeline-dot { touch-action: none; }
-  .timeline-dot .dot {
-    position: absolute;
-    top: 50%;
-    left: var(--dot-center, 50%);
-    transform: translate(-50%, -50%);
-    pointer-events: none;
-  }
-  .timeline-inner .timeline-tick, .timeline-inner .timeline-year, .timeline-inner .timeline-ends { display: none; }
-
-  .timeline-label {
-    position: absolute;
-    width: max-content;
-    max-width: 120px;
-    font-size: 13px;
-    line-height: 14px;
-    color: var(--ink-2);
-    pointer-events: none;
-  }
-
-  .timeline-label[data-row="0"] {
-    bottom: calc(100% - var(--label-near-above));
-  }
-
-  .timeline-label[data-row="1"] {
-    bottom: calc(100% - var(--label-far-above));
-  }
-
-  .timeline-label[data-side="below"][data-row="0"] {
-    top: var(--label-near-below);
-    bottom: auto;
-  }
-
-  .timeline-label[data-side="below"][data-row="1"] {
-    top: var(--label-far-below);
-    bottom: auto;
-  }
-
-  /* A blue dot's text waits until the dot is hovered or focused. It keeps its box while hidden,
-     so explore.ts can line it up against the ends of the line, and sits on the paper so it stays
-     readable where it crosses a red date's text. */
-  .timeline-label-hover {
-    visibility: hidden;
-    background: var(--paper);
-  }
-
-  body[data-timeline-zoomed="true"] .timeline-label[data-timeline-id] {
-    visibility: visible;
-    max-width: min(320px, 100%);
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: normal;
-  }
-
-  /* The zoomed labels' explicit display must not override the hidden attribute. */
-  .timeline-inner .timeline-label[hidden],
-  .timeline-inner .timeline-label.is-current {
-    display: none !important;
-  }
-
-  .timeline-dot:hover + .timeline-label-hover,
-  .timeline-dot:focus-visible + .timeline-label-hover {
-    visibility: visible;
-  }
-
-  .timeline-label[data-align="center"] {
-    transform: translateX(-50%);
-  }
-
-  .timeline-label[data-align="end"] {
-    transform: translateX(-100%);
-  }
-
-  .timeline-tick {
-    position: absolute;
-    border-left: 1px solid var(--ink);
-  }
-
-  .timeline-tick-year {
-    top: 70px;
-    height: 9px;
-  }
-
-  .timeline-tick-quarter {
-    top: 70px;
-    height: 5px;
-    border-left-color: var(--ink-2);
-  }
-
-  .timeline-year {
-    position: absolute;
-    top: calc(100px + var(--timeline-extra));
-    transform: translateX(-50%);
-    font-size: 12px;
-    line-height: 14px;
-    color: var(--ink-2);
-  }
-
-  .timeline-inner .timeline-ends {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: calc(115px + var(--timeline-extra));
-    line-height: 14px;
   }
 
   .status {
