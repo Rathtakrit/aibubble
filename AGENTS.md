@@ -1,8 +1,8 @@
 # AI Bubble rules
 
-A public site showing how the AI bubble formed: company bubbles sized by value, money arrows between them, and a
-day-by-day slider from June 2017. The plan and every decision: `docs/briefs/2026-11-15-aibubble.md`. The design:
-`design/` (start with `Final.dc.html` and `Final-phone.dc.html`).
+A public site that draws the AI, dot-com and housing bubbles: company bubbles sized by value, money arrows between
+them, and a timeline. What the site is, its rules and the next goal: `docs/briefs/2026-11-23-aibubble.md`. The design:
+`design/` (the brief lists which file shows what).
 
 This repo is public. Anyone can read every file, issue, pull request and commit, and none of it can be taken back.
 
@@ -12,15 +12,14 @@ This repo is public. Anyone can read every file, issue, pull request and commit,
 - Say buy or sell, or predict prices.
 - Add a paid service, or a cost of any kind, without the owner's OK.
 - Touch anything outside this repo.
-- Invent design. What the design files don't show goes to the owner as a question.
+- Invent design. What the design files and the brief don't show goes to the owner as a question.
 
 ## Always
 - Every value, deal and news item carries its source link in the data.
 - Plain words. Explain an investment term the first time it appears.
-- Follow the colours, fonts and layout in the brief and `design/`. Bubble sizes and values in `design/` are
-  placeholders, not data.
-- Where a "Review" table in the brief and `design/` differ, the brief wins.
 - Works at phone width (layout C) and desktop (layout B). Touch targets at least 44 px. Respect reduced motion.
+- Before finishing, `npm run check` (data check, unit tests, type check, build) and `npx playwright test` (browser
+  checks of the timeline and Compare at both widths) pass.
 
 ## Night shift
 For runs started by `.github/workflows/night-shift.yml`. You run unattended: nobody can answer questions.
