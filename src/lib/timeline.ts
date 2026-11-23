@@ -196,11 +196,6 @@ export function dayLabel(date: string): string {
   return shortDateFormat.format(new Date(`${date}T00:00:00Z`));
 }
 
-// "10/02" for 9 October 2002: the month, then the year's last two digits.
-export function monthYear(date: string): string {
-  return `${date.slice(5, 7)}/${date.slice(2, 4)}`;
-}
-
 // "arxiv.org" from "https://arxiv.org/abs/1706.03762", for the source line.
 export function siteName(url: string): string {
   try {

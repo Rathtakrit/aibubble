@@ -9,7 +9,6 @@ import {
   dayLabel,
   inDateOrder,
   latestOnOrBefore,
-  monthYear,
   neighbour,
   pillKind,
   placeLabels,
@@ -190,12 +189,6 @@ test("percent to date and back gives the same day for every day in the range", (
 test("dates in words use the day, short month and year", () => {
   assert.equal(dayLabel("2025-01-27"), "27 Jan 2025");
   assert.equal(dayLabel("2022-11-30"), "30 Nov 2022");
-});
-
-test("the short date uses a two-digit month and year", () => {
-  assert.equal(monthYear("2002-10-09"), "10/02");
-  assert.equal(monthYear("2022-11-30"), "11/22");
-  assert.equal(monthYear("2025-01-05"), "01/25");
 });
 
 test("the source line shows the site name without www", () => {
