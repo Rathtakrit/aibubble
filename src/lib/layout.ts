@@ -1156,17 +1156,6 @@ export function arrowsOn(
   return out;
 }
 
-// The sum of the values shown on that day.
-export function totalOn(
-  date: string,
-  companies: Company[],
-  values: ValuePoint[],
-  deals: Deal[] = [],
-  layout: DayLayouts = dayLayouts(companies, values, deals),
-): number {
-  return bubblesOn(date, companies, values, deals, layout).reduce((sum, bubble) => sum + bubble.value, 0);
-}
-
 // "$1.2T", "$340B", "$8B".
 export function formatValue(value: number): string {
   const rounded = Math.round(value * 10) / 10;

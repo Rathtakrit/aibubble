@@ -161,7 +161,6 @@ const DATASETS: Record<DatasetId, Dataset> = {
 
 // The active data set's files. "ai" is active when the module loads.
 export let datasetId: DatasetId = "ai";
-export let datasetTitle: string = DATASETS.ai.title;
 export let status: DataStatus = DATASETS.ai.status;
 export let companies: Company[] = DATASETS.ai.companies;
 export let values: ValuePoint[] = DATASETS.ai.values;
@@ -179,7 +178,6 @@ export let LAST_DAY: string = DATASETS.ai.lastDay ?? latestDateOf(DATASETS.ai);
 export function useDataset(id: DatasetId): void {
   const set = DATASETS[id];
   datasetId = set.id;
-  datasetTitle = set.title;
   status = set.status;
   companies = set.companies;
   values = set.values;

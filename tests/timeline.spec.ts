@@ -329,11 +329,13 @@ test('Labels', async ({ page }) => {
   await page.evaluate(() => document.fonts.ready.then(() => null));
   for (const inward of [true, false]) {
     await setZoom(page, inward);
-    await frame(page);
-    const visible = await box(region, 'Visible Timeline box');
-    const labels = (await labelBoxes(region, ai, /^(?:\d{4}|\d{1,2} [A-Za-z]{3,4}(?: \d{4})?|[A-Za-z]{3,4} \d{4})$/))
-      .filter(label => inside(label, visible));
-    expect.soft(labels.length, 'At least two date labels to compare').toBeGreaterThanOrEqual(2);
+    let labels: Awaited<ReturnType<typeof labelBoxes>> = [];
+    await expect.poll(async () => {
+      const visible = await box(region, 'Visible Timeline box');
+      labels = (await labelBoxes(region, ai, /^(?:\d{4}|\d{1,2} [A-Za-z]{3,4}(?: \d{4})?|[A-Za-z]{3,4} \d{4})$/))
+        .filter(label => inside(label, visible));
+      return labels.length;
+    }, { message: 'At least two date labels to compare' }).toBeGreaterThanOrEqual(2);
     for (const [index, a] of labels.entries()) {
       for (const b of labels.slice(index + 1)) {
         const overlaps = a.x < b.x + b.width && b.x < a.x + a.width &&

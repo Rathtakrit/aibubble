@@ -17,7 +17,6 @@ import {
   LINE_MARGIN,
   LONGEST_LINE,
   straightDistance,
-  totalOn,
   totalForDate,
   installLayouts,
   bubblesForDate,
@@ -438,18 +437,13 @@ test("a company that ended is gone the next day, with its money line and value, 
     true,
   );
 
-  // The next day it is gone: no bubble, no money line, not in the count or the total.
+  // The next day it is gone: no bubble and no money line.
   assert.deepEqual(ids(day(31)), ["x", "y"]);
   assert.equal(
     arrowsOn(day(31), endingCompanies, endingValues, endingDeals, ending).some(
       (arrow) => arrow.from === "z" || arrow.to === "z",
     ),
     false,
-  );
-  const expected = 100 + (80 * 31) / 63 + 60 + (30 * 31) / 63;
-  assert.ok(
-    Math.abs(totalOn(day(31), endingCompanies, endingValues, endingDeals, ending) - expected) < 1e-9,
-    "the ended company is still in the day's total",
   );
 
   // The others close the hole by gliding: nobody moves more than the day-to-day limit.
@@ -592,14 +586,6 @@ test("deals of one kind merge, and a null amount counts as zero", () => {
   assert.equal(investment.amountKnown, true);
 });
 
-test("totalOn sums the values shown on the day", () => {
-  assert.equal(totalOn(day(0), companies, values, deals, layout), 100);
-  assert.equal(totalOn(LAST, companies, values, deals, layout), 400 + 225 + 9);
-  // "a" grew from 100 to 400 over 63 days, so on day 10 it is part of the way there.
-  const partway = 100 + (300 * 10) / 63;
-  assert.ok(Math.abs(totalOn(day(10), companies, values, deals, layout) - (partway + 100)) < 1e-9);
-});
-
 test("four years and twenty companies lay out well under half a second", () => {
   const many: Company[] = [];
   const points: ValuePoint[] = [];
@@ -679,6 +665,13 @@ test("worker layouts match the original on sampled days in every data set", asyn
   // @ts-expect-error node:worker_threads has no types in this repo
   const { Worker } = await import("node:worker_threads");
   const workerUrl = new URL("../scripts/layout.worker.ts", import.meta.url).href;
+  const firstDayTotals: Record<DatasetId, number> = {
+    // The six visible AI companies' 2021 year-end values sum to 6377.97; their 2022
+    // year-end values sum to 4075.11. November 30 is 334 days into that 365-day span.
+    ai: 6377.97 + ((4075.11 - 6377.97) * 334) / 365,
+    dotcom: 35.475 + 8.957 + 26.468 + 12.614 + 41.228 + 1.236 + 4.663,
+    housing: 0, // No companies are visible on the first day.
+  };
   for (const id of ["ai", "dotcom", "housing"] as DatasetId[]) {
     useDataset(id);
     // Compare fresh module instances, as on a page load, independently of earlier tests.
@@ -711,15 +704,13 @@ test("worker layouts match the original on sampled days in every data set", asyn
       assert.equal(actual.first, expected.first);
       assert.equal(actual.last, expected.last);
       assert.equal(actual.days.size, expected.days.size);
+      assert.ok(Math.abs(totalForDate(FIRST_DAY) - firstDayTotals[id]) < 1e-9, `${id}: first-day total`);
       for (const index of [0, 1, 30, Math.floor(dates.length / 2), dates.length - 2, dates.length - 1]) {
         const date = dates[index];
         assert.deepStrictEqual(actual.days.get(date), expected.days.get(date), `${id}: ${date}`);
         assert.deepStrictEqual(bubblesForDate(date), bubblesOn(date, realCompanies, realValues, realDeals, expected));
-        assert.equal(totalForDate(date), totalOn(date, realCompanies, realValues, realDeals, expected));
         assert.deepStrictEqual(arrowsOn(date, realCompanies, realValues, realDeals, actual),
           arrowsOn(date, realCompanies, realValues, realDeals, expected));
-        assert.equal(totalOn(date, realCompanies, realValues, realDeals, actual),
-          totalOn(date, realCompanies, realValues, realDeals, expected));
       }
     } finally {
       await worker.terminate();

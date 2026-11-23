@@ -99,13 +99,6 @@ export function changeLine(a: SideChange, b: SideChange): string {
   return `${changePart("A", a.change)}; ${changePart("B", b.change)}`;
 }
 
-export function top5(dataset: CompareDataset, date: string) {
-  return totalOn(dataset, date).values
-    .filter((entry) => entry.company.kind !== "group")
-    .sort((a, b) => b.value - a.value || a.company.id.localeCompare(b.company.id))
-    .slice(0, 5);
-}
-
 export function formatTotal(value: number): string {
   if (value === 0) return "$0";
   return formatValue(value >= 1000 ? value : Math.round(value));

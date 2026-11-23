@@ -2,7 +2,7 @@
 import test from "node:test";
 // @ts-expect-error node:assert has no types in this repo
 import assert from "node:assert/strict";
-import { datasets, changeLine, comparisonLine, percentDifference, formatTotal, labelsOverlap, moments, momentOptions, packedOn, top5, totalOn } from "./compare.ts";
+import { datasets, changeLine, comparisonLine, percentDifference, formatTotal, labelsOverlap, moments, momentOptions, packedOn, totalOn } from "./compare.ts";
 import type { CompareDataset } from "./compare.ts";
 
 const source = "https://example.com/sample";
@@ -139,11 +139,6 @@ test("empty sides prompt for players instead of a percentage", () => {
   assert.equal(comparisonLine(10, 0), "Pick at least one company for B");
   assert.equal(comparisonLine(0, 0), "Pick at least one company for A");
   assert.equal(formatTotal(0), "$0");
-});
-
-test("top5 sorts by value and excludes groups and missing companies", () => {
-  assert.deepEqual(top5(sample, "2000-01-02").map((entry) => entry.company.id), ["a", "f", "e", "d", "c"]);
-  assert.equal(top5(sample, "2000-01-01").length, 1);
 });
 
 test("totals use one decimal for trillions and whole billions", () => {
