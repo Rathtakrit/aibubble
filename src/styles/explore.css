@@ -487,7 +487,8 @@ body[data-timeline-zoomed="true"] .timeline-dot[data-dot="small"] .dot {
 }
 
 .timeline-row > .timeline-inner {
-  flex: 1 1 0;
+  flex: none;
+  width: 100%;
   min-width: 0;
 }
 
@@ -1180,7 +1181,6 @@ body[data-mode="story"] .sheet .read-story {
 .timeline-inner .is-current .dot { box-shadow: 0 0 0 3px var(--paper), 0 0 0 6px #B42318; }
 .timeline-current span { position: absolute; top: -28px; width: max-content; padding: 5px 10px; border-radius: 3px; background: var(--ink); color: var(--paper); font-size: 13px; font-weight: 600; }
 
-.timeline-row > .timeline-inner { flex-basis: 0; }
 .timeline-inner .timeline-axis {
   top: var(--timeline-line);
   transform: translateY(-50%);

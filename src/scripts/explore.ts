@@ -1323,6 +1323,8 @@ function placeTimelineLabels(): void {
 
 desktopLayout.addEventListener("change", mountTimeline);
 window.addEventListener("resize", drawTimeline);
+const timelineInner = document.querySelector<HTMLElement>("[data-timeline]");
+if (timelineInner) new ResizeObserver(drawTimeline).observe(timelineInner);
 document.fonts.ready.then(drawTimeline, () => {});
 
 // The phone's map is sized from the visible area: the room above the bottom sheet, minus 12px on

@@ -323,6 +323,31 @@ test('Earlier / Later', async ({ page, isMobile }) => {
   }
 });
 
+test('Line keeps its width', async ({ page, isMobile }) => {
+  await open(page, '/past/housing');
+  const strip = page.locator('[data-strip-slider]');
+  if (!isMobile) await strip.scrollIntoViewIfNeeded();
+  for (const fraction of [0.2, 0.6, 0.35, 0.8, 0.5]) {
+    if (isMobile) {
+      await (await step(page, 'Later', true)).tap();
+    } else {
+      const rail = await box(strip, 'Whole story strip');
+      await page.mouse.click(rail.x + rail.width * fraction, rail.y + rail.height / 2);
+    }
+    await page.waitForTimeout(1_000);
+  }
+  const { lineWidth, rowWidth } = await page.locator('.timeline-row > [data-timeline]').evaluate(line => {
+    const row = line.parentElement!;
+    const { paddingLeft, paddingRight } = getComputedStyle(row);
+    return {
+      lineWidth: line.clientWidth,
+      rowWidth: row.clientWidth - parseFloat(paddingLeft) - parseFloat(paddingRight),
+    };
+  });
+  expect(Math.abs(lineWidth - rowWidth), `Line width ${lineWidth}px should fill the row's ${rowWidth}px content width`)
+    .toBeLessThanOrEqual(1);
+});
+
 test('Labels', async ({ page }) => {
   await open(page, '/', middle);
   const region = timeline(page);
