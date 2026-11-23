@@ -41,7 +41,6 @@ import {
   placeLabels,
   publisherName,
   snapToItemDateRange,
-  stepDateLabel,
   type LabelRect,
   timelineScale,
   timelineStrip,
@@ -133,32 +132,30 @@ let changeFromPeak: string | undefined;
 let pan = { dx: 0, dy: 0 };
 let beforeCompany: { itemId: string | null; fitPlayers: boolean; manual: number; pan: typeof pan } | null = null;
 let timelineZoomed = true;
-let visibleTimeline: TimelineWindow = [];
-let timelineAnchor: string | undefined;
-let timelineScrubPointer: number | null = null;
+const fullTimeline: TimelineWindow = { start: 0, middle: 50, end: 100, ids: [] };
+let visibleTimeline = fullTimeline;
+let timelineTarget = fullTimeline;
+let timelineFrame: number | null = null;
+let timelineHandle = 50;
+let scrubPointer: number | null = null;
 const timelineMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-const stepRow = document.querySelector<HTMLElement>("[data-steps] > .step-row");
-const phoneTimeline = makePhoneTimeline();
-const timelineLines = Array.from(document.querySelectorAll<HTMLElement>("[data-timeline]"), (inner) => {
-  const items = new Map<string, {
-    dot: HTMLButtonElement;
-    elements: HTMLElement[];
-    home: Comment;
-    exit?: ReturnType<typeof setTimeout>;
-  }>();
-  for (const dot of inner.querySelectorAll<HTMLButtonElement>(".timeline-dot[data-news]")) {
-    const id = dot.dataset.news!;
-    const label = dot.nextElementSibling as HTMLElement | null;
-    const elements = label?.dataset.timelineId === id ? [dot, label] : [dot];
-    // Keep the original tab order and dot/label adjacency when restoring the whole timeline.
-    const home = document.createComment("");
-    dot.before(home);
-    items.set(id, { dot, elements, home });
+const desktopLayout = window.matchMedia("(min-width: 900px)");
+const timeline = document.querySelector<HTMLElement>(".timeline")!;
+const desktop = timeline.parentElement!;
+const sheetButtons = document.querySelector<HTMLElement>(".sheet > .sheet-buttons.explore-only")!;
+
+function mountTimeline(): void {
+  (desktopLayout.matches ? desktop : sheetButtons.parentElement!).insertBefore(
+    timeline, desktopLayout.matches ? null : sheetButtons,
+  );
+  for (const dot of timeline.querySelectorAll<HTMLElement>(".timeline-dot")) {
+    dot.inert = !desktopLayout.matches;
+    if (desktopLayout.matches) dot.removeAttribute("aria-hidden");
+    else dot.setAttribute("aria-hidden", "true");
   }
-  return { inner, items };
-});
-let lastStep = -1;
-let stopStepGlide: (() => void) | undefined;
+  drawTimeline();
+}
+
 const timelineEvents = ordered;
 const stripFirst = isPast ? FIRST_DAY : "2017-06-12";
 const stripLast = LAST_DAY;
@@ -182,116 +179,17 @@ for (const tick of yearTicks) {
   stripYears?.append(label);
 }
 
-// The phone sheet has a three-item stepper, not a copy of the desktop day line.
-// Reuse the range and news buttons there when zoomed, without the desktop labels.
-function makePhoneTimeline(): HTMLElement | null {
-  const source = document.querySelector<HTMLElement>("[data-timeline]");
-  if (!source || !stepRow) return null;
-  const line = document.createElement("div");
-  line.dataset.timeline = "";
-  line.style.cssText = "position:relative;height:44px;margin-inline:9px";
-  const axis = document.createElement("div");
-  axis.className = "timeline-axis";
-  axis.setAttribute("aria-hidden", "true");
-  axis.style.cssText = "top:21px;height:2.5px;border:0";
-  line.append(axis);
-  for (const control of source.querySelectorAll<HTMLElement>("[data-slider], .timeline-dot[data-news], .timeline-burst")) {
-    const copy = control.cloneNode(true) as HTMLElement;
-    if (copy.matches("[data-slider]")) copy.style.top = "0";
-    if (copy.matches(".timeline-dot")) {
-      copy.style.touchAction = "none";
-      const dot = copy.querySelector<HTMLElement>(".dot")!;
-      dot.style.cssText = "position:absolute;left:var(--dot-center,50%);top:50%;transform:translate(-50%,-50%);pointer-events:none";
-    }
-    line.append(copy);
-  }
-  const summary = document.createElement("span");
-  summary.className = "timeline-ends";
-  summary.dataset.timelineSummary = "";
-  summary.style.justifyContent = "center";
-  const panel = document.createElement("div");
-  panel.append(line, summary);
-  stepRow.after(panel);
-  return panel;
+function timelineHandleAt(window: TimelineWindow): number {
+  return Math.max(0, Math.min(100, windowPercent(scale.percentOf(day), window)));
 }
 
-function drawTimelineItems(
-  { inner, items }: (typeof timelineLines)[number], positions: Map<string, number>, direction: number,
-): void {
-  const motion = inner.dataset.timelineMotion === "true";
-  const targets: { element: HTMLElement; left: string; leaving: boolean }[] = [];
-  let entering = false;
-  for (const [id, entry] of items) {
-    const { dot, elements, home } = entry;
-    const percent = positions.size ? positions.get(id) : scale.percentOf(dot.dataset.timelineDate!);
-    if (percent === undefined && motion && entry.exit !== undefined) continue;
-    clearTimeout(entry.exit);
-    entry.exit = undefined;
-    const connected = dot.parentElement === inner;
-    if (percent === undefined) {
-      if (!connected) continue;
-      if (!motion || !direction) {
-        elements.forEach((element) => element.remove());
-        continue;
-      }
-      dot.inert = true;
-      for (const element of elements) {
-        targets.push({ element, left: direction > 0 ? "-5%" : "105%", leaving: true });
-      }
-      entry.exit = setTimeout(() => {
-        elements.forEach((element) => element.remove());
-        entry.exit = undefined;
-      }, 320);
-      continue;
-    }
-    dot.inert = false;
-    dot.classList.toggle("is-current", id === itemId);
-    if (!connected) home.after(...elements);
-    for (const element of elements) {
-      if (!connected && motion && direction) {
-        element.dataset.timelineLeaving = "";
-        element.style.left = direction > 0 ? "105%" : "-5%";
-        // The incoming label needs a starting box even if its last layout hid it.
-        if (element !== dot) element.hidden = false;
-        entering = true;
-      }
-      targets.push({ element, left: `${percent}%`, leaving: false });
-    }
-  }
-  // Commit the off-line starting positions before moving any items.
-  if (entering) void inner.offsetWidth;
-  for (const { element, left, leaving } of targets) {
-    element.toggleAttribute("data-timeline-leaving", leaving);
-    element.style.left = left;
-  }
-}
-
-function drawTimeline(motion?: boolean, direction = 0): void {
-  const percentOf = (date: string, id?: string) => visibleTimeline.length
-    ? windowPercent(date, visibleTimeline, id)
-    : scale.percentOf(date);
-  const current = percentOf(day, itemId ?? undefined);
-  const positions = new Map(visibleTimeline.map(({ id, percent }) => [id, percent]));
-  for (const line of timelineLines) {
-    const { inner } = line;
-    if (motion !== undefined) inner.dataset.timelineMotion = String(motion);
-    drawTimelineItems(line, positions, direction);
-    inner.style.setProperty("--timeline-current", `${current}%`);
-    const marker = inner.querySelector<HTMLElement>("[data-timeline-current]");
-    if (!marker) continue;
-    marker.style.left = `${current}%`;
-    const flag = marker.querySelector<HTMLElement>("[data-current-flag]");
-    if (flag) {
-      flag.textContent = `You are here · ${dayLabel(day)}`;
-      const x = inner.clientWidth * current / 100;
-      flag.style.left = `${Math.max(-x, Math.min(-flag.offsetWidth / 2, inner.clientWidth - x - flag.offsetWidth))}px`;
-    }
-  }
-  const firstShown = visibleTimeline[0]?.date ?? scale.dateOf(0);
-  const lastShown = visibleTimeline[visibleTimeline.length - 1]?.date ?? scale.dateOf(100);
-  for (const summary of document.querySelectorAll<HTMLElement>("[data-timeline-summary]")) {
-    summary.textContent = `${dayLabel(firstShown)} → ${dayLabel(lastShown)}`;
-  }
+function drawTimeline(): void {
+  const inner = document.querySelector<HTMLElement>("[data-timeline]");
+  if (!inner?.clientWidth) return;
+  const firstShown = scale.dateOf(visibleTimeline.start);
+  const lastShown = scale.dateOf(visibleTimeline.end);
+  const summary = document.querySelector<HTMLElement>("[data-timeline-summary]");
+  if (summary) summary.textContent = `${dayLabel(firstShown)} → ${dayLabel(lastShown)}`;
   const bracket = timelineZoomed ? strip.bracket(firstShown, lastShown) : { left: 0, width: 100 };
   const bracketElement = document.querySelector<HTMLElement>("[data-strip-bracket]");
   if (bracketElement) {
@@ -305,44 +203,60 @@ function drawTimeline(motion?: boolean, direction = 0): void {
     stripSlider.value = String(Math.round(strip.percentOf(day) * 100));
     stripSlider.setAttribute("aria-valuetext", dayLabel(day));
   }
-  if (phoneTimeline && stepRow) {
-    phoneTimeline.hidden = !timelineZoomed;
-    stepRow.style.display = timelineZoomed ? "none" : "";
-  }
-  for (const ends of document.querySelectorAll<HTMLElement>(".timeline-ends")) {
+  for (const ends of inner.querySelectorAll<HTMLElement>(".timeline-ends")) {
     for (const [index, end] of Array.from(ends.children).entries()) {
       const label = end as HTMLElement;
       label.dataset.fullEnd ??= label.textContent ?? "";
-      label.textContent = timelineZoomed ? dayLabel(index === 0 ? firstShown : lastShown) : label.dataset.fullEnd;
+      label.textContent = timelineZoomed
+        ? dayLabel(scale.dateOf(index === 0 ? visibleTimeline.start : visibleTimeline.end))
+        : label.dataset.fullEnd;
     }
   }
-  for (const element of document.querySelectorAll<HTMLElement>("[data-timeline-date]:not([data-news], [data-timeline-id])")) {
-    const date = element.dataset.timelineDate!;
-    const outside = !!visibleTimeline.length && (date < firstShown || date > lastShown);
-    element.dataset.outside = String(outside);
-    element.style.left = `${percentOf(date)}%`;
+  const ids = new Set(timelineTarget.ids);
+  for (const element of inner.querySelectorAll<HTMLElement>("[data-timeline-date]")) {
+    const percent = windowPercent(scale.percentOf(element.dataset.timelineDate!), visibleTimeline);
+    const id = element.dataset.timelineId ?? element.dataset.news;
+    // The whole line must still offer its first and last items, even in sets where
+    // an end item does not have a key or small date flag.
+    if (id && (id === timelineEvents[0]?.id || id === timelineEvents[timelineEvents.length - 1]?.id)) {
+      delete element.dataset.zoomOnly;
+    }
+    element.dataset.outside = String(percent < 0 || percent > 100 || (timelineZoomed && !!id && !ids.has(id)));
+    element.style.left = `${percent}%`;
   }
-  for (const slider of document.querySelectorAll<HTMLInputElement>("[data-slider]")) {
+  placeTimelineDots(inner);
+  let current = timelineHandle;
+  if (!desktopLayout.matches && scrubPointer === null) {
+    const selected = inner.querySelector<HTMLElement>(".timeline-dot.is-current");
+    if (selected?.offsetHeight) {
+      // The handle follows the painted dot even when nearby dates have been fanned out.
+      const center = timelineDotX(selected);
+      const dateX = parseFloat(selected.style.left) * inner.clientWidth / 100;
+      const distance = Math.abs(current * inner.clientWidth / 100 - dateX);
+      current += (center - dateX) * Math.max(0, 1 - distance / 22) * 100 / inner.clientWidth;
+    }
+  }
+  inner.style.setProperty("--timeline-current", `${current}%`);
+  const marker = inner.querySelector<HTMLElement>("[data-timeline-current]");
+  if (marker) {
+    marker.style.left = `${current}%`;
+    const flag = marker.querySelector<HTMLElement>("[data-current-flag]");
+    if (flag) {
+      flag.textContent = `You are here · ${dayLabel(day)}`;
+      const x = inner.clientWidth * current / 100;
+      flag.style.left = `${Math.max(-x, Math.min(-flag.offsetWidth / 2, inner.clientWidth - x - flag.offsetWidth))}px`;
+    }
+  }
+  for (const slider of inner.querySelectorAll<HTMLInputElement>("[data-slider]")) {
     slider.value = String(Math.round(current * 100));
     slider.setAttribute("aria-valuetext", dayLabel(day));
   }
-  for (const inner of document.querySelectorAll<HTMLElement>("[data-timeline]")) placeTimelineDots(inner);
   placeTimelineLabels();
 }
 
 function updateTimeline(immediate = false): void {
   document.body.dataset.timelineZoomed = String(timelineZoomed);
   const anchor = (itemId === null ? null : byId.get(itemId)) ?? latestOnOrBefore(ordered, day);
-  const previous = visibleTimeline;
-  // Keep the same dates under the pointer for the duration of a drag.
-  if (timelineScrubPointer === null) {
-    const id = anchor?.id ?? timelineEvents[0]?.id;
-    const slot = previous.findIndex((item) => item.id === timelineAnchor);
-    visibleTimeline = timelineZoomed && id !== undefined
-      ? timelineWindow(timelineEvents, id, immediate || slot < 0 ? undefined : slot)
-      : [];
-    timelineAnchor = id;
-  }
   for (const button of document.querySelectorAll<HTMLButtonElement>('[data-action="timeline-zoom"]')) {
     button.setAttribute("aria-pressed", String(timelineZoomed));
     const label = button.querySelector<HTMLElement>("[data-timeline-zoom-label]");
@@ -352,69 +266,66 @@ function updateTimeline(immediate = false): void {
       button.querySelector("path")?.setAttribute("d", timelineZoomed
         ? "M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"
         : "M4 9h5V4M20 9h-5V4M4 15h5v5M20 15h-5v5");
-    } else {
-      button.setAttribute("aria-label", timelineZoomed ? "Zoom timeline out" : "Zoom timeline in");
-      button.querySelector("path")?.setAttribute("d", timelineZoomed ? "M5 12h14" : "M5 12h14M12 5v14");
     }
   }
-  const direction = Math.sign(
-    timelineEvents.findIndex((item) => item.id === visibleTimeline[0]?.id) -
-    timelineEvents.findIndex((item) => item.id === previous[0]?.id),
-  );
-  const motion = !immediate && !timelineMotion.matches && timelineScrubPointer === null &&
-    previous.length > 0 && visibleTimeline.length > 0;
-  drawTimeline(motion, direction);
+  glideTimeline(anchor?.id ?? timelineEvents[0]?.id ?? "", immediate);
+}
+
+let timelineDrawn = false;
+let timelineTargetHandle = 50;
+
+function glideTimeline(anchor: string, immediate: boolean): void {
+  const last = timelineEvents[timelineEvents.length - 1];
+  // Share the final window across the last step so the handle travels to the final dot
+  // instead of recentering the rail on both items.
+  const windowAnchor = last && anchor === timelineEvents[timelineEvents.length - 2]?.id ? last.id : anchor;
+  const target = scrubPointer !== null ? timelineTarget
+    : timelineZoomed ? timelineWindow(timelineEvents, windowAnchor, scale) : fullTimeline;
+  const endHandle = timelineHandleAt(target);
+  const sameWindow = JSON.stringify(target) === JSON.stringify(timelineTarget);
+  if (sameWindow && endHandle === timelineTargetHandle && timelineFrame !== null &&
+    !immediate && !timelineMotion.matches) return;
+  timelineTarget = target;
+  timelineTargetHandle = endHandle;
+  if (timelineFrame !== null) cancelAnimationFrame(timelineFrame);
+  if (timelineMotion.matches || immediate || !timelineDrawn || scrubPointer !== null ||
+    (sameWindow && timelineHandle === endHandle)) {
+    timelineDrawn = true;
+    timelineFrame = null;
+    visibleTimeline = target;
+    timelineHandle = endHandle;
+    drawTimeline();
+    return;
+  }
+  const from = visibleTimeline;
+  const handleOffset = timelineHandle - timelineHandleAt(from);
+  const start = performance.now();
+  function glide(now: number): void {
+    const t = Math.min(1, (now - start) / (sameWindow ? 300 : 900));
+    const eased = t * t * (3 - 2 * t);
+    visibleTimeline = t === 1 ? target : {
+      start: from.start + (target.start - from.start) * eased,
+      middle: from.middle + (target.middle - from.middle) * eased,
+      end: from.end + (target.end - from.end) * eased,
+      ids: target.ids,
+    };
+    // Follow the changing scale during zoom, and ease from the old handle on a news step.
+    const position = timelineHandleAt(visibleTimeline);
+    timelineHandle = Math.max(0, Math.min(100, position + handleOffset * (1 - eased)));
+    drawTimeline();
+    timelineFrame = t < 1 ? requestAnimationFrame(glide) : null;
+  }
+  timelineFrame = requestAnimationFrame(glide);
 }
 
 timelineMotion.addEventListener("change", () => {
-  if (timelineMotion.matches) {
-    stopStepGlide?.();
-    drawTimeline(false);
-  }
+  if (!timelineMotion.matches) return;
+  if (timelineFrame !== null) cancelAnimationFrame(timelineFrame);
+  timelineFrame = null;
+  visibleTimeline = timelineTarget;
+  timelineHandle = timelineTargetHandle;
+  drawTimeline();
 });
-
-function renderSteps(anchor: NewsItem | null, at: number): void {
-  if (!stepRow) return;
-  const direction = Math.sign(at - lastStep);
-  let outgoing: HTMLElement | undefined;
-  if (direction || at < 0) stopStepGlide?.();
-  if (direction && at >= 0 && lastStep >= 0 && !timelineMotion.matches && stepRow.offsetWidth) {
-    outgoing = stepRow.cloneNode(true) as HTMLElement;
-    outgoing.classList.add("step-row-outgoing");
-    outgoing.inert = true;
-    stepRow.before(outgoing);
-  }
-  lastStep = at;
-
-  const slots = [anchor && neighbour(ordered, anchor.id, -1), anchor, anchor && neighbour(ordered, anchor.id, 1)];
-  stepRow.querySelectorAll<HTMLButtonElement>("[data-step]").forEach((button, index) => {
-    const target = slots[index];
-    button.hidden = !target;
-    if (!target) {
-      delete button.dataset.news;
-      return;
-    }
-    button.dataset.news = target.id;
-    button.setAttribute("aria-label", ariaFor(target.title, target.date));
-    const date = button.querySelector<HTMLElement>(".step-date");
-    if (date) date.textContent = stepDateLabel(target.date);
-  });
-
-  if (!outgoing) return;
-  const previous = outgoing;
-  // With x1 = 1/3 and x2 = 2/3, this is the desktop glide's smoothstep curve.
-  const timing = { duration: 300, easing: "cubic-bezier(0.333333, 0, 0.666667, 1)" };
-  const exit = previous.animate([{ transform: "none" }, { transform: `translateX(${-direction * 100}%)` }], timing);
-  const enter = stepRow.animate([{ transform: `translateX(${direction * 100}%)` }, { transform: "none" }], timing);
-  const cleanup = () => {
-    previous.remove();
-    exit.cancel();
-    enter.cancel();
-    stopStepGlide = undefined;
-  };
-  stopStepGlide = cleanup;
-  enter.onfinish = cleanup;
-}
 
 function setText(name: string, text: string): void {
   for (const element of document.querySelectorAll<HTMLElement>(`[data-bind="${name}"]`)) {
@@ -666,8 +577,6 @@ function render(soon = false): void {
   for (const button of document.querySelectorAll<HTMLButtonElement>('[data-action="timeline-start"]')) {
     button.disabled = at === 0;
   }
-
-  renderSteps(anchor, at);
 
   drawBubble(false);
   if (soon) writeAddressSoon();
@@ -997,14 +906,36 @@ for (const slider of document.querySelectorAll<HTMLInputElement>("[data-strip-sl
   });
 }
 
+function startTimelineScrub(pointerId: number): void {
+  scrubPointer = pointerId;
+  // Hold the mapping still under the pointer, including when a glide was interrupted.
+  if (timelineFrame !== null) cancelAnimationFrame(timelineFrame);
+  timelineFrame = null;
+  timelineTarget = visibleTimeline;
+}
+
 for (const slider of document.querySelectorAll<HTMLInputElement>("[data-slider]")) {
-  const scrubTo = (percent: number) => sliderTo(windowPlace(percent, visibleTimeline) ?? scale.dateOf(percent));
+  const scrubTo = (percent: number) => {
+    const place = windowPlace(percent, visibleTimeline);
+    const first = timelineEvents[0];
+    const last = timelineEvents[timelineEvents.length - 1];
+    // Test the position before rounding it to a day, so the rail beyond an end dot snaps
+    // to that item even when it rounds to the same date.
+    const edge = first && place <= scale.percentOf(first.date) ? first
+      : last && place >= scale.percentOf(last.date) ? last : null;
+    if (edge) {
+      chapterIndex = null;
+      storyListOpen = false;
+      setItem(edge);
+      render(true);
+      return;
+    }
+    sliderTo(scale.dateOf(place));
+  };
   slider.addEventListener("input", () => scrubTo(Number(slider.value) / 100));
   slider.addEventListener("pointerdown", (event) => {
-    if (visibleTimeline.length && event.isPrimary && event.button === 0) {
-      timelineScrubPointer = event.pointerId;
-      drawTimeline(false);
-    }
+    if (!event.isPrimary || event.button !== 0 || !desktopLayout.matches) return;
+    startTimelineScrub(event.pointerId);
   });
   slider.addEventListener("keydown", (event) => {
     const at = dayIndex(day);
@@ -1020,21 +951,23 @@ for (const slider of document.querySelectorAll<HTMLInputElement>("[data-slider]"
 
   const line = slider.closest<HTMLElement>("[data-timeline]");
   if (!line) continue;
-  let press: { id: number; x: number; y: number; dragging: boolean } | null = null;
+  let press: { id: number; x: number; y: number; dragging: boolean; rail: boolean } | null = null;
   line.addEventListener("pointerdown", (event) => {
     if (press || !event.isPrimary || event.button !== 0 || !(event.target instanceof Element)) return;
-    const dot = event.target.closest<HTMLButtonElement>(".timeline-dot");
-    if (!dot) return;
-    // Keep a small movement across a shared midpoint from changing which dot gets the click.
-    press = { id: event.pointerId, x: event.clientX, y: event.clientY, dragging: false };
-    dot.setPointerCapture(event.pointerId);
+    const rail = !desktopLayout.matches && event.target === slider;
+    const control = rail ? slider : event.target.closest<HTMLButtonElement>(".timeline-dot");
+    if (!control) return;
+    // On phone, wait for the release to distinguish a nearest-dot tap from a calendar drag.
+    if (rail) event.preventDefault();
+    press = { id: event.pointerId, x: event.clientX, y: event.clientY, dragging: false, rail };
+    control.setPointerCapture(event.pointerId);
   });
   line.addEventListener("pointermove", (event) => {
     if (!press || event.pointerId !== press.id) return;
     if (!press.dragging) {
       if (Math.hypot(event.clientX - press.x, event.clientY - press.y) <= 6) return;
       press.dragging = true;
-      if (visibleTimeline.length) timelineScrubPointer = event.pointerId;
+      startTimelineScrub(event.pointerId);
       // A synthetic pointerdown cannot start a native range drag. Transfer capture so the
       // release is not a dot click, and use the same date mapping as the range's input event.
       slider.setPointerCapture(event.pointerId);
@@ -1043,9 +976,26 @@ for (const slider of document.querySelectorAll<HTMLInputElement>("[data-slider]"
     if (width > 0) scrubTo(Math.max(0, Math.min(100, 100 * (event.clientX - left) / width)));
   });
   const endPress = (event: PointerEvent) => {
-    if (event.pointerId === press?.id) press = null;
-    if (event.pointerId === timelineScrubPointer) {
-      timelineScrubPointer = null;
+    if (event.pointerId === press?.id) {
+      const tap = press.rail && !press.dragging && event.type === "pointerup";
+      press = null;
+      if (tap) {
+        const x = event.clientX - line.getBoundingClientRect().left;
+        let nearest: HTMLElement | undefined;
+        let distance = Infinity;
+        for (const dot of line.querySelectorAll<HTMLElement>(".timeline-dot")) {
+          if (!dot.offsetHeight) continue;
+          const gap = Math.abs(timelineDotX(dot) - x);
+          if (gap >= distance) continue;
+          distance = gap;
+          nearest = dot;
+        }
+        if (nearest?.dataset.news) selectItem(nearest.dataset.news);
+        else if (nearest?.dataset.chapter) goToChapter(Number(nearest.dataset.chapter) - 1);
+      }
+    }
+    if (event.pointerId === scrubPointer) {
+      scrubPointer = null;
       updateTimeline(true);
     }
   };
@@ -1287,14 +1237,19 @@ if (savedVisit && savedVisit.address === stateAddress()) {
     resetZoom();
   }
 }
+mountTimeline();
 render();
 void prepareLayouts().catch((error: unknown) => console.error(error));
+
+function timelineDotX(dot: HTMLElement): number {
+  return dot.offsetLeft + parseFloat(dot.style.getPropertyValue("--dot-center"));
+}
 
 // Keep isolated targets 44px wide and split crowded targets at their midpoint.
 function placeTimelineDots(inner: HTMLElement): void {
   if (!inner.clientWidth) return;
   const dots = Array.from(inner.querySelectorAll<HTMLButtonElement>(".timeline-dot"))
-    .filter((dot) => !dot.inert && dot.offsetHeight > 0)
+    .filter((dot) => dot.offsetHeight > 0)
     .map((dot) => ({ dot, x: Number.parseFloat(dot.style.left) * inner.clientWidth / 100 }))
     .sort((a, b) => a.x - b.x);
   // Fan out coincident or nearly coincident dots so each has its own reachable centre.
@@ -1328,7 +1283,7 @@ function placeTimelineLabels(): void {
   const currentChapter = chapterIndex === null ? null : chapters[chapterIndex];
   const labels = Array.from(inner.querySelectorAll<HTMLElement>(story
     ? "[data-story-label]"
-    : '[data-timeline-id]:not([data-timeline-leaving])'));
+    : '[data-timeline-id]:not([data-outside="true"])'));
   for (const label of labels) {
     label.hidden = story
       ? !!currentChapter && label.textContent?.trim() === currentChapter.title
@@ -1343,16 +1298,9 @@ function placeTimelineLabels(): void {
   });
   const bounds = inner.getBoundingClientRect();
   const reserved: LabelRect[] = [];
-  const marker = inner.querySelector<HTMLElement>("[data-timeline-current]");
-  if (marker) {
-    // Reserve the destination, not the marker's position mid-glide.
-    const x = Number.parseFloat(marker.style.left) * bounds.width / 100;
-    for (const element of [marker, marker.querySelector<HTMLElement>("[data-current-flag]")]) {
-      if (!element) continue;
-      const { width, top, bottom } = element.getBoundingClientRect();
-      const left = element === marker ? x : x + marker.clientLeft + (Number.parseFloat(element.style.left) || 0);
-      reserved.push({ left, right: left + width, top: top - bounds.top, bottom: bottom - bounds.top });
-    }
+  for (const element of inner.querySelectorAll("[data-current-flag], [data-timeline-current]")) {
+    const { left, right, top, bottom } = element.getBoundingClientRect();
+    reserved.push({ left: left - bounds.left, right: right - bounds.left, top: top - bounds.top, bottom: bottom - bounds.top });
   }
   const style = getComputedStyle(inner);
   const row = (name: string) => Number.parseFloat(style.getPropertyValue(`--label-${name}`));
@@ -1373,8 +1321,9 @@ function placeTimelineLabels(): void {
   });
 }
 
-window.addEventListener("resize", () => drawTimeline());
-document.fonts.ready.then(() => drawTimeline(), () => {});
+desktopLayout.addEventListener("change", mountTimeline);
+window.addEventListener("resize", drawTimeline);
+document.fonts.ready.then(drawTimeline, () => {});
 
 // The phone's map is sized from the visible area: the room above the bottom sheet, minus 12px on
 // each side, never wider than the window, and 560px at most; it is centred in that space. The
@@ -1455,6 +1404,7 @@ function showSheetState(sheet: HTMLElement, state: SheetState): void {
   const handle = sheet.querySelector<HTMLButtonElement>("[data-sheet-handle]");
   handle?.setAttribute("aria-expanded", String(state === "open"));
   handle?.setAttribute("aria-label", state === "open" ? "Show less" : "Show more");
+  if (state === "open") drawTimeline();
 }
 
 for (const sheet of document.querySelectorAll<HTMLElement>("[data-sheet]")) {

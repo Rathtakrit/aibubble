@@ -22,11 +22,9 @@ import {
   dayLabel,
   FIRST_DAY,
   inDateOrder,
-  neighbour,
   pillKind,
   placeLabels,
   publisherName,
-  stepDateLabel,
   timelineScale,
 } from "../lib/timeline.ts";
 import { chapterProblems, chapterSources, orderChapterFiles } from "../lib/story.ts";
@@ -137,14 +135,6 @@ const labels = placeLabels(
 const monthName = new Intl.DateTimeFormat("en-GB", { month: "short", year: "numeric", timeZone: "UTC" });
 const firstEnd = monthName.format(new Date(`${firstDay}T00:00:00Z`));
 const lastEnd = dayLabel(lastDay);
-
-// The sheet's three-day row: the news before this one, this one and the next, with an empty slot
-// at either end so the current dot stays in the middle.
-const stepSlots = [
-  { step: "before", item: neighbour(ordered, current.id, -1) },
-  { step: "current", item: current },
-  { step: "next", item: neighbour(ordered, current.id, 1) },
-] as const;
 
 // Story mode's chapters, read from docs/story while the site is built, in file-name order. They
 // are read only while Story is on, so unfinished chapters cannot stop the site: the same checks
@@ -526,7 +516,7 @@ const ariaFor = (itemTitle: string, date: string) => `${dayLabel(date)}, ${itemT
             </button>
           </div>
         </div>
-        <p class="status">{statusLine && `${statusLine} `}<a href="https://github.com/Rathtakrit/aibubble/issues/new/choose">Report a problem</a></p>
+        <p class="status desktop-timeline-status">{statusLine && `${statusLine} `}<a href="https://github.com/Rathtakrit/aibubble/issues/new/choose">Report a problem</a></p>
       </section>
     </div>
 
@@ -702,31 +692,6 @@ const ariaFor = (itemTitle: string, date: string) => `${dayLabel(date)}, ${itemT
             </div>
           )
         }
-
-        <div class="sheet-steps explore-only" data-steps>
-          <div class="step-row">
-            {stepSlots.map((slot) => (
-              <div class="step-slot">
-                <button
-                  type="button"
-                  class="step-button"
-                  data-step={slot.step}
-                  data-news={slot.item?.id}
-                  hidden={!slot.item}
-                  aria-label={slot.item ? ariaFor(slot.item.title, slot.item.date) : undefined}
-                >
-                  <span class="sheet-kicker step-now" aria-hidden="true">
-                    {slot.step === "current" ? "Now" : ""}
-                  </span>
-                  <span class="step-mark" aria-hidden="true"><span class="step-dot" /></span>
-                  <span class="step-date" aria-hidden="true">
-                    {slot.item ? stepDateLabel(slot.item.date) : ""}
-                  </span>
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
 
         <div class="sheet-buttons explore-only">
           <button type="button" class="button" data-action="earlier">← Earlier</button>
