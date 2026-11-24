@@ -3,6 +3,4 @@
 One file per chapter, shown in file-name order. `date` is the day the bubble shows while the chapter is read (not
 before 2022-11-30), `players` are the company ids the camera frames.
 
-**These nine chapters are AI-written samples** (Claude, 15 November 2026, at the owner's request, to try Story mode).
-They are built from a draft narrative (`docs/research/00-draft-narrative.md`, removed 23 Nov 2026, in git history) and carry its doubts. The owner rewrites or replaces them;
-until then the site marks them as samples.
+The AI chapters sit in `docs/story/`, the dot-com and housing chapters in `docs/story/dotcom/` and `docs/story/housing/`; all were written by OpenCode workers from the research files `docs/research/story-<bubble>.md` on 24 Nov 2026 and are reviewed by the owner in the pull request; `links`, `look` and `sources` are read by nothing yet.

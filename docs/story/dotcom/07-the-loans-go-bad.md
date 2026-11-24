@@ -1,0 +1,13 @@
+---
+title: "The loans go bad"
+date: 2001-04-19
+players: [lucent, cisco, winstar, icg, leap]
+links: [2000-09-30-lucent-winstar, 2000-09-30-cisco-icg, 2000-09-30-lucent-leap]
+look: "The three maker-to-customer lines fade as the customer bubbles shrink, and the loans on them turn into losses."
+sources: [https://www.latimes.com/archives/la-xpm-2001-apr-19-fi-52855-story.html, https://www.eweek.com/news/vendor-financing-backfires/, https://www.sec.gov/Archives/edgar/data/1013240/000102140801503681/d10k.txt]
+---
+On 19 April 2001 Winstar files for Chapter 11, the bankruptcy process that lets a company keep running while it reworks its debts, blaming Lucent for cutting off its financing. Lucent has lent it about $700 million, and Winstar has missed about $75 million of interest payments.
+
+ICG, which borrowed $180 million from Cisco, is in bankruptcy by November 2000. Leap owes Lucent $111 million.
+
+The loans were made to win orders. When the customer fails, the maker loses the order and the money.
