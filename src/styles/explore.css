@@ -123,6 +123,12 @@ body { --bubble-caption-size: 13px; }
   color: var(--ink);
 }
 
+/* A deal kind past a set's third has no colour of its own yet and keeps the quiet ink-2 its money
+   lines are drawn in. */
+.pill-ink-2 {
+  color: var(--ink-2);
+}
+
 .legend {
   display: flex;
   flex-wrap: wrap;
@@ -160,6 +166,10 @@ body { --bubble-caption-size: 13px; }
 
 .legend-chip {
   border-top-color: var(--chip);
+}
+
+.legend-ink-2 {
+  border-top-color: var(--ink-2);
 }
 
 .button {
@@ -907,6 +917,24 @@ body[data-mode="story"] .story-dot {
   color: var(--accent-dark);
 }
 
+.story-links {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 16px;
+}
+
+.story-sources {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+/* Keep the source hit boxes clear of the chapter text and the note below. */
+.story-sources .source {
+  margin-block: 0;
+}
+
 /* The list of every chapter, past and next, as the design shows it: one row each, the chapter
    being read marked with the accent. */
 .chapter-list {
@@ -1037,15 +1065,12 @@ body[data-mode="story"] .story-dot {
   text-decoration: none;
 }
 
-/* On the phone the chapter lives in the sheet: kicker, title, note, players and buttons stay
-   put and the text scrolls inside them, so the sheet never grows past its 40dvh and nothing is
-   drawn over the buttons or the day line. The money key has no room left in Story and is left
-   out; Explore keeps it. */
+/* On the phone the chapter and its sources scroll with the existing sheet, not inside a
+   second scroll area. The money key has no room left in Story; Explore keeps it. */
 body[data-mode="story"] .phone-legend {
   display: none;
 }
 
-.sheet:has([data-block="story"]:not([hidden])),
 .sheet:has([data-block="story-list"]:not([hidden])) {
   display: flex;
   flex-direction: column;
@@ -1056,33 +1081,22 @@ body[data-mode="story"] .phone-legend {
   flex: 0 0 auto;
 }
 
-.sheet:has([data-block="story"]:not([hidden])) [data-block="story"] {
-  flex: 1 1 auto;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.sheet [data-block="story"] .chapter-text {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-}
-
-/* A few pixels less between the lines that stay put leaves the chapter text more of the
-   40dvh to read in. */
+/* The tab row keeps a small gap above the chapter's kicker. */
 body[data-mode="story"] .sheet .mode-switch {
   margin-bottom: 8px;
 }
 
-body[data-mode="story"] .sheet .status,
-body[data-mode="story"] .sheet .players-line {
+.sheet [data-block="story"] .status {
   margin-top: 6px;
 }
 
-body[data-mode="story"] .sheet .read-story {
-  margin-top: 4px;
+.sheet [data-block="story"] .sheet-buttons,
+.sheet .story-links {
+  margin-top: 8px;
+}
+
+.sheet .story-links .read-story {
+  margin-top: 0;
 }
 
 .sheet [data-block="story"] .chapter-text p {
@@ -1253,7 +1267,7 @@ body[data-mode="story"] .sheet .read-story {
   background: var(--paper);
 }
 
-body[data-timeline-zoomed="true"] .timeline-label[data-timeline-id] {
+body[data-mode="explore"][data-timeline-zoomed="true"] .timeline-label[data-timeline-id] {
   visibility: visible;
   max-width: min(320px, 100%);
   display: -webkit-box;
@@ -1573,22 +1587,19 @@ body[data-timeline-zoomed="true"] .timeline-label[data-timeline-id] {
   }
 }
 
-/* --- Story on desktop: the page keeps the window's height and the chapter text scrolls --- */
+/* --- Story on desktop: at least the window's height, never a scroll box inside it --- */
 
-/* Story keeps the page the height of the window, as Explore does, so the timeline never falls
-   below it. The page is read as three bands: the header, the main area and the timeline. The
-   header and the timeline keep their heights and the main area is given whatever is left over, so
-   it is a share of the window and never the height of the chapter. The text column fills that
-   area, and the chapter text is the one part that shrinks and scrolls inside it: the kicker, date,
-   title, sample note, the players line, the buttons and "Read the story" keep their places around
-   it, above the timeline.
+/* Story fills at least the window, so with a short chapter the timeline sits at its foot as in
+   Explore. The chapter text is never cut into a scroll box of its own: when the kicker, title,
+   text, sources, note, picture line and buttons need more room than the window leaves, the page
+   grows and scrolls instead, so the whole chapter can always be read.
    The 1048px is where the two columns stop sitting side by side: their sizes (360px and 560px), the
    gap and the page's side padding add up to that, and below it the columns stack and the page
    scrolls in Explore too, so Story behaves the same there. */
 @media (min-width: 1048px) {
   body[data-mode="story"] .layout-desktop {
-    height: 100vh;
-    height: 100dvh;
+    min-height: 100vh;
+    min-height: 100dvh;
   }
 
   body[data-mode="story"] .layout-desktop > .site-header,
@@ -1596,70 +1607,19 @@ body[data-timeline-zoomed="true"] .timeline-label[data-timeline-id] {
     flex: 0 0 auto;
   }
 
-  /* The main area is the window less the header and the timeline, not the height of what it holds:
-     its size starts at zero and it grows into the room left between them. Nothing is drawn outside
-     it, so neither column can reach the timeline's line.
-     One line, not wrapping: above 1048px the two columns always fit side by side, and a wrapping
-     area sizes its line by the tallest thing in it — the chapter — so the column would be handed
-     the chapter's height again instead of the room between the header and the timeline. */
+  /* The main area takes the room between the header and the timeline, and more when the chapter
+     needs it. One line, not wrapping: above 1048px the two columns always fit side by side. */
   body[data-mode="story"] .explore-main {
-    flex: 1 1 0;
+    flex: 1 0 auto;
     flex-wrap: nowrap;
-    min-height: 0;
-    overflow: hidden;
   }
 
-  /* The text column fills that area from the top and hands the room it has to its one growing
-     child, the chapter block. Its height is the area's own content box, whatever the chapter's
-     length, so the block and the chapter text have a shorter height to shrink into. */
   body[data-mode="story"] .story-column {
-    height: 100%;
-    min-height: 0;
     justify-content: flex-start;
   }
 
   body[data-mode="story"] .story-column > * {
     flex: 0 0 auto;
-  }
-
-  /* Inside the column the kicker and, in the block, the title, the sample note, the
-     players line, the buttons and "Read the story" keep their natural height; the chapter text is
-     the only part that grows into the leftover room and shrinks below its content to scroll. */
-  body[data-mode="story"] .story-column [data-block="story"]:not([hidden]) {
-    display: flex;
-    flex-direction: column;
-    flex: 1 1 auto;
-    min-height: 0;
-  }
-
-  body[data-mode="story"] .story-column [data-block="story"] > * {
-    flex: 0 0 auto;
-  }
-
-  body[data-mode="story"] .story-column [data-block="story"] .chapter-text {
-    flex: 1 1 auto;
-    min-height: 0;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-  }
-
-  /* The chapter list is a panel in the same column; it gives the column's leftover room to its
-     scrolling rows, so opening it never pushes the timeline off screen either. */
-  body[data-mode="story"] .story-column [data-block="story-list"]:not([hidden]) {
-    display: flex;
-    flex-direction: column;
-    flex: 1 1 auto;
-    min-height: 0;
-  }
-
-  body[data-mode="story"] .story-column .chapter-list {
-    flex: 1 1 auto;
-    min-height: 0;
-  }
-
-  body[data-mode="story"] .story-column .chapter-list-items {
-    flex: 1 1 auto;
-    min-height: 0;
   }
 }
 

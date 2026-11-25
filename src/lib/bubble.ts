@@ -568,9 +568,7 @@ function createArrowNode(): ArrowNode {
   return { group, shaft, head };
 }
 
-// The look of one arrow: a pale thin line for the everyday view, or its kind colour and
-// small arrowhead when both ends are players of the chosen item. With a company panel open,
-// every line that touches that company is drawn that way instead.
+// A strong line uses its kind colour and a small arrowhead; the rest are pale and thin.
 function styleArrow(live: LiveArrow): void {
   const strong = live.strong;
   const colour = `var(--${kindColour(live.arrow.kind)})`;
@@ -747,18 +745,24 @@ function opacityOf(live: LiveBubble, drawing: Drawing): string {
   return drawing.dim && !drawing.players.has(live.bubble.id) ? DIM : "1";
 }
 
-function updateArrows(drawing: Drawing, layer: SVGGElement, arrows: Arrow[]): void {
+function updateArrows(
+  drawing: Drawing,
+  layer: SVGGElement,
+  arrows: Arrow[],
+  strongArrows?: ReadonlySet<string>,
+): void {
   const seen = new Set<string>();
   for (const arrow of arrows) {
     const key = `${arrow.from}|${arrow.to}|${arrow.kind}`;
     seen.add(key);
-    const strong =
+    const strong = strongArrows?.has(key) ?? (
       drawing.focus !== null
         ? arrow.from === drawing.focus || arrow.to === drawing.focus
-        : drawing.dim && drawing.players.has(arrow.from) && drawing.players.has(arrow.to);
-    // The everyday view draws one pale line per pair; a chosen item draws every line of
-    // its own pairs in full.
-    const visible = strong || arrow.pairFirst;
+        : drawing.dim && drawing.players.has(arrow.from) && drawing.players.has(arrow.to)
+    );
+    // Explore and chapters without links keep one pale line per pair. With explicit chapter
+    // links, every other arrow is drawn faint, including additional arrows within a pair.
+    const visible = strongArrows !== undefined || strong || arrow.pairFirst;
     const live = drawing.arrows.get(key);
     if (!live) {
       const node = createArrowNode();
@@ -819,6 +823,8 @@ export type BubbleOptions = {
   peak?: PeakDay;
   changeFromPeak?: string;
   immediate?: boolean;
+  // The chapter's eligible money lines, keyed by "from|to|kind"; overrides player lighting.
+  strongArrows?: ReadonlySet<string>;
 };
 
 // The zoom control's 1x is the whole view, even when the peak fit has already scaled the scene.
@@ -940,7 +946,7 @@ export function renderBubble(
   drawing.reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   updateBubbles(drawing, bubbleLayer, bubbles);
-  updateArrows(drawing, arrowLayer, arrows);
+  updateArrows(drawing, arrowLayer, arrows, options.strongArrows);
   glide(drawing);
 
 }

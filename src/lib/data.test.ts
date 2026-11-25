@@ -98,7 +98,7 @@ test("useDataset switches companies, first day, last day and kinds, and switchin
   assert.equal(burst?.source, "https://www.wired.com/2010/03/0310nasdaq-bust/");
   assert.equal(FIRST_DAY, "1995-01-01");
   assert.equal(LAST_DAY, "2002-12-31");
-  assert.deepEqual(kinds.map((one) => one.id), ["investment", "takeover", "supplier"]);
+  assert.deepEqual(kinds.map((one) => one.id), ["investment", "takeover", "supplier", "vendor-loan"]);
 
   useDataset("housing");
   assert.ok(companies.some((one) => one.id === "lehman-brothers"));
@@ -106,7 +106,14 @@ test("useDataset switches companies, first day, last day and kinds, and switchin
   assert.equal(burst?.source, "https://news.bbc.co.uk/1/hi/business/7615931.stm");
   assert.equal(FIRST_DAY, "2003-01-01");
   assert.equal(LAST_DAY, "2009-12-31");
-  assert.deepEqual(kinds.map((one) => one.id), ["investment", "takeover"]);
+  assert.deepEqual(kinds.map((one) => one.id), [
+    "investment",
+    "takeover",
+    "loan-sale",
+    "insurance",
+    "short-term-loan",
+    "rescue",
+  ]);
   assert.equal(status, "draft");
 
   useDataset("ai");

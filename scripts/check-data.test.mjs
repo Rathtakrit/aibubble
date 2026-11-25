@@ -340,6 +340,21 @@ test("a folder with a meta.json takes its first day, last day and deal kinds fro
   expectOk(dir);
 });
 
+test("a meta.json takes up to eight deal kinds, not none and not nine", () => {
+  const kinds = (count) =>
+    [{ id: "takeover", label: "Takeover deal" }, { id: "cloud", label: "Cloud deal" }, { id: "chip", label: "Chip deal" }]
+      .concat(Array.from({ length: 6 }, (_, at) => ({ id: `extra-${at}`, label: `Extra deal ${at}` })))
+      .slice(0, count);
+  const eight = olderFixture();
+  write(eight, "meta.json", meta({ kinds: kinds(8) }));
+  expectOk(eight);
+  for (const count of [0, 9]) {
+    const dir = olderFixture();
+    write(dir, "meta.json", meta({ kinds: kinds(count) }));
+    expectFail(dir, "meta.json");
+  }
+});
+
 test("burst accepts real dates within the set and http(s) sources", () => {
   for (const date of ["2016-01-01", "2020-03-10", "2021-12-31"]) {
     for (const source of ["http://example.com/event", "https://example.com/event"]) {

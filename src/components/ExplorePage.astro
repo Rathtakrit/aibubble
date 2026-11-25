@@ -38,8 +38,8 @@ const { id } = Astro.props;
 // data modules hold one set at a time, so the set is chosen before anything is read from them.
 useDataset(id);
 const isPast = id !== "ai";
-// Story is off for now because it is too close to Explore.
-const STORY_ENABLED = false;
+// Each bubble's tab opens its story; explicit Explore addresses still open the day-by-day view.
+const STORY_ENABLED = true;
 // Everything below is taken now, while this set is the active one.
 const bubbleName = { ai: "AI bubble", dotcom: "Dot-com bubble", housing: "Housing bubble" }[id];
 // What the browser tab calls each set, and the line a search result or link preview shows. The
@@ -136,25 +136,21 @@ const monthName = new Intl.DateTimeFormat("en-GB", { month: "short", year: "nume
 const firstEnd = monthName.format(new Date(`${firstDay}T00:00:00Z`));
 const lastEnd = dayLabel(lastDay);
 
-// Story mode's chapters, read from docs/story while the site is built, in file-name order. They
-// are read only while Story is on, so unfinished chapters cannot stop the site: the same checks
-// run in src/lib/story.test.ts. A day before the site starts, or a company the data does not
-// have, stops the build with the file name when Story is on. A past page has none.
-const chapters: Chapter[] = STORY_ENABLED && !isPast ? orderChapterFiles(chapterSources()) : [];
-if (STORY_ENABLED && !isPast) {
-  const chapterProblemsFound = chapterProblems(
-    chapters,
-    allCompanies.map((company) => company.id),
-  );
-  if (chapters.length === 0) throw new Error("Story mode has no chapters: docs/story has no .md files.");
+// Story mode's chapters, read from the set's own folder (docs/story, docs/story/dotcom or
+// docs/story/housing) while the site is built, in file-name order. A day that is not a day, or one
+// before the set's first day, stops the build with the file name; the same checks run in
+// src/lib/story.test.ts. A player or link the set's data does not have yet is skipped on the page
+// and printed as a warning by that test.
+const chapters: Chapter[] = STORY_ENABLED ? orderChapterFiles(chapterSources(id)) : [];
+if (STORY_ENABLED) {
+  const chapterProblemsFound = chapterProblems(chapters, firstDay);
+  if (chapters.length === 0) throw new Error(`Story mode has no chapters for the ${bubbleName}.`);
   if (chapterProblemsFound.length > 0) {
     throw new Error(`Story chapters are not ready:\n${chapterProblemsFound.join("\n")}`);
   }
 }
 const firstChapter = chapters[0];
-const firstChapterNames = firstChapter
-  ? firstChapter.players.map((company) => nameOf.get(company) ?? company).join(", ")
-  : "";
+const chapterStatus = "Chapters written with AI from the listed sources and checked by the owner.";
 // The browser needs the chapter text too, so the page carries it as data rather than asking for
 // the files again.
 const chaptersJson = chapters.length > 0 ? JSON.stringify(chapters).replace(/</g, "\\u003c") : "";
@@ -175,15 +171,13 @@ const ariaFor = (itemTitle: string, date: string) => `${dayLabel(date)}, ${itemT
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
   </head>
-  <body data-mode="explore" data-dataset={id} data-story-enabled={isPast ? undefined : STORY_ENABLED}>
+  <body data-mode="explore" data-dataset={id} data-story-enabled={STORY_ENABLED}>
     <div class="layout-desktop">
       <header class="site-header">
         <a class="wordmark" href="/">Bubble</a>
         <nav class="site-nav" aria-label="Sections">
-          {STORY_ENABLED && <a class="nav-item" data-mode="story" href="/?chapter=1">Story</a>}
           <a
             class:list={["nav-item", !isPast && "nav-current"]}
-            data-mode={isPast ? undefined : "explore"}
             href="/"
             aria-current={isPast ? undefined : "page"}>AI</a
           >
@@ -205,7 +199,7 @@ const ariaFor = (itemTitle: string, date: string) => `${dayLabel(date)}, ${itemT
         <div class="story-column">
           <p class="kicker boom-kicker explore-only" data-bind="kicker-desktop">{bubbleName}</p>
           {
-            STORY_ENABLED && !isPast && (
+            STORY_ENABLED && (
               <p class="kicker story-only" data-bind="story-kicker">
                 Chapter 1 of {chapters.length}
               </p>
@@ -256,20 +250,20 @@ const ariaFor = (itemTitle: string, date: string) => `${dayLabel(date)}, ${itemT
           </div>
 
           {
-            STORY_ENABLED && !isPast && (
+            STORY_ENABLED && (
               <div data-block="story" hidden>
                 <h1 class="headline" data-bind="story-title" tabindex="-1">
                   {firstChapter.title}
                 </h1>
-                <div class="chapter-text" data-bind="story-text" tabindex="0">
+                <div class="chapter-text" data-bind="story-text">
                   {firstChapter.paragraphs.map((paragraph) => (
                     <p>{paragraph}</p>
                   ))}
                 </div>
-                <p class="status">Sample chapters, written by AI, not yet rewritten by the owner.</p>
-                <p class="players-line" data-players-line="story">
-                  The view follows the players:{" "}
-                  <strong data-bind="story-names">{firstChapterNames}</strong>
+                <p class="story-sources" data-story-sources hidden></p>
+                <p class="status">{chapterStatus}</p>
+                <p class="players-line" data-story-look hidden={!firstChapter.look}>
+                  In the picture: <strong data-bind="story-look">{firstChapter.look}</strong>
                 </p>
                 <div class="button-row">
                   <button type="button" class="button" data-action="chapter-earlier">
@@ -279,15 +273,20 @@ const ariaFor = (itemTitle: string, date: string) => `${dayLabel(date)}, ${itemT
                     Next chapter →
                   </button>
                 </div>
-                <button type="button" class="read-story" data-action="story-open" aria-expanded="false">
-                  Read the story
-                </button>
+                <div class="story-links">
+                  <button type="button" class="read-story" data-action="story-open" aria-expanded="false">
+                    Read the story
+                  </button>
+                  <button type="button" class="read-story" data-action="story-explore">
+                    Explore day by day
+                  </button>
+                </div>
               </div>
             )
           }
 
           {
-            STORY_ENABLED && !isPast && (
+            STORY_ENABLED && (
               <div data-block="story-list" hidden>
                 <div class="chapter-list">
                   <div class="chapter-list-head">
@@ -446,7 +445,7 @@ const ariaFor = (itemTitle: string, date: string) => `${dayLabel(date)}, ${itemT
             ))
           }
           {
-            STORY_ENABLED && !isPast &&
+            STORY_ENABLED &&
               chapters.map((chapter) => {
                 const left = scale.percentOf(chapter.date);
                 return (
@@ -455,6 +454,7 @@ const ariaFor = (itemTitle: string, date: string) => `${dayLabel(date)}, ${itemT
                       type="button"
                       class="timeline-dot story-dot"
                       data-chapter={chapter.number}
+                      data-timeline-date={chapter.date}
                       style={`left: ${left}%`}
                       title={chapter.title}
                       aria-label={`Chapter ${chapter.number} of ${chapters.length}: ${dayLabel(chapter.date)}, ${chapter.title}`}
@@ -464,6 +464,7 @@ const ariaFor = (itemTitle: string, date: string) => `${dayLabel(date)}, ${itemT
                     <span
                       class="timeline-label"
                       data-story-label
+                      data-timeline-date={chapter.date}
                       style={`left: ${left}%`}
                       hidden
                       aria-hidden="true"
@@ -574,18 +575,6 @@ const ariaFor = (itemTitle: string, date: string) => `${dayLabel(date)}, ${itemT
           >
           <a class="mode-button" href="/compare/">Compare</a>
         </nav>
-        {
-          STORY_ENABLED && !isPast && (
-            <div class="mode-switch" role="group" aria-label="Mode">
-              <a class="mode-button" data-mode="story" href="/?chapter=1">
-                Story
-              </a>
-              <a class="mode-button nav-current" data-mode="explore" href="/" aria-current="page">
-                AI
-              </a>
-            </div>
-          )
-        }
         <div class="dock-row">
           <p class="dock-title" data-bind="dock-title">{current.title}</p>
           <button type="button" class="dock-button" data-action="earlier" aria-label="Earlier">←</button>
@@ -629,7 +618,7 @@ const ariaFor = (itemTitle: string, date: string) => `${dayLabel(date)}, ${itemT
         </div>
 
         {
-          STORY_ENABLED && !isPast && (
+          STORY_ENABLED && (
             <div data-block="story" hidden>
               <p class="sheet-kicker" data-bind="story-kicker">
                 Chapter 1 of {chapters.length}
@@ -637,14 +626,15 @@ const ariaFor = (itemTitle: string, date: string) => `${dayLabel(date)}, ${itemT
               <h1 class="sheet-title" data-bind="story-title" tabindex="-1">
                 {firstChapter.title}
               </h1>
-              <div class="chapter-text" data-bind="story-text" tabindex="0">
+              <div class="chapter-text" data-bind="story-text">
                 {firstChapter.paragraphs.map((paragraph) => (
                   <p>{paragraph}</p>
                 ))}
               </div>
-              <p class="status">Sample chapters, written by AI, not yet rewritten by the owner.</p>
-              <p class="players-line" data-players-line="story">
-                The view follows the players: <strong data-bind="story-names">{firstChapterNames}</strong>
+              <p class="story-sources" data-story-sources hidden></p>
+              <p class="status">{chapterStatus}</p>
+              <p class="players-line" data-story-look hidden={!firstChapter.look}>
+                In the picture: <strong data-bind="story-look">{firstChapter.look}</strong>
               </p>
               <div class="sheet-buttons">
                 <button type="button" class="button" data-action="chapter-earlier">
@@ -654,15 +644,20 @@ const ariaFor = (itemTitle: string, date: string) => `${dayLabel(date)}, ${itemT
                   Next chapter →
                 </button>
               </div>
-              <button type="button" class="read-story" data-action="story-open" aria-expanded="false">
-                Read the story
-              </button>
+              <div class="story-links">
+                <button type="button" class="read-story" data-action="story-open" aria-expanded="false">
+                  Read the story
+                </button>
+                <button type="button" class="read-story" data-action="story-explore">
+                  Explore day by day
+                </button>
+              </div>
             </div>
           )
         }
 
         {
-          STORY_ENABLED && !isPast && (
+          STORY_ENABLED && (
             <div data-block="story-list" hidden>
               <div class="chapter-list chapter-list-sheet">
                 <div class="chapter-list-head">
@@ -702,7 +697,7 @@ const ariaFor = (itemTitle: string, date: string) => `${dayLabel(date)}, ${itemT
       </section>
     </div>
 
-    {STORY_ENABLED && !isPast && <script type="application/json" data-story-chapters set:html={chaptersJson}></script>}
+    {STORY_ENABLED && <script type="application/json" data-story-chapters set:html={chaptersJson}></script>}
     <script>
       import "../scripts/explore.ts";
     </script>

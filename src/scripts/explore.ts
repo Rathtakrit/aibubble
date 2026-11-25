@@ -40,6 +40,7 @@ import {
   pillKind,
   placeLabels,
   publisherName,
+  siteName,
   snapToItemDateRange,
   type LabelRect,
   timelineScale,
@@ -93,6 +94,7 @@ const STORY_ENABLED = document.body.dataset.storyEnabled === "true";
 // Explore walks money news only, from the set's first day on; the other news waits for its own tab.
 const ordered = inDateOrder(news.filter((item) => item.kind === "money" && item.date >= FIRST_DAY));
 const byId = new Map(ordered.map((item) => [item.id, item]));
+const dealById = new Map(deals.map((deal) => [deal.id, deal]));
 const nameOf = new Map(companies.map((company) => [company.id, company.name]));
 const companyById = new Map(companies.map((company) => [company.id, company]));
 const lastDate = defaultDate();
@@ -365,7 +367,8 @@ function isCompanyShown(id: string, date: string): boolean {
 // The companies that the focus button can frame on this day.
 function playersNow(): string[] {
   const chapter = chapterIndex === null ? null : (chapters[chapterIndex] ?? null);
-  if (chapter !== null) return chapter.players;
+  // A player the set's data does not have yet (us-government, for one) is skipped.
+  if (chapter !== null) return chapter.players.filter((id) => companyById.has(id));
   const item = itemId === null ? null : (byId.get(itemId) ?? null);
   if (item !== null) return item.players;
   return companyId !== null ? [companyId, ...partnersOf(companyId, day)] : [];
@@ -467,17 +470,7 @@ function render(soon = false): void {
   }
 
   // The stylesheet follows the mode: Story shows the chapter's dots and hides Explore's masthead.
-  const mode = storyChapter !== null ? "story" : "explore";
-  document.body.dataset.mode = mode;
-  // The header tab and the phone's switch mark the mode they lead to. The body carries
-  // data-mode itself, so it is left out; with it, everything inside it would take the tab's
-  // underline.
-  for (const control of document.querySelectorAll<HTMLElement>("[data-mode]:not(body)")) {
-    const active = (control.dataset.mode === "story") === (storyChapter !== null);
-    control.classList.toggle("nav-current", active);
-    if (active) control.setAttribute("aria-current", "page");
-    else control.removeAttribute("aria-current");
-  }
+  document.body.dataset.mode = storyChapter !== null ? "story" : "explore";
   for (const sheet of document.querySelectorAll<HTMLElement>("[data-sheet]")) {
     sheet.setAttribute("aria-label", storyChapter !== null ? "Chapter" : "News item");
   }
@@ -488,9 +481,9 @@ function render(soon = false): void {
     setText("story-title", storyChapter.title);
     // The docked sheet's one line: the chapter being read.
     setText("dock-title", storyChapter.title);
-    setText("story-names", namesOf(storyChapter.players));
-    for (const line of document.querySelectorAll<HTMLElement>('[data-players-line="story"]')) {
-      line.hidden = storyChapter.players.length === 0;
+    setText("story-look", storyChapter.look);
+    for (const line of document.querySelectorAll<HTMLElement>("[data-story-look]")) {
+      line.hidden = !storyChapter.look;
     }
     // Every paragraph, word for word, in a plain text block rather than markup.
     for (const text of document.querySelectorAll<HTMLElement>('[data-bind="story-text"]')) {
@@ -501,6 +494,7 @@ function render(soon = false): void {
         text.appendChild(element);
       }
     }
+    renderStorySources(storyChapter.sources);
     for (const button of document.querySelectorAll<HTMLButtonElement>('[data-action="chapter-earlier"]')) {
       button.disabled = storyAt === 0;
     }
@@ -583,6 +577,35 @@ function render(soon = false): void {
   else writeAddress();
 }
 
+function renderStorySources(sources: readonly string[]): void {
+  const urls = sources.flatMap((source) => {
+    try {
+      const url = new URL(source);
+      return url.protocol === "https:" || url.protocol === "http:" ? [url] : [];
+    } catch {
+      return [];
+    }
+  });
+  for (const line of document.querySelectorAll<HTMLElement>("[data-story-sources]")) {
+    line.hidden = urls.length === 0;
+    line.replaceChildren();
+    if (line.hidden) continue;
+    line.append("Sources: ");
+    urls.forEach((url, index) => {
+      const name = siteName(url.href);
+      const link = document.createElement("a");
+      link.className = "source";
+      link.href = url.href;
+      link.target = "_blank";
+      link.rel = "noopener";
+      link.setAttribute("aria-label", `Source: ${name}, opens in a new tab`);
+      link.textContent = name;
+      if (index > 0) line.append(" · ");
+      line.append(link);
+    });
+  }
+}
+
 // Gesture frames update only the camera, not the news panel, timeline or address.
 function drawBubble(immediate: boolean): void {
   const zoomActive = fitPlayers || manual !== 1;
@@ -597,12 +620,20 @@ function drawBubble(immediate: boolean): void {
 
   if (!layoutsReady) return;
   const players = fitPlayers ? playersNow() : [];
+  const chapter = chapterIndex === null ? undefined : chapters[chapterIndex];
+  // A link the set's data does not have yet is skipped. With no links left the player rule
+  // stays; otherwise the links replace it, even if none of them has happened by the chapter's day.
+  const links = chapter ? chapter.links.flatMap((id) => dealById.get(id) ?? []) : [];
+  const strongArrows = chapter && links.length > 0
+    ? new Set(links.filter((deal) => deal.date <= chapter.date).map((deal) => `${deal.from}|${deal.to}|${deal.kind}`))
+    : undefined;
   const zoomedIn = zoomActive && cameraView(manual, players).z > 1;
   for (const svg of document.querySelectorAll<SVGSVGElement>("[data-bubble]")) {
     svg.dataset.zoomed = String(zoomedIn);
     renderBubble(svg, day, {
       players,
       focus: companyId ?? undefined,
+      strongArrows,
       manual,
       burstDate: burst?.date,
       peak,
@@ -644,11 +675,9 @@ function writeAddressSoon(): void {
   addressTimer = setTimeout(writeAddress, 200);
 }
 
-// The browser tab's own storage and the tab links on both layouts. A link with a query of its
-// own, like Story's ?chapter=1, says what it means and is not a tab link. With storage blocked
-// the page remembers nothing, exactly as on a first visit.
+// Tab links carry the saved address back to the page; a plain visit does not read it as a destination.
 const visitStorage = tabStorage();
-const visitLinks = Array.from(document.querySelectorAll<HTMLAnchorElement>(".site-nav a[href], .mode-switch a[href]"))
+const visitLinks = Array.from(document.querySelectorAll<HTMLAnchorElement>(".site-nav a[href], nav.mode-switch a[href]"))
   .filter((link) => link.search === "" && link.hash === "");
 
 // The page's saved place, written only when it changes; the tab links then lead back to it.
@@ -683,20 +712,26 @@ function goToChapter(index: number): void {
   day = chapter.date;
   resetZoom(true);
   render();
-  // A chapter opens at its first line, never where the last one was left.
-  for (const text of document.querySelectorAll<HTMLElement>('[data-bind="story-text"]')) {
-    text.scrollTop = 0;
+  // A chapter opens at its first line: on the phone the sheet scrolls back to the top, and on a
+  // desktop page that has grown past the window, the page scrolls back to the chapter's kicker.
+  for (const panel of document.querySelectorAll<HTMLElement>("[data-sheet]")) {
+    panel.scrollTop = 0;
+  }
+  const column = document.querySelector<HTMLElement>(".story-column");
+  if (column && column.offsetParent !== null && column.getBoundingClientRect().top < 0) {
+    window.scrollTo({ top: 0 });
   }
 }
 
-// Dragging the slider to a day that is not a chapter's leaves Story for Explore on that day.
-function leaveStory(date: string): void {
+// Leave Story for Explore on the same day, or the day reached by scrubbing.
+function leaveStory(date: string, soon = false): void {
   chapterIndex = null;
   storyListOpen = false;
   itemId = null;
   resetZoom();
   day = date;
-  render(true);
+  render(soon);
+  if (!soon) focusVisible("[data-slider]");
 }
 
 function openStoryList(open: boolean): void {
@@ -821,16 +856,13 @@ document.addEventListener("click", (event) => {
   } else if (action === "chapter-next") {
     if (chapterIndex !== null) {
       if (chapterIndex === chapters.length - 1) {
-        // The last chapter's "Explore any day" shows Explore on that chapter's day.
-        chapterIndex = null;
-        storyListOpen = false;
-        itemId = null;
-        resetZoom();
-        render();
+        leaveStory(day);
       } else {
         goToChapter(chapterIndex + 1);
       }
     }
+  } else if (action === "story-explore") {
+    if (chapterIndex !== null) leaveStory(day);
   } else if (action === "story-open") {
     openStoryList(true);
   } else if (action === "story-close") {
@@ -866,7 +898,7 @@ function sliderTo(date: string): void {
     return;
   }
   if (chapterIndex !== null) {
-    leaveStory(date);
+    leaveStory(date, true);
     return;
   }
   moveTo(date);
@@ -1171,12 +1203,12 @@ for (const svg of document.querySelectorAll<SVGSVGElement>("[data-bubble]")) {
 
 // The tab links lead to each page's saved place, and the address is read once, then the page is
 // drawn. A chapter opens Story on its day; without one, ?news=, ?company= or ?date= picks the
-// view. Otherwise the opening item stays selected. A past page has no Story mode, so it ignores
-// ?chapter=.
+// view. Otherwise every bubble opens its first chapter.
 function readAddress(): void {
   const params = new URLSearchParams(window.location.search);
-  // ?chapter=3 opens chapter 3; a number that is not a chapter opens the first.
-  if (STORY_ENABLED && !isPast && params.has("chapter") && chapters.length > 0) {
+  const exploreAddress = params.has("news") || params.has("company") || params.has("date");
+  // ?chapter=3 opens chapter 3; a plain visit or an invalid chapter opens the first.
+  if (STORY_ENABLED && chapters.length > 0 && (params.has("chapter") || !exploreAddress)) {
     const wanted = Number(params.get("chapter"));
     const at = Number.isInteger(wanted) && wanted >= 1 && wanted <= chapters.length ? wanted - 1 : 0;
     chapterIndex = at;
@@ -1216,7 +1248,7 @@ function readAddress(): void {
     day = calendarDate;
     return;
   }
-  if (params.has("news") || params.has("company") || params.has("date")) {
+  if (exploreAddress) {
     // A day, an item or a company was asked for but is not in the data: show the whole frame
     // for today.
     itemId = null;

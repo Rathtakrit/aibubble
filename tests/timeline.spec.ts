@@ -2,6 +2,8 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 import aiNews from '../data/news.json' with { type: 'json' };
 import dotcomNews from '../data/past/dotcom/news.json' with { type: 'json' };
 import dotcomMeta from '../data/past/dotcom/meta.json' with { type: 'json' };
+import housingNews from '../data/past/housing/news.json' with { type: 'json' };
+import housingMeta from '../data/past/housing/meta.json' with { type: 'json' };
 
 type Item = { id: string; date: string; title: string; kind: string; label?: string };
 type Box = NonNullable<Awaited<ReturnType<Locator['boundingBox']>>>;
@@ -43,7 +45,15 @@ function ordered(items: Item[], start: string) {
 
 const ai = ordered(aiNews.items, '2022-11-30'); // Start of the AI money timeline.
 const dotcom = ordered(dotcomNews.items, dotcomMeta.first_day);
+const housing = ordered(housingNews.items, housingMeta.first_day);
 const middle = ai[Math.floor(ai.length / 2)];
+// Each bubble's plain address opens its story, so Explore is reached through an explicit day: the
+// middle of the AI timeline, and a past set's first item, which its Explore opened on before.
+const exploreDate: Record<string, string> = {
+  '/': middle.date,
+  '/past/dotcom': dotcom[0].date,
+  '/past/housing': housing[0].date,
+};
 
 function dot(region: Locator, item: Item) {
   return region.getByRole('button', {
@@ -65,7 +75,9 @@ async function step(page: Page, direction: 'Earlier' | 'Later', phone: boolean) 
 }
 
 async function open(page: Page, path = '/', item?: Item) {
-  const response = await page.goto(item ? `${path}?news=${encodeURIComponent(item.id)}` : path);
+  const address = item ? `${path}?news=${encodeURIComponent(item.id)}`
+    : exploreDate[path] ? `${path.replace(/\/?$/, '/')}?date=${exploreDate[path]}` : path;
+  const response = await page.goto(address);
   expect(response?.ok(), `${path} should load`).toBe(true);
 }
 
