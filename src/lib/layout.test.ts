@@ -666,9 +666,10 @@ test("worker layouts match the original on sampled days in every data set", asyn
   const { Worker } = await import("node:worker_threads");
   const workerUrl = new URL("../scripts/layout.worker.ts", import.meta.url).href;
   const firstDayTotals: Record<DatasetId, number> = {
-    // The six visible AI companies' 2021 year-end values sum to 6377.97; their 2022
-    // year-end values sum to 4075.11. November 30 is 334 days into that 365-day span.
-    ai: 6377.97 + ((4075.11 - 6377.97) * 334) / 365,
+    // The other six visible AI companies total 6377.97 at 2021 year-end and 4075.11 at
+    // 2022 year-end. November 30 is 334 days into that 365-day span. For OpenAI, it is
+    // 579 days into the 728-day span from 2021-04-30 ($14bn) to 2023-04-28 ($29bn).
+    ai: 6377.97 + ((4075.11 - 6377.97) * 334) / 365 + (14 + ((29 - 14) * 579) / 728),
     dotcom: 35.475 + 8.957 + 26.468 + 12.614 + 41.228 + 1.236 + 4.663,
     housing: 0, // No companies are visible on the first day.
   };
