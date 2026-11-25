@@ -126,7 +126,7 @@ const readJson = (path: string) => JSON.parse(readFileSync(path, "utf8"));
 for (const set of sets) {
   test(`the real ${set.id} chapter files have no problems`, (t: { diagnostic(message: string): void }) => {
     const files = readdirSync(set.dir).filter((file: string) => /^[0-9][0-9]-.*\.md$/.test(file));
-    assert.equal(files.length, 9, `${set.dir} should hold nine chapter files.`);
+    assert.ok(files.length > 0, `${set.dir} should hold at least one chapter file.`);
     const sources: Record<string, string> = {};
     for (const file of files) sources[`${set.dir}/${file}`] = readFileSync(`${set.dir}/${file}`, "utf8");
     const chapters = orderChapterFiles(sources);

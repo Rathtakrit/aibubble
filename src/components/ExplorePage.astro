@@ -150,7 +150,6 @@ if (STORY_ENABLED) {
   }
 }
 const firstChapter = chapters[0];
-const chapterStatus = "Chapters written with AI from the listed sources and checked by the owner.";
 // The browser needs the chapter text too, so the page carries it as data rather than asking for
 // the files again.
 const chaptersJson = chapters.length > 0 ? JSON.stringify(chapters).replace(/</g, "\\u003c") : "";
@@ -261,7 +260,6 @@ const ariaFor = (itemTitle: string, date: string) => `${dayLabel(date)}, ${itemT
                   ))}
                 </div>
                 <p class="story-sources" data-story-sources hidden></p>
-                <p class="status">{chapterStatus}</p>
                 <p class="players-line" data-story-look hidden={!firstChapter.look}>
                   In the picture: <strong data-bind="story-look">{firstChapter.look}</strong>
                 </p>
@@ -277,8 +275,8 @@ const ariaFor = (itemTitle: string, date: string) => `${dayLabel(date)}, ${itemT
                   <button type="button" class="read-story" data-action="story-open" aria-expanded="false">
                     Read the story
                   </button>
-                  <button type="button" class="read-story" data-action="story-explore">
-                    Explore day by day
+                  <button type="button" class="read-story" data-action="story-explore" aria-label="Explore day by day" title="Explore day by day">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="m16 8-2 6-6 2 2-6z"></path></svg>
                   </button>
                 </div>
               </div>
@@ -349,17 +347,6 @@ const ariaFor = (itemTitle: string, date: string) => `${dayLabel(date)}, ${itemT
       </main>
 
       <section class="timeline" aria-label="Timeline">
-        <div class="timeline-overview">
-          <span class="timeline-overview-title">Whole story</span>
-          <div class="timeline-strip" data-timeline-strip>
-            <div class="timeline-strip-line" aria-hidden="true"></div>
-            <div class="timeline-strip-dots" data-strip-dots aria-hidden="true"></div>
-            <div class="timeline-strip-bracket" data-strip-bracket aria-hidden="true"></div>
-            <div class="timeline-strip-current" data-strip-current aria-hidden="true"></div>
-            <input type="range" min="0" max="10000" step="1" value="10000" data-strip-slider aria-label="Position in the whole timeline" />
-            <div class="timeline-strip-years" data-strip-years aria-hidden="true"></div>
-          </div>
-        </div>
         <div class="timeline-row">
         <div class="timeline-inner" data-timeline>
           <div class="timeline-axis" aria-hidden="true"></div>
@@ -507,13 +494,28 @@ const ariaFor = (itemTitle: string, date: string) => `${dayLabel(date)}, ${itemT
 
         </div>
         <div class="timeline-footer">
-          <span data-timeline-summary></span>
+          <div class="timeline-summary">
+            <div class="timeline-strip" data-timeline-strip>
+              <div class="timeline-strip-line" aria-hidden="true"></div>
+              <div class="timeline-strip-dots" data-strip-dots aria-hidden="true"></div>
+              <div class="timeline-strip-bracket" data-strip-bracket aria-hidden="true"></div>
+              <div class="timeline-strip-current" data-strip-current aria-hidden="true"></div>
+              <input type="range" min="0" max="10000" step="1" value="10000" data-strip-slider aria-label="Position in the whole timeline" />
+              <div class="timeline-strip-ends" aria-hidden="true"><span>{firstEnd}</span><span>{lastEnd}</span></div>
+            </div>
+            <span data-timeline-summary></span>
+          </div>
           <div class="timeline-controls">
-            <button type="button" data-action="timeline-start">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.3-5.6M4 4v4h4"></path></svg>First day
+            {STORY_ENABLED && (
+              <button type="button" data-action="timeline-story" aria-label="Back to the story" title="Back to the story">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 6v14m0-14c-3-2-6-2-10-2v14c4 0 7 0 10 2 3-2 6-2 10-2V4c-4 0-7 0-10 2z"></path></svg>
+              </button>
+            )}
+            <button type="button" data-action="timeline-start" aria-label="First day" title="First day">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.3-5.6M4 4v4h4"></path></svg>
             </button>
-            <button type="button" data-action="timeline-zoom" aria-pressed="true">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"></path></svg><span data-timeline-zoom-label>Whole timeline</span>
+            <button type="button" data-action="timeline-zoom" aria-pressed="true" aria-label="Whole timeline" title="Whole timeline">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"></path></svg>
             </button>
           </div>
         </div>
@@ -632,7 +634,6 @@ const ariaFor = (itemTitle: string, date: string) => `${dayLabel(date)}, ${itemT
                 ))}
               </div>
               <p class="story-sources" data-story-sources hidden></p>
-              <p class="status">{chapterStatus}</p>
               <p class="players-line" data-story-look hidden={!firstChapter.look}>
                 In the picture: <strong data-bind="story-look">{firstChapter.look}</strong>
               </p>
@@ -648,8 +649,8 @@ const ariaFor = (itemTitle: string, date: string) => `${dayLabel(date)}, ${itemT
                 <button type="button" class="read-story" data-action="story-open" aria-expanded="false">
                   Read the story
                 </button>
-                <button type="button" class="read-story" data-action="story-explore">
-                  Explore day by day
+                <button type="button" class="read-story" data-action="story-explore" aria-label="Explore day by day" title="Explore day by day">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="m16 8-2 6-6 2 2-6z"></path></svg>
                 </button>
               </div>
             </div>

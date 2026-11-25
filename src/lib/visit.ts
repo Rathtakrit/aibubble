@@ -1,6 +1,5 @@
-// Each tab keeps its place for the rest of the browser tab's visit: the address it was last on,
-// and the things that have no address of their own (Explore's zoom, Compare's picks). Every page
-// stores one entry per page in sessionStorage, and its tab links point back at those addresses.
+// Each page saves its latest address and the things that have no address of their own
+// (Explore's zoom, Compare's picks) in sessionStorage for the rest of the browser tab's visit.
 // Storage can be blocked (a private window), so every read and write is guarded: with no storage
 // the pages simply start as they do on a first visit.
 
@@ -83,12 +82,12 @@ export function writeVisit(visit: Visit, storage: VisitStorage | null): void {
   }
 }
 
-// A page's tab links lead back to where the reader left each one. Call it with the links that
-// stand for a page itself (a link with a query of its own, like Story's ?chapter=1, says what it
-// means and is not one); it can be called again whenever a page's saved place changes.
+// Only Compare's tab leads back to its saved place. A bubble's plain address opens chapter 1.
+// Call with the bare tab links; subsequent calls can update the restored Compare address.
 export function restoreTabLinks(links: Iterable<VisitLink>, storage: VisitStorage | null): void {
   if (!storage) return;
   for (const link of links) {
+    if (pageOf(link.pathname) !== "/compare") continue;
     const saved = readVisit(link.pathname, storage);
     if (saved) link.href = saved.address;
   }

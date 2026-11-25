@@ -917,6 +917,11 @@ body[data-mode="story"] .story-dot {
   color: var(--accent-dark);
 }
 
+.read-story[data-action="story-explore"] {
+  min-width: 44px;
+  justify-content: center;
+}
+
 .story-links {
   display: flex;
   flex-wrap: wrap;
@@ -927,12 +932,13 @@ body[data-mode="story"] .story-dot {
   margin: 0;
   color: var(--ink-2);
   font-size: 13px;
+  line-height: 14px;
   overflow-wrap: anywhere;
 }
 
-/* Keep the source hit boxes clear of the chapter text and the note below. */
+/* Keep the 44px link boxes without letting them set the wrapped line height. */
 .story-sources .source {
-  margin-block: 0;
+  margin-block: calc((1lh - 44px) / 2);
 }
 
 /* The list of every chapter, past and next, as the design shows it: one row each, the chapter
@@ -1086,10 +1092,6 @@ body[data-mode="story"] .sheet .mode-switch {
   margin-bottom: 8px;
 }
 
-.sheet [data-block="story"] .status {
-  margin-top: 6px;
-}
-
 .sheet [data-block="story"] .sheet-buttons,
 .sheet .story-links {
   margin-top: 8px;
@@ -1156,38 +1158,29 @@ body[data-mode="story"] .sheet .mode-switch {
   margin: 0 auto;
 }
 
-.timeline-overview, .timeline-footer {
+.timeline-footer {
   max-width: 1360px;
   margin: 0 auto;
   display: flex;
   align-items: center;
-  gap: 16px;
+  justify-content: space-between;
+  gap: 24px;
   color: var(--ink-2);
   font-size: 13px;
 }
 
-.timeline-overview { margin-bottom: 4px; }
-.timeline-overview-title {
-  flex: 0 0 auto;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-}
-.timeline-strip { position: relative; flex: 1; height: 56px; min-width: 0; }
-.timeline-strip-line { position: absolute; top: 21px; width: 100%; border-top: 2px solid #57534B; }
-.timeline-strip-dots span { position: absolute; top: 19.5px; width: 5px; height: 5px; border-radius: 50%; background: #57534B; transform: translateX(-50%); }
-.timeline-strip-bracket { position: absolute; top: 10px; height: 24px; box-sizing: border-box; border: 1.5px solid #1E3A8A; border-radius: 3px; background: rgb(30 58 138 / 12%); }
-.timeline-strip-current { position: absolute; top: 8px; height: 28px; border-left: 2px solid #B42318; }
+.timeline-summary { white-space: nowrap; }
+.timeline-strip { position: relative; width: 240px; height: 44px; }
+.timeline-strip-line { position: absolute; top: 14px; width: 100%; border-top: 2px solid #57534B; }
+.timeline-strip-dots span { position: absolute; top: 12.5px; width: 5px; height: 5px; border-radius: 50%; background: #57534B; transform: translateX(-50%); }
+.timeline-strip-bracket { position: absolute; top: 2px; height: 24px; box-sizing: border-box; border: 1.5px solid #1E3A8A; border-radius: 3px; background: rgb(30 58 138 / 12%); }
+.timeline-strip-current { position: absolute; top: 0; height: 28px; border-left: 2px solid #B42318; }
 .timeline-strip input { position: absolute; inset: 0; width: 100%; height: 44px; margin: 0; opacity: 0; cursor: pointer; }
 .timeline-strip:focus-within { outline: 2px solid #1E3A8A; outline-offset: 3px; }
-.timeline-strip-years span { position: absolute; top: 36px; font-size: 12px; line-height: 14px; transform: translateX(-50%); white-space: nowrap; }
-.timeline-strip-years span::before { content: ""; position: absolute; top: -10px; left: 50%; height: 5px; border-left: 1px solid #CFC5B2; }
-.timeline-strip-years span:first-child { transform: none; }
-.timeline-strip-years span:last-child { transform: translateX(-100%); }
-.timeline-footer { justify-content: space-between; gap: 24px; }
+.timeline-strip-ends { position: absolute; inset: 28px 0 auto; display: flex; justify-content: space-between; font-size: 12px; line-height: 14px; pointer-events: none; }
 .timeline-controls { display: flex; gap: 8px; flex-shrink: 0; }
-.timeline-controls button { min-height: 44px; padding: 0 16px; border: 1px solid var(--ink); background: transparent; color: var(--ink); border-radius: 999px; font: 500 14px "Instrument Sans", sans-serif; display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.timeline-controls button { min-width: 44px; min-height: 44px; padding: 0; border: 1px solid var(--ink); background: transparent; color: var(--ink); border-radius: 999px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+body[data-mode="story"] .timeline-controls [data-action="timeline-story"] { display: none; }
 .timeline-controls [data-action="timeline-zoom"] { background: var(--ink); color: var(--paper); }
 .timeline-controls button:disabled { opacity: .45; cursor: default; }
 .timeline-current { position: absolute; top: 28px; height: 36px; border-left: 2px solid var(--ink); pointer-events: none; }
@@ -1337,7 +1330,7 @@ body[data-mode="explore"][data-timeline-zoomed="true"] .timeline-label[data-time
   }
 
   .timeline-row { padding-inline: 22px; }
-  .sheet .timeline-overview { display: none; }
+  .sheet .timeline-strip { display: none; }
   .sheet .timeline-dot { pointer-events: none; }
   .timeline-footer { flex-wrap: wrap; gap: 4px 16px; }
   .timeline-controls { margin-left: auto; }
@@ -1354,7 +1347,7 @@ body[data-mode="explore"][data-timeline-zoomed="true"] .timeline-label[data-time
 
   .layout-desktop {
     --timeline-lower: 0px;
-    --timeline-extra: 112px;
+    --timeline-extra: 72px;
     display: flex;
     flex-direction: column;
     min-height: 100vh;
@@ -1511,13 +1504,6 @@ body[data-mode="explore"][data-timeline-zoomed="true"] .timeline-label[data-time
     margin-top: 4px;
   }
 
-  /* The story's sample note starts at the column's left edge, as every other line there does.
-     The timeline's own status line keeps its wide band and its centred margins, which would
-     centre the note too if it kept them inside the column. */
-  .story-column [data-block="story"] .status {
-    margin: 10px 0 0;
-  }
-
   /* Keep room for two rows even in short windows, and let the remaining space scroll. */
   .story-column .company-news {
     max-height: max(98px, min(32vh, 100vh - 700px));
@@ -1627,13 +1613,7 @@ body[data-mode="explore"][data-timeline-zoomed="true"] .timeline-label[data-time
    dropping labels that cannot fit in the tighter bands rather than clipping them. */
 @media (min-width: 900px) and (max-height: 760px) {
   .timeline { padding-top: 6px; padding-bottom: 6px; }
-  .timeline-overview { margin-bottom: 0; }
-  .timeline-strip { height: 44px; }
-  .timeline-strip-line { top: 14px; }
-  .timeline-strip-dots span { top: 12.5px; }
-  .timeline-strip-bracket { top: 2px; }
-  .timeline-strip-current { top: 0; }
-  .timeline-strip-years span { top: 28px; }
+  .layout-desktop { --timeline-extra: 88px; }
   .timeline-inner {
     --timeline-line: 48px;
     --label-near-above: 34px;

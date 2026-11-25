@@ -159,26 +159,12 @@ function mountTimeline(): void {
 }
 
 const timelineEvents = ordered;
-const stripFirst = isPast ? FIRST_DAY : "2017-06-12";
-const stripLast = LAST_DAY;
-const strip = timelineStrip(stripFirst, stripLast);
+const strip = timelineStrip(FIRST_DAY, LAST_DAY);
 const stripDots = document.querySelector<HTMLElement>("[data-strip-dots]");
 for (const item of timelineEvents) {
   const dot = document.createElement("span");
   dot.style.left = `${strip.percentOf(item.date)}%`;
   stripDots?.append(dot);
-}
-const stripYears = document.querySelector<HTMLElement>("[data-strip-years]");
-const yearTicks = [{ date: stripFirst, label: new Intl.DateTimeFormat("en-GB", { month: "short", year: "numeric", timeZone: "UTC" }).format(new Date(`${stripFirst}T00:00:00Z`)) }];
-for (let year = Number(stripFirst.slice(0, 4)) + 2; year < Number(stripLast.slice(0, 4)); year += 2) {
-  yearTicks.push({ date: `${year}-01-01`, label: String(year) });
-}
-yearTicks.push({ date: stripLast, label: dayLabel(stripLast) });
-for (const tick of yearTicks) {
-  const label = document.createElement("span");
-  label.style.left = `${strip.percentOf(tick.date)}%`;
-  label.textContent = tick.label;
-  stripYears?.append(label);
 }
 
 function timelineHandleAt(window: TimelineWindow): number {
@@ -261,14 +247,12 @@ function updateTimeline(immediate = false): void {
   const anchor = (itemId === null ? null : byId.get(itemId)) ?? latestOnOrBefore(ordered, day);
   for (const button of document.querySelectorAll<HTMLButtonElement>('[data-action="timeline-zoom"]')) {
     button.setAttribute("aria-pressed", String(timelineZoomed));
-    const label = button.querySelector<HTMLElement>("[data-timeline-zoom-label]");
-    if (label) {
-      label.textContent = timelineZoomed ? "Whole timeline" : "Zoom in";
-      button.setAttribute("aria-label", label.textContent);
-      button.querySelector("path")?.setAttribute("d", timelineZoomed
-        ? "M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"
-        : "M4 9h5V4M20 9h-5V4M4 15h5v5M20 15h-5v5");
-    }
+    const label = timelineZoomed ? "Whole timeline" : "Zoom in";
+    button.setAttribute("aria-label", label);
+    button.title = label;
+    button.querySelector("path")?.setAttribute("d", timelineZoomed
+      ? "M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"
+      : "M4 9h5V4M20 9h-5V4M4 15h5v5M20 15h-5v5");
   }
   glideTimeline(anchor?.id ?? timelineEvents[0]?.id ?? "", immediate);
 }
@@ -675,12 +659,11 @@ function writeAddressSoon(): void {
   addressTimer = setTimeout(writeAddress, 200);
 }
 
-// Tab links carry the saved address back to the page; a plain visit does not read it as a destination.
+// Only Compare's tab link can carry a saved address. Bubble tabs open chapter 1.
 const visitStorage = tabStorage();
-const visitLinks = Array.from(document.querySelectorAll<HTMLAnchorElement>(".site-nav a[href], nav.mode-switch a[href]"))
-  .filter((link) => link.search === "" && link.hash === "");
+const compareLinks = document.querySelectorAll<HTMLAnchorElement>('.site-nav a[href="/compare/"], nav.mode-switch a[href="/compare/"]');
 
-// The page's saved place, written only when it changes; the tab links then lead back to it.
+// The page's saved place, written only when it changes.
 let savedState = "";
 
 function saveVisit(): void {
@@ -689,7 +672,7 @@ function saveVisit(): void {
   if (value === savedState) return;
   savedState = value;
   writeVisit(visit, visitStorage);
-  restoreTabLinks(visitLinks, visitStorage);
+  restoreTabLinks(compareLinks, visitStorage);
 }
 
 // A chapter the reader can see: focus it, skipping the copy the other layout keeps hidden.
@@ -839,6 +822,9 @@ document.addEventListener("click", (event) => {
     timelineZoomed = !timelineZoomed;
     updateTimeline();
     return;
+  } else if (action === "timeline-story") {
+    goToChapter(0);
+    focusVisible('[data-bind="story-title"]');
   } else if (action === "timeline-start") {
     const first = timelineEvents[0];
     if (first) selectItem(first.id);
@@ -1201,9 +1187,8 @@ for (const svg of document.querySelectorAll<SVGSVGElement>("[data-bubble]")) {
   });
 }
 
-// The tab links lead to each page's saved place, and the address is read once, then the page is
-// drawn. A chapter opens Story on its day; without one, ?news=, ?company= or ?date= picks the
-// view. Otherwise every bubble opens its first chapter.
+// The address is read once, then the page is drawn. A chapter opens Story on its day; without
+// one, ?news=, ?company= or ?date= picks the view. Otherwise every bubble opens its first chapter.
 function readAddress(): void {
   const params = new URLSearchParams(window.location.search);
   const exploreAddress = params.has("news") || params.has("company") || params.has("date");
@@ -1256,7 +1241,7 @@ function readAddress(): void {
   }
 }
 
-restoreTabLinks(visitLinks, visitStorage);
+restoreTabLinks(compareLinks, visitStorage);
 const savedVisit = readVisit(window.location.pathname, visitStorage);
 readAddress();
 // Back in this tab, the saved address brings back its zoom as well. An address of its own, such

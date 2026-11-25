@@ -4,6 +4,7 @@ import dotcomNews from '../data/past/dotcom/news.json' with { type: 'json' };
 import dotcomMeta from '../data/past/dotcom/meta.json' with { type: 'json' };
 import housingNews from '../data/past/housing/news.json' with { type: 'json' };
 import housingMeta from '../data/past/housing/meta.json' with { type: 'json' };
+import { FIRST_CHAPTER_DAY } from '../src/lib/story.ts';
 
 type Item = { id: string; date: string; title: string; kind: string; label?: string };
 type Box = NonNullable<Awaited<ReturnType<Locator['boundingBox']>>>;
@@ -43,7 +44,7 @@ function ordered(items: Item[], start: string) {
     .sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id));
 }
 
-const ai = ordered(aiNews.items, '2022-11-30'); // Start of the AI money timeline.
+const ai = ordered(aiNews.items, FIRST_CHAPTER_DAY);
 const dotcom = ordered(dotcomNews.items, dotcomMeta.first_day);
 const housing = ordered(housingNews.items, housingMeta.first_day);
 const middle = ai[Math.floor(ai.length / 2)];
@@ -335,6 +336,24 @@ test('Earlier / Later', async ({ page, isMobile }) => {
   }
 });
 
+test('The AI footer minimap starts on the first day and supports keyboard scrubbing', async ({ page, isMobile }) => {
+  await open(page, '/', middle);
+  const strip = page.locator('.timeline-footer [data-timeline-strip]');
+  if (isMobile) {
+    await expect(strip).toBeHidden();
+    return;
+  }
+  const ends = strip.locator('.timeline-strip-ends span');
+  await expect(ends).toHaveCount(2);
+  const month = new Intl.DateTimeFormat('en-GB', { month: 'short', year: 'numeric', timeZone: 'UTC' });
+  await expect(ends.first()).toHaveText(month.format(new Date(FIRST_CHAPTER_DAY)));
+  const scrub = strip.getByRole('slider', { name: 'Position in the whole timeline' });
+  await scrub.press('Home');
+  await expect(daySlider(page)).toHaveAttribute('aria-valuetext', dateText(ai[0].date));
+  await scrub.press('End');
+  await expect(daySlider(page)).toHaveAttribute('aria-valuetext', dateText(ai.at(-1)!.date));
+});
+
 test('Line keeps its width', async ({ page, isMobile }) => {
   await open(page, '/past/housing');
   const strip = page.locator('[data-strip-slider]');
@@ -414,7 +433,7 @@ test('Phone only: bottom sheet, tap boxes and smooth handle', async ({ page, isM
   await expect.soft(region, 'The bottom sheet should contain a named Timeline region').toBeVisible();
   await expect(region.getByText('Whole story', { exact: true })).toBeHidden();
   const buttons = region.getByRole('button');
-  await expect(buttons).toHaveCount(2);
+  await expect(buttons).toHaveCount(3);
   for (const button of [...await buttons.all(), await step(page, 'Earlier', true), await step(page, 'Later', true)]) {
     const rect = await box(button, 'Phone timeline tap target');
     const label = await button.getAttribute('aria-label') ?? await button.innerText();
