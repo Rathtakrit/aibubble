@@ -1,6 +1,6 @@
 # How money moves in the AI boom, 30 November 2022 to November 2026
 
-Research base for a short story of at most nine chapters. Written 24 November 2026. Every number below was
+Research base for a short story of at most ten chapters. Written 24 November 2026. Every number below was
 taken from a page opened during this run; the page, a short quote and a second link (where one was found) are in
 the fact table in Section 3. This is a description of deals that were announced or reported, not advice and not a
 forecast.
@@ -97,7 +97,7 @@ again in the last bullet of Section 5. Each row links to its page; the Sources l
 | F24. Nvidia's market value | $5tn, the first company to reach it | 29 Oct 2025 | [BBC, 29 Oct 2025](https://www.bbc.co.uk/news/articles/cp8e970vn5vo) | "first company in the world to reach a market value of $5tn" | none found |
 | F25. The DeepSeek sell-off | Nvidia lost $600bn in a day; Nasdaq fell 3%; Oracle fell 14% | 27 Jan 2025 | [Guardian, 28 Jan 2025](https://www.theguardian.com/technology/2025/jan/28/deepseek-selloff) | "wiped $600bn in Nvidia's market value"; "Nasdaq index to drop 3%"; "Oracle stock dropped 14%" | none found |
 | F26. The July 2026 AI sell-off | Kospi fell 11.5%; SK Hynix and Samsung fell more than 10%; Nvidia fell 5% and closed below $200; $250bn of Nvidia–OpenAI Ohio talks | 28 Jul 2026 | [Guardian, 28 Jul 2026](https://www.theguardian.com/business/2026/jul/28/ai-sell-off-chip-stocks-sk-hynix-samsung) | "Kospi share index down by 11.5%"; "SK Hynix and Samsung Electronics fell by more than 10%"; "Nvidia was in discussions with OpenAI about providing $250bn"; "Nvidia fell 5% and closed the session below the $200-per-share mark" | none found |
-| F27. The November 2026 rout | more than $3.2tn wiped from the US stock market; Nasdaq fell 5.5%; S&P 500 fell 4.4%; investors bet on an AI slowdown after the US midterm elections | 5 Nov 2026 | [Guardian, 6 Nov 2026](https://www.theguardian.com/technology/2026/nov/06/us-tech-stock-ai-bubble-bursting-market-meltdown-explainer) | "More than $3.2tn ... was wiped from the value of the US stock market on Thursday"; "Nasdaq fell by 5.5% and the blue-chip S&P 500 fell by 4.4%"; "as investors bet on an AI slowdown after the US midterm elections"; "some analysts said had become increasingly detached from reality" | [AP, 5 Nov 2026](https://apnews.com/article/stocks-markets-ai-midterm-oil-trump-7ee9c212805aa5e70cf34d25aab7a36e) (the 5.5% and 4.4% only: "The S&P 500 fell 4.4% ... while the Nasdaq composite tumbled 5.5%"); no openable second source found for the $3.2tn total (`data/news.json` says "$2.5tn+"; Section 5) |
+| F27. The November 2026 rout | more than $2.5tn lost from US shares (`data/news.json` figure; CNN says "roughly $2.5 trillion"; the Guardian says "$3.2tn"); Nasdaq fell 5.5%; S&P 500 fell 4.4%; investors bet on an AI slowdown after the US midterm elections | 5 Nov 2026 | [Guardian, 6 Nov 2026](https://www.theguardian.com/technology/2026/nov/06/us-tech-stock-ai-bubble-bursting-market-meltdown-explainer) | "Nasdaq fell by 5.5% and the blue-chip S&P 500 fell by 4.4%"; "as investors bet on an AI slowdown after the US midterm elections"; the page's dollar total is "More than $3.2tn" | [CNN, 5 Nov 2026](https://www.cnn.com/2026/11/05/investing/tech-heavy-nasdaq-plunges) ("wiped out roughly $2.5 trillion in market value Thursday"); [AP, 5 Nov 2026](https://apnews.com/article/stocks-markets-ai-midterm-oil-trump-7ee9c212805aa5e70cf34d25aab7a36e) (5.5% and 4.4%); `data/news.json` labels the day "$2.5tn+" and gives the Guardian URL. No openable second source was found for the $3.2tn total. |
 | F28. Anthropic's IPO and concurrent placement | $93.5bn gross; $91.6bn to Anthropic; 1.127bn shares at $83; $26bn placement | 20 Nov 2026 | [Anthropic, 20 Nov 2026](https://www.anthropic.com/news/ipo-close) | "aggregate gross proceeds ... were approximately $93.5 billion"; "1,127,000,000 shares ... at a public offering price of $83.00 per share"; "313,253,007 shares of Class N common stock ... for an aggregate purchase price of approximately $26.0 billion" | none found |
 | F29. Stargate | $500bn intended over four years; $100bn immediate | 21 Jan 2025 | [SoftBank, 22 Jan 2025](https://group.softbank/en/news/press/20250122) | "invest $500 billion over the next four years building new AI infrastructure for OpenAI"; "begin deploying $100 billion immediately" | [TechCrunch, 21 Jan 2025](https://techcrunch.com/2025/01/21/openai-teams-up-with-softbank-and-oracle-on-50b-data-center-project/) |
 | F30. xAI's Series E | $20bn | 6 Jan 2026 | [xAI, 6 Jan 2026](https://x.ai/news/series-e) | "$20 billion" | none found |
@@ -115,10 +115,14 @@ again in the last bullet of Section 5. Each row links to its page; the Sources l
 | F42. Microsoft's planned capital spending for fiscal 2025 | $80bn | 3 Jan 2025 | [TechCrunch, 3 Jan 2025](https://techcrunch.com/2025/01/03/microsoft-to-spend-80-billion-in-fy25-on-data-centers-for-ai/) | "Microsoft has earmarked $80 billion in fiscal 2025 to build data centers designed to handle artificial intelligence workloads"; "The tech giant's 2025 fiscal year ends in June." | none found |
 | F43. Blue Owl Capital's business | no number | undated page, opened 24 Nov 2026 | [Blue Owl, home page](https://www.blueowl.com/) | "At Blue Owl, we are doing more than just investing in private markets"; "we are shaping the future of alternatives" | [Meta, 21 Oct 2025](https://about.fb.com/news/2025/10/meta-blue-owl-capital-develop-hyperion-data-center/) ("Blue Owl Capital complements this joint venture with its ability to deliver substantial capital at scale, along with deep expertise in digital infrastructure investment") |
 | F44. Why OpenAI's revenue matters | no number | 8 Oct 2026 | [TechCrunch, 8 Oct 2026](https://techcrunch.com/2026/10/08/openais-revenue-is-reportedly-20-billion-less-than-previously-projected/) | "The issue of OpenAI's revenue has troubled the company, as it attempts to justify the gargantuan investments being made on its behalf" | none found |
+| F45. OpenAI's board fires Sam Altman | fired on Friday 17 November 2023; the vast majority of 770 employees threatened to quit unless Altman and Brockman returned | 17 Nov 2023 | [Guardian, 25 Nov 2023](https://www.theguardian.com/technology/2023/nov/25/how-crisis-openai-sam-altman-unfolded) | "OpenAI's board announced on Friday 17 November that it had sacked the 38-year-old"; "The vast majority of OpenAI's 770 employees including Murati signed a letter addressed to the board threatening to quit en masse" | [BBC, 22 Nov 2023](https://www.bbc.com/news/business-67494165) ("staff threatening mass resignations unless he was reinstated") |
+| F46. Microsoft hires Altman and Brockman | hired for a new AI research team on Monday 20 November 2023 | 20 Nov 2023 | [Guardian, 22 Nov 2023](https://www.theguardian.com/technology/2023/nov/22/sam-altman-openai-ceo-return-board-chatgpt) | "On Monday it hired Altman and Greg Brockman, who quit his role as OpenAI's president on Friday after his colleague's sacking" | [Guardian, 20 Nov 2023](https://www.theguardian.com/technology/2023/nov/20/openai-staff-walkout-sam-altman-board) ("Microsoft had hired the duo to head a new AI research unit") |
+| F47. Altman returns after five days | attempted board coup lasted five days; employees threatened to defect to Microsoft; Altman was fired on Friday | 22 Nov 2023 | [The Verge, 22 Nov 2023](https://www.theverge.com/2023/11/22/23967223/sam-altman-returns-ceo-open-ai) | "an attempted coup by OpenAI's board that lasted five days"; "employees of OpenAI revolted, threatening to defect to Microsoft with Altman and co-founder Brockman"; "initially fired Altman on Friday" | [BBC, 22 Nov 2023](https://www.bbc.com/news/business-67494165) ("will return as boss just days after he was fired by the board") |
+| F48. BBC summary of the firing and return | return days after the firing; staff threatened mass resignations; new board members appointed | 22 Nov 2023 | [BBC, 22 Nov 2023](https://www.bbc.com/news/business-67494165) | "OpenAI co-founder Sam Altman will return as boss just days after he was fired by the board"; "Mr Altman's sacking on Friday astonished industry watchers and led to staff threatening mass resignations unless he was reinstated"; "The agreement 'in principle' involves new board members being appointed" | [Guardian, 22 Nov 2023](https://www.theguardian.com/technology/2023/nov/22/sam-altman-openai-ceo-return-board-chatgpt) |
 
 ## 4. Turning points
 
-Nine dated moments, in order. Company ids are from `data/companies.json`; "not in data" marks an organisation
+Nine dated money moments, in order. Company ids are from `data/companies.json`; "not in data" marks an organisation
 that has no id. Each quote is from a page published at the time or shortly after the event.
 
 **1. 25 September 2023 — Amazon puts up to $4bn into Anthropic and makes AWS its main cloud.**
@@ -162,12 +166,12 @@ an OpenAI data centre in Ohio. The Guardian named "circular funding" as a worry.
 growing jittery about the 'circular funding' at the heart of the AI industry, through which artificial intelligence
 firms finance one another."
 
-**8. 5 November 2026 — more than $3.2tn is wiped from the US stock market in one day.**
+**8. 5 November 2026 — US shares lose more than $2.5tn in one day.**
 Companies: `nvidia`, `alphabet`, `microsoft`, `meta`, `amazon`. What changed: the sell-off moved from
 chip stocks to the whole US market after the midterm elections, with the Nasdaq down 5.5% and the S&P 500 down
-4.4%. Quote: "More than $3.2tn (£2.4tn) was wiped from the value of the US stock market on Thursday – bigger than
-the annual output of the Canadian economy – after the tech-heavy Nasdaq fell by 5.5% and the blue-chip S&P 500
-fell by 4.4%."
+4.4%. `data/news.json` gives the day as "$2.5tn+" and points to the Guardian explainer, whose text says "more than
+$3.2tn"; CNN says "roughly $2.5 trillion". The chapter uses the news.json figure. Quote: "Global markets tumbled
+after a Wall Street rout wiped out roughly $2.5 trillion in market value Thursday" (CNN, 5 Nov 2026).
 
 **9. 20 November 2026 — Anthropic closes its IPO and a $26bn placement to its suppliers and partners.**
 Companies: `anthropic`, `amd`, `broadcom`, `alphabet`, `microsoft`, `nvidia`, `tsmc`; Micron is inside `g-chips`.
@@ -185,14 +189,14 @@ of which approximately $91.6 billion was received by Anthropic."
 - **Google's 2023 Anthropic investment is reported, not confirmed by the companies.** TechCrunch's 27 October
   2023 report attributes the figure to the Wall Street Journal and says it had asked Anthropic for comment; the
   $500m now / $1.5bn later split comes from that report. `data/deals.json` records it as $2bn "up to".
-- **The size of the 5 November 2026 wipeout differs by source.** The Guardian says "more than $3.2tn" was wiped
-  from the US stock market. `data/news.json` labels the same day "$2.5tn+ wiped as AI stocks rout". The two may be
-  measuring different things (the whole US market against AI stocks), but the opened pages do not reconcile them.
-  This draft uses the Guardian figure only in the turning-point entry and flags the difference here. The FT
-  headline also says "$3.2tn" but the FT page was blocked in this run. AP (5 Nov 2026) confirms the S&P 500 fell
-  4.4% and the Nasdaq composite 5.5% but gives no dollar total. Bloomberg's 5 Nov live coverage puts the Nasdaq
-  100's loss at $2.3tn. **Could not source:** the $3.2tn whole-market total has no openable second source in this
-  run; it rests on the Guardian alone.
+- **The size of the 5 November 2026 wipeout differs by source.** `data/news.json` labels the day "$2.5tn+" and
+  points to the Guardian explainer, whose text says "more than $3.2tn" was wiped from the US stock market. CNN
+  says "roughly $2.5 trillion". The two may be measuring different things (the whole US market against AI stocks),
+  but the opened pages do not reconcile them. The chapter uses the news.json figure, more than $2.5tn, because no
+  second openable page states $3.2tn. The FT headline also says "$3.2tn" but the FT page was blocked in this run.
+  AP (5 Nov 2026) confirms the S&P 500 fell 4.4% and the Nasdaq composite 5.5% but gives no dollar total.
+  Bloomberg's 5 Nov live coverage puts the Nasdaq 100's loss at $2.3tn. **Could not source:** the $3.2tn
+  whole-market total has no openable second source in this run; it rests on the Guardian alone.
 - **The 20% OpenAI revenue share with Microsoft is not confirmed.** TechCrunch says OpenAI "reportedly" shares 20%
   of its revenue with Microsoft and that neither company has publicly confirmed the percentage. This draft
   therefore uses the reported $10bn of Microsoft revenue, not a 20% calculation.
@@ -313,6 +317,11 @@ opened during this run; the date is the publication or filing date.
 - "How major US stock indexes fared Thursday 11/5/2026", 5 Nov 2026 —
   https://apnews.com/article/wall-street-stocks-dow-nasdaq-afe254c608c3d1fe2ea792812ba9765a
 
+**CNN**
+
+- "Massive tech sell-off wipes $2.5 trillion from the stock market", 5 Nov 2026 —
+  https://www.cnn.com/2026/11/05/investing/tech-heavy-nasdaq-plunges
+
 **Bloomberg**
 
 - "OpenAI's Revenue Run Rate Nears $50 Billion, Less Than Reported", 8 Oct 2026 —
@@ -339,12 +348,19 @@ opened during this run; the date is the publication or filing date.
 - "Microsoft recorded $10 billion in revenue from OpenAI", 28 Oct 2026 —
   https://techcrunch.com/2026/10/28/microsoft-recorded-10-billion-in-revenue-from-openai/
 
+**The Verge**
+
+- "Sam Altman to return as CEO of OpenAI", 22 Nov 2023 —
+  https://www.theverge.com/2023/11/22/23967223/sam-altman-returns-ceo-open-ai
+
 **BBC**
 
 - "ChatGPT: New AI chatbot has everyone talking to it", 7 Dec 2022 —
   https://www.bbc.co.uk/news/technology-63861322
 - "Nvidia briefly worth $1 trillion thanks to AI boom", 30 May 2023 —
   https://www.bbc.co.uk/news/business-65757812
+- "Sam Altman: Ousted OpenAI boss to return days after being sacked", 22 Nov 2023 —
+  https://www.bbc.com/news/business-67494165
 - "Nvidia shares sink as Chinese AI app DeepSeek spooks US markets", 27 Jan 2025 —
   https://www.bbc.com/news/articles/c0qw7z2v1pgo
 - "Nvidia becomes world's first $5tn company", 29 Oct 2025 —
@@ -357,6 +373,10 @@ opened during this run; the date is the publication or filing date.
 
 **Guardian**
 
+- "Sam Altman to return as CEO of OpenAI", 22 Nov 2023 —
+  https://www.theguardian.com/technology/2023/nov/22/sam-altman-openai-ceo-return-board-chatgpt
+- "Sacking, revolt, return: how crisis at OpenAI over Sam Altman unfolded", 25 Nov 2023 —
+  https://www.theguardian.com/technology/2023/nov/25/how-crisis-openai-sam-altman-unfolded
 - "Tech billionaires lost almost $100bn in stock market selloff sparked by DeepSeek", 28 Jan 2025 —
   https://www.theguardian.com/technology/2025/jan/28/deepseek-selloff
 - "South Korean stock market at three-month low as AI sell-off intensifies", 28 Jul 2026 —
