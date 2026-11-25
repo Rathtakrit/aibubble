@@ -144,6 +144,8 @@ Dates are the date the page gives, not a date inferred from the file.
 | F48 | The fall in US home prices from the peak | about 30% | mid-2006 to mid-2009 | [Federal Reserve History, The Great Recession](https://www.federalreservehistory.org/essays/great-recession-of-200709) | "Home prices fell approximately 30 percent, on average, from their mid-2006 peak to mid-2009" | [Federal Reserve History, The Great Recession and Its Aftermath](https://www.federalreservehistory.org/essays/great-recession-and-its-aftermath) says "home prices fell by over a fifth on average across the nation from the first quarter of 2007 to the second quarter of 2011" |
 | F49 | Fannie Mae and Freddie Mac's combined loss | about $14bn in the past year | 7 Sep 2008 | [BBC, 7 Sep 2008](https://news.bbc.co.uk/2/mobile/business/7602992.stm) | "But they have made a combined loss of about $14bn in the past year and officials were worried that they would no longer be able to continue functioning if such losses continued." | [Treasury statement, 7 Sep 2008](https://home.treasury.gov/news/press-releases/hp1129) confirms the conservatorship that followed |
 
+| F50 | The rise in US home prices | more than doubled | 1998–2006 | [Federal Reserve History, The Great Recession and Its Aftermath](https://www.federalreservehistory.org/essays/great-recession-and-its-aftermath) | "Average home prices in the United States more than doubled between 1998 and 2006, the sharpest increase recorded in US history" | [S&P Dow Jones Indices, 29 Nov 2016](https://press.spglobal.com/2016-11-29-The-S-P-CoreLogic-Case-Shiller-National-Index-Reaches-New-High-As-Home-Price-Gains-Continue) gives the 20-city peak of 206.52 in July 2006 (F24) |
+
 
 ---
 

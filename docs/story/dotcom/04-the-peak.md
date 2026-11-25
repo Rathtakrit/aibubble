@@ -3,7 +3,7 @@ title: "The peak"
 date: 2000-03-10
 players: [microsoft, intel, cisco]
 links: []
-look: "The Nasdaq bubble rises to its record, then the Microsoft, Intel and Cisco bubbles shrink as the index falls 77%."
+look: "Three large technology bubbles, Microsoft, Intel and Cisco, sit alone on 10 March 2000 with no money lines lit."
 sources: [https://www.wired.com/2010/03/0310nasdaq-bust/, https://www.goldmansachs.com/our-firm/history/moments/2000-dot-com-bubble, https://www.bbc.com/news/business-32429413]
 ---
 The Nasdaq, the index that tracks technology share prices, closes at a record 5,048.62 on 10 March 2000. Microsoft is the most valuable stock on the index that day.

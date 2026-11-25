@@ -3,7 +3,7 @@ title: "The first trillion"
 date: 2023-05-30
 players: [nvidia, microsoft, openai]
 links: []
-look: "Nvidia's bubble swells until it is the largest on the page, while the labs that buy its chips stay small."
+look: "Nvidia's bubble is large, Microsoft's is larger, OpenAI's is small, and no money lines are lit."
 sources: [https://www.bbc.co.uk/news/business-65757812, https://www.cbsnews.com/news/nvidia-1-trillion-market-value-becoming-ai-first-chip-company-to-do-so/]
 ---
 The companies building models like ChatGPT need the same thing: Nvidia chips, in very large numbers.

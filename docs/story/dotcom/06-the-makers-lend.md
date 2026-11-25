@@ -8,4 +8,4 @@ sources: [https://www.eweek.com/news/vendor-financing-backfires/]
 ---
 Young carriers need gear and have little cash. The equipment makers lend them the money. Lucent promises Winstar up to $2 billion, Cisco lends ICG $180 million, and Lucent opens a $1.35 billion credit line, a promise to lend up to that much, to Leap Wireless.
 
-The order is booked now, the loan sits on the maker's books, and the customer is meant to repay out of the revenue the gear produces.
+The order is booked now, the loan sits on the maker's books, and the customer is meant to repay out of the revenue the gear produces, the money from sales before costs.

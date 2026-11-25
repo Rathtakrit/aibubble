@@ -97,7 +97,7 @@ again in the last bullet of Section 5. Each row links to its page; the Sources l
 | F24. Nvidia's market value | $5tn, the first company to reach it | 29 Oct 2025 | [BBC, 29 Oct 2025](https://www.bbc.co.uk/news/articles/cp8e970vn5vo) | "first company in the world to reach a market value of $5tn" | none found |
 | F25. The DeepSeek sell-off | Nvidia lost $600bn in a day; Nasdaq fell 3%; Oracle fell 14% | 27 Jan 2025 | [Guardian, 28 Jan 2025](https://www.theguardian.com/technology/2025/jan/28/deepseek-selloff) | "wiped $600bn in Nvidia's market value"; "Nasdaq index to drop 3%"; "Oracle stock dropped 14%" | none found |
 | F26. The July 2026 AI sell-off | Kospi fell 11.5%; SK Hynix and Samsung fell more than 10%; Nvidia fell 5% and closed below $200; $250bn of Nvidia–OpenAI Ohio talks | 28 Jul 2026 | [Guardian, 28 Jul 2026](https://www.theguardian.com/business/2026/jul/28/ai-sell-off-chip-stocks-sk-hynix-samsung) | "Kospi share index down by 11.5%"; "SK Hynix and Samsung Electronics fell by more than 10%"; "Nvidia was in discussions with OpenAI about providing $250bn"; "Nvidia fell 5% and closed the session below the $200-per-share mark" | none found |
-| F27. The November 2026 rout | more than $3.2tn wiped from the US stock market; Nasdaq fell 5.5%; S&P 500 fell 4.4%; investors bet on an AI slowdown after the US midterm elections | 5 Nov 2026 | [Guardian, 6 Nov 2026](https://www.theguardian.com/technology/2026/nov/06/us-tech-stock-ai-bubble-bursting-market-meltdown-explainer) | "More than $3.2tn ... was wiped from the value of the US stock market on Thursday"; "Nasdaq fell by 5.5% and the blue-chip S&P 500 fell by 4.4%"; "as investors bet on an AI slowdown after the US midterm elections"; "some analysts said had become increasingly detached from reality" | none found; `data/news.json` says "$2.5tn+" for the same day (Section 5) |
+| F27. The November 2026 rout | more than $3.2tn wiped from the US stock market; Nasdaq fell 5.5%; S&P 500 fell 4.4%; investors bet on an AI slowdown after the US midterm elections | 5 Nov 2026 | [Guardian, 6 Nov 2026](https://www.theguardian.com/technology/2026/nov/06/us-tech-stock-ai-bubble-bursting-market-meltdown-explainer) | "More than $3.2tn ... was wiped from the value of the US stock market on Thursday"; "Nasdaq fell by 5.5% and the blue-chip S&P 500 fell by 4.4%"; "as investors bet on an AI slowdown after the US midterm elections"; "some analysts said had become increasingly detached from reality" | [AP, 5 Nov 2026](https://apnews.com/article/stocks-markets-ai-midterm-oil-trump-7ee9c212805aa5e70cf34d25aab7a36e) (the 5.5% and 4.4% only: "The S&P 500 fell 4.4% ... while the Nasdaq composite tumbled 5.5%"); no openable second source found for the $3.2tn total (`data/news.json` says "$2.5tn+"; Section 5) |
 | F28. Anthropic's IPO and concurrent placement | $93.5bn gross; $91.6bn to Anthropic; 1.127bn shares at $83; $26bn placement | 20 Nov 2026 | [Anthropic, 20 Nov 2026](https://www.anthropic.com/news/ipo-close) | "aggregate gross proceeds ... were approximately $93.5 billion"; "1,127,000,000 shares ... at a public offering price of $83.00 per share"; "313,253,007 shares of Class N common stock ... for an aggregate purchase price of approximately $26.0 billion" | none found |
 | F29. Stargate | $500bn intended over four years; $100bn immediate | 21 Jan 2025 | [SoftBank, 22 Jan 2025](https://group.softbank/en/news/press/20250122) | "invest $500 billion over the next four years building new AI infrastructure for OpenAI"; "begin deploying $100 billion immediately" | [TechCrunch, 21 Jan 2025](https://techcrunch.com/2025/01/21/openai-teams-up-with-softbank-and-oracle-on-50b-data-center-project/) |
 | F30. xAI's Series E | $20bn | 6 Jan 2026 | [xAI, 6 Jan 2026](https://x.ai/news/series-e) | "$20 billion" | none found |
@@ -109,11 +109,12 @@ again in the last bullet of Section 5. Each row links to its page; the Sources l
 | F36. Microsoft's 2019 OpenAI investment and cloud partnership | $1bn | 22 Jul 2019 | [Microsoft, 22 Jul 2019](https://news.microsoft.com/source/2019/07/22/openai-forms-exclusive-computing-partnership-with-microsoft-to-build-new-azure-ai-supercomputing-technologies/) | "an investment of $1 billion from Microsoft"; "OpenAI will port its services to run on Microsoft Azure" | none found |
 | F37. ChatGPT's public release | 30 Nov 2022 | 30 Nov 2022 | [TechCrunch, 1 Dec 2022](https://techcrunch.com/2022/12/01/while-anticipation-builds-for-gpt-4-openai-quietly-releases-gpt-3-5/) | "GPT-3.5 broke cover on Wednesday with ChatGPT"; "Debuted in a public demo yesterday afternoon". The page is dated Thursday 1 Dec 2022, so "yesterday" and "Wednesday" are both 30 Nov 2022 | [BBC, 7 Dec 2022](https://www.bbc.co.uk/news/technology-63861322) ("publicly released on Wednesday") |
 | F38. Nvidia briefly reaches a $1tn market value | $1tn; first chipmaker to reach it | 30 May 2023 | [BBC, 30 May 2023](https://www.bbc.co.uk/news/business-65757812) | "Nvidia briefly joined the ranks"; "ended trading ... worth more than $990bn" | [CBS, 30 May 2023](https://www.cbsnews.com/news/nvidia-1-trillion-market-value-becoming-ai-first-chip-company-to-do-so/) ("first chip company to do so") |
-| F39. OpenAI's revenue shortfall | about $50bn annualised; $20bn below the earlier $70bn figure | 8 Oct 2026 | [TechCrunch, 8 Oct 2026](https://techcrunch.com/2026/10/08/openais-revenue-is-reportedly-20-billion-less-than-previously-projected/) | "its annualized revenue is 'approaching $50 billion'"; "some $20 billion lower" | none found |
+| F39. OpenAI's revenue shortfall | about $50bn annualised; $20bn below the earlier $70bn figure | 8 Oct 2026 | [TechCrunch, 8 Oct 2026](https://techcrunch.com/2026/10/08/openais-revenue-is-reportedly-20-billion-less-than-previously-projected/) | "its annualized revenue is 'approaching $50 billion'"; "some $20 billion lower" | [Bloomberg, 8 Oct 2026](https://www.bloomberg.com/news/articles/2026-10-08/openai-s-annualized-revenue-nears-50-billion-ft-says) ("annualized revenue of roughly $50 billion ... less than some recently reported estimates"; "Some outlets reported last month that OpenAI was already on track to generate nearly $70 billion") |
 | F40. Why a cheaper model hit Nvidia | R1 used "fewer resources and less compute power"; good models "don't necessarily need expensive, high-end chips"; Nvidia lost nearly $600bn in a day | 27 Jan 2025 | [TechCrunch, 27 Jan 2025](https://techcrunch.com/2025/01/27/nvidia-drops-600bn-off-its-market-cap-amid-the-rise-of-deepseek) | "despite using fewer resources and less compute power"; "AI models don't necessarily need expensive, high-end chips or hardware to build an impressive model, which isn't exactly great news for a chipmaker like Nvidia" | [BBC, 27 Jan 2025](https://www.bbc.com/news/articles/c0qw7z2v1pgo) ("AI models that require far less computing power than before"; "they cost a lot less than previously thought possible") |
 | F41. Microsoft's capital spending, fiscal 2023 and 2024 | $44,477m in fiscal 2024; $28,107m in fiscal 2023 | 30 Jul 2024 (10-K) | [Microsoft 10-K, 30 Jul 2024](https://www.sec.gov/Archives/edgar/data/789019/000095017024087843/msft-20240630.htm) | "Additions to property and equipment (44,477) (28,107) (23,886)" | none found |
 | F42. Microsoft's planned capital spending for fiscal 2025 | $80bn | 3 Jan 2025 | [TechCrunch, 3 Jan 2025](https://techcrunch.com/2025/01/03/microsoft-to-spend-80-billion-in-fy25-on-data-centers-for-ai/) | "Microsoft has earmarked $80 billion in fiscal 2025 to build data centers designed to handle artificial intelligence workloads"; "The tech giant's 2025 fiscal year ends in June." | none found |
 | F43. Blue Owl Capital's business | no number | undated page, opened 24 Nov 2026 | [Blue Owl, home page](https://www.blueowl.com/) | "At Blue Owl, we are doing more than just investing in private markets"; "we are shaping the future of alternatives" | [Meta, 21 Oct 2025](https://about.fb.com/news/2025/10/meta-blue-owl-capital-develop-hyperion-data-center/) ("Blue Owl Capital complements this joint venture with its ability to deliver substantial capital at scale, along with deep expertise in digital infrastructure investment") |
+| F44. Why OpenAI's revenue matters | no number | 8 Oct 2026 | [TechCrunch, 8 Oct 2026](https://techcrunch.com/2026/10/08/openais-revenue-is-reportedly-20-billion-less-than-previously-projected/) | "The issue of OpenAI's revenue has troubled the company, as it attempts to justify the gargantuan investments being made on its behalf" | none found |
 
 ## 4. Turning points
 
@@ -187,7 +188,11 @@ of which approximately $91.6 billion was received by Anthropic."
 - **The size of the 5 November 2026 wipeout differs by source.** The Guardian says "more than $3.2tn" was wiped
   from the US stock market. `data/news.json` labels the same day "$2.5tn+ wiped as AI stocks rout". The two may be
   measuring different things (the whole US market against AI stocks), but the opened pages do not reconcile them.
-  This draft uses the Guardian figure only in the turning-point entry and flags the difference here.
+  This draft uses the Guardian figure only in the turning-point entry and flags the difference here. The FT
+  headline also says "$3.2tn" but the FT page was blocked in this run. AP (5 Nov 2026) confirms the S&P 500 fell
+  4.4% and the Nasdaq composite 5.5% but gives no dollar total. Bloomberg's 5 Nov live coverage puts the Nasdaq
+  100's loss at $2.3tn. **Could not source:** the $3.2tn whole-market total has no openable second source in this
+  run; it rests on the Guardian alone.
 - **The 20% OpenAI revenue share with Microsoft is not confirmed.** TechCrunch says OpenAI "reportedly" shares 20%
   of its revenue with Microsoft and that neither company has publicly confirmed the percentage. This draft
   therefore uses the reported $10bn of Microsoft revenue, not a 20% calculation.
@@ -300,6 +305,18 @@ opened during this run; the date is the publication or filing date.
 **Papers and reference**
 
 - Vaswani et al., "Attention Is All You Need", 12 Jun 2017 — https://arxiv.org/abs/1706.03762
+
+**AP**
+
+- "A brutal sell-off for AI stocks sends Wall Street reeling, and the S&P 500 tumbles 4.4%", 5 Nov 2026 —
+  https://apnews.com/article/stocks-markets-ai-midterm-oil-trump-7ee9c212805aa5e70cf34d25aab7a36e
+- "How major US stock indexes fared Thursday 11/5/2026", 5 Nov 2026 —
+  https://apnews.com/article/wall-street-stocks-dow-nasdaq-afe254c608c3d1fe2ea792812ba9765a
+
+**Bloomberg**
+
+- "OpenAI's Revenue Run Rate Nears $50 Billion, Less Than Reported", 8 Oct 2026 —
+  https://www.bloomberg.com/news/articles/2026-10-08/openai-s-annualized-revenue-nears-50-billion-ft-says
 
 **TechCrunch**
 
