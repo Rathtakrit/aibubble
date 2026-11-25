@@ -1,6 +1,6 @@
 # How money moves in the AI boom, 30 November 2022 to November 2026
 
-Research base for a short story of at most ten chapters. Written 24 November 2026. Every number below was
+Research base for a short story of at most eleven chapters. Written 24 November 2026. Every number below was
 taken from a page opened during this run; the page, a short quote and a second link (where one was found) are in
 the fact table in Section 3. This is a description of deals that were announced or reported, not advice and not a
 forecast.
@@ -119,6 +119,12 @@ again in the last bullet of Section 5. Each row links to its page; the Sources l
 | F46. Microsoft hires Altman and Brockman | hired for a new AI research team on Monday 20 November 2023 | 20 Nov 2023 | [Guardian, 22 Nov 2023](https://www.theguardian.com/technology/2023/nov/22/sam-altman-openai-ceo-return-board-chatgpt) | "On Monday it hired Altman and Greg Brockman, who quit his role as OpenAI's president on Friday after his colleague's sacking" | [Guardian, 20 Nov 2023](https://www.theguardian.com/technology/2023/nov/20/openai-staff-walkout-sam-altman-board) ("Microsoft had hired the duo to head a new AI research unit") |
 | F47. Altman returns after five days | attempted board coup lasted five days; employees threatened to defect to Microsoft; Altman was fired on Friday | 22 Nov 2023 | [The Verge, 22 Nov 2023](https://www.theverge.com/2023/11/22/23967223/sam-altman-returns-ceo-open-ai) | "an attempted coup by OpenAI's board that lasted five days"; "employees of OpenAI revolted, threatening to defect to Microsoft with Altman and co-founder Brockman"; "initially fired Altman on Friday" | [BBC, 22 Nov 2023](https://www.bbc.com/news/business-67494165) ("will return as boss just days after he was fired by the board") |
 | F48. BBC summary of the firing and return | return days after the firing; staff threatened mass resignations; new board members appointed | 22 Nov 2023 | [BBC, 22 Nov 2023](https://www.bbc.com/news/business-67494165) | "OpenAI co-founder Sam Altman will return as boss just days after he was fired by the board"; "Mr Altman's sacking on Friday astonished industry watchers and led to staff threatening mass resignations unless he was reinstated"; "The agreement 'in principle' involves new board members being appointed" | [Guardian, 22 Nov 2023](https://www.theguardian.com/technology/2023/nov/22/sam-altman-openai-ceo-return-board-chatgpt) |
+| F49. Huang resigns and Kress becomes interim CEO | resigned as president, CEO and board member on 12 Nov 2026, effective immediately; Kress interim CEO | 12 Nov 2026 | [Nvidia release filed with the SEC, 12 Nov 2026](https://www.sec.gov/Archives/edgar/data/1045810/000104581026000082/nvidiaannouncesceotransiti.htm) | "Jensen Huang has resigned as President, Chief Executive Officer, and a member of the Board, effective immediately."; "Colette Kress, current Executive Vice President and Chief Financial Officer of NVIDIA, has agreed to serve as Interim Chief Executive Officer." | [Nvidia newsroom, 12 Nov 2026](https://nvidianews.nvidia.com/news/nvidia-announces-ceo-transition) (same release) |
+| F50. Reported reason for Huang's exit | reports of two extramarital affairs, one with an alleged Chinese spy and one with an Nvidia executive | 12 Nov 2026 | [The Verge, 12 Nov 2026](https://www.theverge.com/ai-artificial-intelligence/1031689/jensen-huang-nvidia-ceo-resigns) | "after reports of two extramarital affairs, one with an alleged Chinese spy and one with an Nvidia executive who reported to Huang" | none found in the rows used here; the Jensen note records the BBC and Guardian reporting the same trigger |
+| F51. China denies the spying claim | no number | 13 Nov 2026, updated 23 Nov 2026 | [Guardian timeline, 13 Nov 2026](https://www.theguardian.com/technology/2026/nov/12/jensen-huang-affair-timeline) | "China has denied the accusations that it had tapped Alice Huang ... and called them a 'smear'." | none found |
+| F52. Nvidia's value before and after the resignation | nearly $6tn in October 2026; $3.7tn by 17 Nov 2026 | 17 Nov 2026 | [Guardian, 17 Nov 2026](https://www.theguardian.com/technology/2026/nov/17/nvidia-third-quarter-revenue-jensen-huang) | "dropping its valuation to $3.7tn. In October, the company had hit an all-time-high valuation of nearly $6tn" | none found (SINGLE) |
+| F53. Board reinstates Huang and the shares rise | unanimous vote on 23 Nov 2026; shares rose 32%, adding more than $1tn | 23 Nov 2026 | [Nvidia, 23 Nov 2026](https://nvidianews.nvidia.com/news/nvidia-board-reinstates-jensen-huang-as-president-ceo-and-board-director) | "The Board of Directors voted unanimously to reinstate Mr. Huang" | [Guardian, 23 Nov 2026](https://www.theguardian.com/technology/2026/nov/23/jensen-huang-reinstated-as-nvidia-chief-executive) ("jumping 32% and adding more than $1tn (£760bn) to the company's market value") |
+| F54. The board's investigation is still open | no result published | 23 Nov 2026 | [Nvidia, 23 Nov 2026](https://nvidianews.nvidia.com/news/nvidia-board-reinstates-jensen-huang-as-president-ceo-and-board-director) | "The Board reiterated that the committee's investigation will proceed to conclusion." | none found |
 
 ## 4. Turning points
 
@@ -270,6 +276,8 @@ opened during this run; the date is the publication or filing date.
   https://nvidianews.nvidia.com/news/nvidia-and-intel-to-develop-ai-infrastructure-and-personal-computing-products
 - Nvidia, "NVIDIA announces CEO transition", 12 Nov 2026 —
   https://nvidianews.nvidia.com/news/nvidia-announces-ceo-transition
+- Nvidia, "NVIDIA announces CEO transition", Form 8-K exhibit 99.1 filed 12 Nov 2026 —
+  https://www.sec.gov/Archives/edgar/data/1045810/000104581026000082/nvidiaannouncesceotransiti.htm
 - Nvidia, "NVIDIA board reinstates Jensen Huang", 23 Nov 2026 —
   https://nvidianews.nvidia.com/news/nvidia-board-reinstates-jensen-huang-as-president-ceo-and-board-director
 - AMD, "AMD and OpenAI announce strategic partnership to deploy 6 gigawatts of AMD GPUs", 6 Oct 2025 —
@@ -352,6 +360,8 @@ opened during this run; the date is the publication or filing date.
 
 - "Sam Altman to return as CEO of OpenAI", 22 Nov 2023 —
   https://www.theverge.com/2023/11/22/23967223/sam-altman-returns-ceo-open-ai
+- Jensen Huang resigns as Nvidia CEO, 12 Nov 2026 —
+  https://www.theverge.com/ai-artificial-intelligence/1031689/jensen-huang-nvidia-ceo-resigns
 
 **BBC**
 
@@ -377,6 +387,12 @@ opened during this run; the date is the publication or filing date.
   https://www.theguardian.com/technology/2023/nov/22/sam-altman-openai-ceo-return-board-chatgpt
 - "Sacking, revolt, return: how crisis at OpenAI over Sam Altman unfolded", 25 Nov 2023 —
   https://www.theguardian.com/technology/2023/nov/25/how-crisis-openai-sam-altman-unfolded
+- Jensen Huang affair timeline, 13 Nov 2026, updated 23 Nov 2026 —
+  https://www.theguardian.com/technology/2026/nov/12/jensen-huang-affair-timeline
+- Nvidia third-quarter revenue and Jensen Huang, 17 Nov 2026 —
+  https://www.theguardian.com/technology/2026/nov/17/nvidia-third-quarter-revenue-jensen-huang
+- Jensen Huang reinstated as Nvidia chief executive, 23 Nov 2026 —
+  https://www.theguardian.com/technology/2026/nov/23/jensen-huang-reinstated-as-nvidia-chief-executive
 - "Tech billionaires lost almost $100bn in stock market selloff sparked by DeepSeek", 28 Jan 2025 —
   https://www.theguardian.com/technology/2025/jan/28/deepseek-selloff
 - "South Korean stock market at three-month low as AI sell-off intensifies", 28 Jul 2026 —
