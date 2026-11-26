@@ -22,6 +22,69 @@ const shortFormat = new Intl.DateTimeFormat('en-GB', {
   day: 'numeric', month: 'short', timeZone: 'UTC',
 });
 const dateText = (date: string) => dateFormat.format(new Date(date));
+
+for (const [width, height] of [[390, 844], [360, 780]]) {
+  test(`phone at ${width}x${height}: map tabs and docked timeline stay usable`, async ({ page, isMobile }) => {
+    test.skip(!isMobile, 'Phone layout');
+    await page.setViewportSize({ width, height });
+    await open(page, '/', middle);
+    const panel = sheet(page);
+    const nav = page.locator('.map-top').getByRole('navigation', { name: 'Bubbles' });
+    const links = nav.getByRole('link');
+    await expect(links).toHaveText(['AI', 'Dot-com', 'Housing', 'Compare']);
+    await expect(panel.locator('.mode-switch')).toHaveCount(0);
+    await expect(links.first()).toHaveAttribute('aria-current', 'page');
+
+    const dragHandle = async (name: string, dy: number) => {
+      const handle = await box(panel.getByRole('button', { name }), name);
+      await page.mouse.move(center(handle), handle.y + handle.height / 2);
+      await page.mouse.down();
+      await page.mouse.move(center(handle), handle.y + handle.height / 2 + dy, { steps: 8 });
+      await page.mouse.up();
+    };
+    await dragHandle('Show less', 160);
+    await expect(panel).toHaveAttribute('data-sheet-state', 'docked');
+    const content = panel.locator(':scope > :visible');
+    await expect(content).toHaveCount(3);
+    await expect(panel.locator('.dock-title')).toHaveText(middle.title);
+    await expect(daySlider(page)).toBeInViewport({ ratio: 1 });
+    await expect(timeline(page).locator('.timeline-controls')).toBeInViewport({ ratio: 1 });
+    await zoom(page).tap();
+    await expect(zoom(page)).toHaveAttribute('aria-pressed', 'false');
+
+    const tabs = await box(nav, 'Map tabs');
+    const wordmark = await box(page.locator('.wordmark-chip'), 'Wordmark');
+    expect(wordmark.x + wordmark.width).toBeLessThan(tabs.x);
+    expect(tabs.x + tabs.width).toBeLessThanOrEqual(width);
+    for (const selector of ['.phone-legend', '.map-zoom', '.map-bubble']) {
+      const below = await box(page.locator(selector), selector);
+      expect(below.y, selector).toBeGreaterThanOrEqual(tabs.y + tabs.height);
+    }
+
+    await dragHandle('Show more', -160);
+    await expect(panel).toHaveAttribute('data-sheet-state', 'open');
+    await expect(panel.locator('[data-block="item"]')).toBeVisible();
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await panel.getByRole('button', { name: 'Show less' }).tap();
+    await expect(panel).toHaveAttribute('data-sheet-state', 'docked');
+    await expect(panel.locator('.dock-title')).toHaveText(middle.title);
+    await panel.getByRole('button', { name: 'Show more' }).tap();
+    await expect(panel).toHaveAttribute('data-sheet-state', 'open');
+
+    for (const [name, path] of [['AI', '/'], ['Dot-com', '/past/dotcom/'], ['Housing', '/past/housing/'], ['Compare', '/compare/']]) {
+      const link = nav.getByRole('link', { name, exact: true });
+      const target = await box(link, name);
+      expect(target.height, name).toBeGreaterThanOrEqual(44);
+      expect(target.width, name).toBeGreaterThanOrEqual(44);
+      await link.tap();
+      await expect.poll(() => new URL(page.url()).pathname).toBe(path);
+      if (name !== 'Compare') {
+        await expect(page.locator('body')).toHaveAttribute('data-mode', 'story');
+        await expect(nav.getByRole('link', { name, exact: true })).toHaveAttribute('aria-current', 'page');
+      }
+    }
+  });
+}
 const escape = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const center = (box: Box) => box.x + box.width / 2;
 

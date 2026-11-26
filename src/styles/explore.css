@@ -563,14 +563,24 @@ body:not([data-timeline-zoomed="true"]) [data-zoom-only="true"],
   height: auto;
 }
 
-.map-top {
+.map-chrome {
   position: absolute;
-  left: 12px;
-  right: 12px;
-  top: 12px;
+  inset: 12px 12px auto;
+  display: grid;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.map-top {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+  justify-content: space-between;
   gap: 8px;
+}
+
+.map-chrome :is(a, button) {
+  pointer-events: auto;
 }
 
 .wordmark-chip {
@@ -589,10 +599,6 @@ body:not([data-timeline-zoomed="true"]) [data-zoom-only="true"],
 /* The money key and the zoom buttons stand in one column at the top right: the key first, the
    buttons 8px below it, so the buttons follow the key however many money kinds a page has. */
 .map-side {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -663,7 +669,7 @@ body:not([data-timeline-zoomed="true"]) [data-zoom-only="true"],
   pointer-events: none;
 }
 
-/* The docked sheet shows only the handle, the tab pill and one title line. */
+/* The docked sheet shows only the handle, one title line and the timeline. */
 .sheet[data-sheet-state="docked"] {
   max-height: none;
   overflow: visible;
@@ -677,12 +683,8 @@ body:not([data-timeline-zoomed="true"]) [data-zoom-only="true"],
   padding: 16px 0 0;
 }
 
-.sheet[data-sheet-state="docked"] > :not(.sheet-handle):not(.mode-switch):not(.dock-row) {
+.sheet[data-sheet-state="docked"] > :not(.sheet-handle, .dock-row, .timeline) {
   display: none;
-}
-
-.sheet[data-sheet-state="docked"] .mode-switch {
-  margin-bottom: 8px;
 }
 
 .dock-row {
@@ -985,17 +987,19 @@ body[data-mode="story"] .story-dot {
   color: var(--accent);
 }
 
-/* The phone's bubble tabs and Story / Explore switch share the bottom sheet's pill row. */
+/* The phone's bubble tabs keep the pill treatment in the map toolbar. */
 .mode-switch {
   display: flex;
-  padding: 0;
-  margin-bottom: 0;
+  margin-inline-start: auto;
   border: 1px solid var(--ink);
   border-radius: 999px;
+  background: var(--paper);
 }
 
 .mode-button {
-  flex: 1 1 0;
+  min-width: 44px;
+  box-sizing: border-box;
+  padding-inline: 5px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1006,12 +1010,6 @@ body[data-mode="story"] .story-dot {
   font-size: 13px;
   font-weight: 600;
   text-decoration: none;
-}
-
-@media (max-width: 430px) {
-  .mode-button {
-    font-size: 13px;
-  }
 }
 
 .mode-switch .nav-current {
@@ -1034,11 +1032,6 @@ body[data-mode="story"] .phone-legend {
 .sheet:has([data-block="story"]:not([hidden])) > *,
 .sheet:has([data-block="story-list"]:not([hidden])) > * {
   flex: 0 0 auto;
-}
-
-/* The tab row keeps a small gap above the chapter's kicker. */
-body[data-mode="story"] .sheet .mode-switch {
-  margin-bottom: 8px;
 }
 
 .sheet .story-links {
