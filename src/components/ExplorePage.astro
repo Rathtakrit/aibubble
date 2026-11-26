@@ -517,6 +517,12 @@ const ariaFor = (itemTitle: string, date: string) => `${dayLabel(date)}, ${itemT
             <button type="button" data-action="timeline-zoom" aria-pressed="true" aria-label="Whole timeline" title="Whole timeline">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"></path></svg>
             </button>
+            <button type="button" data-timeline-earlier data-action="earlier" aria-label="Earlier" title="Earlier">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 12H4m7-7-7 7 7 7"></path></svg>
+            </button>
+            <button type="button" data-timeline-next data-action="later" aria-label="Later" title="Later">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 12h16m-7-7 7 7-7 7"></path></svg>
+            </button>
           </div>
         </div>
         <p class="status desktop-timeline-status">{statusLine && `${statusLine} `}<a href="https://github.com/Rathtakrit/aibubble/issues/new/choose">Report a problem</a></p>
@@ -579,8 +585,6 @@ const ariaFor = (itemTitle: string, date: string) => `${dayLabel(date)}, ${itemT
         </nav>
         <div class="dock-row">
           <p class="dock-title" data-bind="dock-title">{current.title}</p>
-          <button type="button" class="dock-button" data-action="earlier" aria-label="Earlier">←</button>
-          <button type="button" class="dock-button" data-action="later" aria-label="Later">→</button>
         </div>
 
         <p class="sheet-kicker boom-kicker explore-only" data-bind="kicker-phone">{bubbleName}</p>
@@ -637,14 +641,6 @@ const ariaFor = (itemTitle: string, date: string) => `${dayLabel(date)}, ${itemT
               <p class="players-line" data-story-look hidden={!firstChapter.look}>
                 In the picture: <strong data-bind="story-look">{firstChapter.look}</strong>
               </p>
-              <div class="sheet-buttons">
-                <button type="button" class="button" data-action="chapter-earlier">
-                  ← Earlier
-                </button>
-                <button type="button" class="button button-primary" data-action="chapter-next">
-                  Next chapter →
-                </button>
-              </div>
               <div class="story-links">
                 <button type="button" class="read-story" data-action="story-open" aria-expanded="false">
                   Read the story
@@ -688,11 +684,6 @@ const ariaFor = (itemTitle: string, date: string) => `${dayLabel(date)}, ${itemT
             </div>
           )
         }
-
-        <div class="sheet-buttons explore-only">
-          <button type="button" class="button" data-action="earlier">← Earlier</button>
-          <button type="button" class="button button-primary" data-action="later">Later →</button>
-        </div>
 
         <p class="status">{statusLine && `${statusLine} `}<a href="https://github.com/Rathtakrit/aibubble/issues/new/choose">Report a problem</a></p>
       </section>

@@ -79,7 +79,7 @@ test('AI opens the story, with no separate Story tab or Mode switch', async ({ p
 });
 
 for (const set of sets) {
-  test(`${set.name} opens its story; its chapters, picture, and sources follow Next`, async ({ page }) => {
+  test(`${set.name} opens its story; its chapters, picture, and sources follow Next`, async ({ page, isMobile }) => {
     const errors = recordErrors(page);
     const list = set.chapters;
     expect(list.length).toBeGreaterThan(0);
@@ -88,6 +88,21 @@ for (const set of sets) {
     await expect(page.getByText(/Chapters written with AI/i)).toHaveCount(0);
 
     const card = story(page);
+    const navigation = isMobile ? page.locator('.timeline-controls') : card;
+    const next = navigation.getByRole('button', { name: /^Next chapter/ });
+    const explore = navigation.getByRole('button', { name: 'Explore any day', exact: true });
+    if (isMobile) {
+      const earlier = navigation.getByRole('button', { name: 'Earlier chapter', exact: true });
+      await expectIconButton(earlier, 'Earlier chapter');
+      await expect(earlier).toBeDisabled();
+      if (list.length > 1) {
+        await expectIconButton(next, 'Next chapter');
+        await next.tap();
+        await expectChapter(page, 2, list);
+        await earlier.tap();
+        await expectChapter(page, 1, list);
+      }
+    }
     for (let number = 1; number <= list.length; number++) {
       const chapter = await expectChapter(page, number, list);
       const look = card.locator('[data-story-look]');
@@ -111,12 +126,17 @@ for (const set of sets) {
         const box = (await button.boundingBox())!;
         expect(Math.min(box.width, box.height), await button.innerText()).toBeGreaterThanOrEqual(44);
       }
-      if (number < list.length) await card.getByRole('button', { name: /^Next chapter/ }).click();
+      if (number < list.length) {
+        if (isMobile) await next.tap();
+        else await next.click();
+      }
     }
-    await expect(card.getByRole('button', { name: 'Explore any day', exact: true })).toBeVisible();
+    await expect(explore).toBeVisible();
+    if (isMobile) await expectIconButton(explore, 'Explore any day');
     // The worker must have drawn the bubble before checking for runtime errors.
     await expect(page.locator('[data-bubble] .bubble').filter({ visible: true }).first()).toBeVisible();
-    await card.getByRole('button', { name: 'Explore any day', exact: true }).click();
+    if (isMobile) await explore.tap();
+    else await explore.click();
     await expectExplore(page, list.at(-1)!.date);
     expect(errors).toEqual([]);
   });
