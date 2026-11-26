@@ -347,8 +347,7 @@ body { --bubble-caption-size: 13px; }
 }
 
 /* A dot on the line: red for a key date, blue for a smaller event, and the quiet ink for a
-   chapter. Each is ringed in paper so it sits on the line; the chosen one keeps its own colour
-   and gains a ring of ink around it. */
+   chapter. Each is ringed in paper; the separate day marker carries the selection ring. */
 .dot {
   box-sizing: border-box;
   width: 10px;
@@ -356,7 +355,7 @@ body { --bubble-caption-size: 13px; }
   border-radius: 50%;
   background: var(--ink-2);
   border: 1.5px solid var(--paper);
-  transition: all 300ms ease;
+  transition: width 300ms ease, height 300ms ease;
 }
 
 .timeline-dot[data-dot="key"] .dot {
@@ -377,10 +376,6 @@ body[data-timeline-zoomed="true"] .timeline-dot[data-dot="small"] .dot {
   width: 7px;
   height: 7px;
   background: var(--accent);
-}
-
-.is-current .dot {
-  box-shadow: 0 0 0 2px var(--ink);
 }
 
 /* Date buttons sit above the Day slider. Neighbours divide the space between them. */
@@ -1183,9 +1178,8 @@ body[data-mode="story"] .sheet .mode-switch {
 body[data-mode="story"] .timeline-controls [data-action="timeline-story"] { display: none; }
 .timeline-controls [data-action="timeline-zoom"] { background: var(--ink); color: var(--paper); }
 .timeline-controls button:disabled { opacity: .45; cursor: default; }
-.timeline-current { position: absolute; top: 28px; height: 36px; border-left: 2px solid var(--ink); pointer-events: none; }
-.timeline-current::after { content: ""; position: absolute; top: 23px; left: -15px; width: 26px; height: 26px; box-sizing: border-box; border: 3px solid #B42318; border-radius: 50%; background: var(--paper); }
-.timeline-inner .is-current .dot { box-shadow: 0 0 0 3px var(--paper), 0 0 0 6px #B42318; }
+.timeline-current { position: absolute; top: 28px; height: calc(var(--timeline-line) - 28px); border-left: 2px solid var(--ink); pointer-events: none; }
+.timeline-current::after { content: ""; position: absolute; z-index: 3; top: 100%; left: -2px; transform: translate(-50%, -50%); width: 26px; height: 26px; box-sizing: border-box; border: 3px solid #B42318; border-radius: 50%; }
 .timeline-current span { position: absolute; top: -28px; width: max-content; padding: 5px 10px; border-radius: 3px; background: var(--ink); color: var(--paper); font-size: 13px; font-weight: 600; }
 
 .timeline-inner .timeline-axis {
@@ -1621,8 +1615,6 @@ body[data-mode="explore"][data-timeline-zoomed="true"] .timeline-label[data-time
     --label-far-below: 98px;
     height: 126px;
   }
-  .timeline-current { height: 20px; }
-  .timeline-current::after { top: 7px; }
 }
 
 /* --- a short window: the same page, with less air between its lines --- */

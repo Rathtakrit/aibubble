@@ -178,8 +178,9 @@ function readHandleX(node: Element, timing?: { button: Element; delay: number })
       (Number(input.max || 100) - Number(input.min || 0)));
   };
   if (timing) {
-    const sample = new Promise<number>(resolve => timing.button.addEventListener('click', () => {
-      setTimeout(() => resolve(measure()), timing.delay);
+    const sample = new Promise<{ during: number; end: number }>(resolve => timing.button.addEventListener('click', () => {
+      const during = new Promise<number>(done => setTimeout(() => done(measure()), timing.delay));
+      setTimeout(async () => resolve({ end: measure(), during: await during }), 400);
     }, { once: true }));
     Object.assign(window, { timelineMotionSample: sample });
   }
@@ -187,6 +188,35 @@ function readHandleX(node: Element, timing?: { button: Element; delay: number })
 }
 
 const handleX = (slider: Locator) => slider.evaluate<number, undefined>(readHandleX, undefined);
+
+async function ringSamplesAfter(button: Locator, phone: boolean) {
+  // Sample computed paint, not just the current class: an outgoing shadow can still be visible.
+  const samples = await button.evaluateHandle(control => ({ result: new Promise<number[]>(resolve => {
+    const count = () => {
+      const visible = (el: Element) => el.checkVisibility({ opacityProperty: true, visibilityProperty: true });
+      const red = /rgba?\(180,\s*35,\s*24(?:,\s*(?!0\))[^)]+)?\)/;
+      const rings = [...document.querySelectorAll('[data-timeline-current]')].filter(el => {
+        const ring = getComputedStyle(el, '::after');
+        return visible(el) && ring.content !== 'none' && parseFloat(ring.borderTopWidth) > 0 && red.test(ring.borderTopColor);
+      });
+      const shadows = [...document.querySelectorAll('[data-timeline] .dot')]
+        .filter(el => visible(el) && red.test(getComputedStyle(el).boxShadow));
+      return rings.length + shadows.length;
+    };
+    control.addEventListener('click', () => {
+      const during = new Promise<number>(sample => setTimeout(() => sample(count()), 50));
+      const after = new Promise<number>(sample => setTimeout(() => sample(count()), 400));
+      void Promise.all([during, after]).then(resolve);
+    }, { once: true });
+  }) }));
+  try {
+    if (phone) await button.tap();
+    else await button.click();
+    return await samples.evaluate(({ result }) => result);
+  } finally {
+    await samples.dispose();
+  }
+}
 
 function recordErrors(page: Page) {
   const errors: string[] = [];
@@ -214,11 +244,13 @@ for (const { path, items } of [{ path: '/', items: ai }, { path: '/past/dotcom',
     const titles = new Set<string>();
     const drawings = new Set<string>();
     const dates: number[] = [];
+    const positions: number[] = [];
     const titlePattern = new RegExp(`^(?:${items.map(item => escape(item.title)).join('|')})$`);
     const news = page.getByRole('main').or(sheet(page)).getByText(titlePattern).filter({ visible: true });
     const sample = async () => {
       await frame(page);
       dates.push(await selectedDate(slider));
+      positions.push(await handleX(slider));
       (await news.allTextContents()).forEach(title => titles.add(title.trim()));
       const drawing = await bubbleDrawing(page);
       if (drawing) drawings.add(drawing);
@@ -244,6 +276,7 @@ for (const { path, items } of [{ path: '/', items: ai }, { path: '/past/dotcom',
       expect.soft(dates[i], `Day at drag step ${i}: ${new Date(dates[i - 1]).toISOString()} -> ${new Date(dates[i]).toISOString()}`).toBeGreaterThanOrEqual(dates[i - 1]);
     }
     expect.soft(dates.at(-1), 'Drag should advance the date').toBeGreaterThan(dates[0]);
+    expect.soft(Math.max(...positions) - Math.min(...positions), 'Drag should move the visible marker').toBeGreaterThan(10);
     expect.soft(titles.size, 'Different news titles should appear during the drag').toBeGreaterThan(1);
     expect(drawings.size, 'Bubble sizes or composition should change during the drag').toBeGreaterThan(1);
   });
@@ -336,6 +369,31 @@ test('Earlier / Later', async ({ page, isMobile }) => {
   }
 });
 
+test('One red ring through Later, Later, Earlier, Earlier', async ({ page, isMobile }) => {
+  await open(page, '/', ai[0]);
+  await shown(page, ai[0]);
+  for (const [direction, index] of [['Later', 1], ['Later', 2], ['Earlier', 1], ['Earlier', 0]] as const) {
+    await test.step(`${direction} to item ${index + 1}`, async () => {
+      expect(await ringSamplesAfter(await step(page, direction, isMobile), isMobile), 'Visible rings at 50 and 400 ms').toEqual([1, 1]);
+      await shown(page, ai[index]);
+      const mark = paintedDate(timeline(page), ai[index]);
+      expect(Math.abs(await handleX(daySlider(page)) - await dotX(mark))).toBeLessThanOrEqual(2);
+    });
+  }
+});
+
+test('One red ring from chapter 1 to chapter 2', async ({ page, isMobile }) => {
+  await page.goto('/?chapter=1');
+  const body = page.locator('body');
+  test.skip(await body.getAttribute('data-story-enabled') !== 'true', 'Story is disabled');
+  const selected = timeline(page).locator('.story-dot.is-current');
+  await expect(selected).toHaveAttribute('data-chapter', '1');
+  const next = page.getByRole('button', { name: /^Next chapter/ }).filter({ visible: true });
+  expect(await ringSamplesAfter(next, isMobile), 'Visible rings at 50 and 400 ms').toEqual([1, 1]);
+  await expect(selected).toHaveAttribute('data-chapter', '2');
+  expect(Math.abs(await handleX(daySlider(page)) - await dotX(selected))).toBeLessThanOrEqual(2);
+});
+
 test('The AI footer minimap starts on the first day and supports keyboard scrubbing', async ({ page, isMobile }) => {
   await open(page, '/', middle);
   const strip = page.locator('.timeline-footer [data-timeline-strip]');
@@ -416,12 +474,10 @@ async function laterMotion(page: Page, phone: boolean, ms: number) {
   const start = await slider.evaluate<number, { button: typeof button; delay: number }>(readHandleX, { button, delay: ms });
   if (phone) await later.tap();
   else await later.click();
-  const during = await page.evaluate(() => (window as typeof window & { timelineMotionSample?: Promise<number> }).timelineMotionSample!);
+  const { during, end } = await page.evaluate(() => (window as typeof window & {
+    timelineMotionSample: Promise<{ during: number; end: number }>;
+  }).timelineMotionSample);
   await shown(page, last);
-  await slider.evaluate(async input => {
-    await Promise.allSettled((input.parentElement ?? input).getAnimations({ subtree: true }).map(a => a.finished));
-  });
-  const end = await handleX(slider);
   expect(Math.abs(end - start), 'Later should move the handle from its starting position').toBeGreaterThan(1);
   return { start, during, end };
 }

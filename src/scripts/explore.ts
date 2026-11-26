@@ -139,6 +139,7 @@ let visibleTimeline = fullTimeline;
 let timelineTarget = fullTimeline;
 let timelineFrame: number | null = null;
 let timelineHandle = 50;
+let timelineBlend: { from: number; progress: number } | null = null;
 let scrubPointer: number | null = null;
 const timelineMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 const desktopLayout = window.matchMedia("(min-width: 900px)");
@@ -167,8 +168,14 @@ for (const item of timelineEvents) {
   stripDots?.append(dot);
 }
 
-function timelineHandleAt(window: TimelineWindow): number {
-  return Math.max(0, Math.min(100, windowPercent(scale.percentOf(day), window)));
+function timelineHandleAt(inner: HTMLElement): number {
+  if (scrubPointer === null) {
+    const selected = inner.querySelector<HTMLElement>(chapterIndex === null
+      ? ".timeline-dot[data-news].is-current"
+      : ".story-dot.is-current");
+    if (selected?.offsetHeight) return timelineDotX(selected) * 100 / inner.clientWidth;
+  }
+  return Math.max(0, Math.min(100, windowPercent(scale.percentOf(day), visibleTimeline)));
 }
 
 function drawTimeline(): void {
@@ -213,17 +220,12 @@ function drawTimeline(): void {
     element.style.left = `${percent}%`;
   }
   placeTimelineDots(inner);
-  let current = timelineHandle;
-  if (!desktopLayout.matches && scrubPointer === null) {
-    const selected = inner.querySelector<HTMLElement>(".timeline-dot.is-current");
-    if (selected?.offsetHeight) {
-      // The handle follows the painted dot even when nearby dates have been fanned out.
-      const center = timelineDotX(selected);
-      const dateX = parseFloat(selected.style.left) * inner.clientWidth / 100;
-      const distance = Math.abs(current * inner.clientWidth / 100 - dateX);
-      current += (center - dateX) * Math.max(0, 1 - distance / 22) * 100 / inner.clientWidth;
-    }
-  }
+  // Follow the painted dot, including any spacing added for crowded dates.
+  const destination = timelineHandleAt(inner);
+  const current = timelineBlend
+    ? timelineBlend.from + (destination - timelineBlend.from) * timelineBlend.progress
+    : destination;
+  timelineHandle = current;
   inner.style.setProperty("--timeline-current", `${current}%`);
   const marker = inner.querySelector<HTMLElement>("[data-timeline-current]");
   if (marker) {
@@ -242,7 +244,7 @@ function drawTimeline(): void {
   placeTimelineLabels();
 }
 
-function updateTimeline(immediate = false): void {
+function updateTimeline(immediate = false, duration = 300): void {
   document.body.dataset.timelineZoomed = String(timelineZoomed);
   const anchor = (itemId === null ? null : byId.get(itemId)) ?? latestOnOrBefore(ordered, day);
   for (const button of document.querySelectorAll<HTMLButtonElement>('[data-action="timeline-zoom"]')) {
@@ -254,40 +256,39 @@ function updateTimeline(immediate = false): void {
       ? "M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"
       : "M4 9h5V4M20 9h-5V4M4 15h5v5M20 15h-5v5");
   }
-  glideTimeline(anchor?.id ?? timelineEvents[0]?.id ?? "", immediate);
+  glideTimeline(anchor?.id ?? timelineEvents[0]?.id ?? "", immediate, duration);
 }
 
 let timelineDrawn = false;
-let timelineTargetHandle = 50;
+let timelineSelection = "";
 
-function glideTimeline(anchor: string, immediate: boolean): void {
+function glideTimeline(anchor: string, immediate: boolean, duration: number): void {
   const last = timelineEvents[timelineEvents.length - 1];
   // Share the final window across the last step so the handle travels to the final dot
   // instead of recentering the rail on both items.
   const windowAnchor = last && anchor === timelineEvents[timelineEvents.length - 2]?.id ? last.id : anchor;
   const target = scrubPointer !== null ? timelineTarget
     : timelineZoomed ? timelineWindow(timelineEvents, windowAnchor, scale) : fullTimeline;
-  const endHandle = timelineHandleAt(target);
-  const sameWindow = JSON.stringify(target) === JSON.stringify(timelineTarget);
-  if (sameWindow && endHandle === timelineTargetHandle && timelineFrame !== null &&
-    !immediate && !timelineMotion.matches) return;
+  const selection = `${day}:${itemId ?? ""}:${chapterIndex ?? ""}`;
+  const sameTarget = selection === timelineSelection && JSON.stringify(target) === JSON.stringify(timelineTarget);
+  if (sameTarget && !immediate && !timelineMotion.matches && scrubPointer === null) return;
   timelineTarget = target;
-  timelineTargetHandle = endHandle;
+  timelineSelection = selection;
   if (timelineFrame !== null) cancelAnimationFrame(timelineFrame);
-  if (timelineMotion.matches || immediate || !timelineDrawn || scrubPointer !== null ||
-    (sameWindow && timelineHandle === endHandle)) {
+  if (timelineMotion.matches || immediate || !timelineDrawn || scrubPointer !== null) {
     timelineDrawn = true;
     timelineFrame = null;
+    timelineBlend = null;
     visibleTimeline = target;
-    timelineHandle = endHandle;
     drawTimeline();
     return;
   }
   const from = visibleTimeline;
-  const handleOffset = timelineHandle - timelineHandleAt(from);
+  const fromHandle = timelineHandle;
   const start = performance.now();
+  timelineBlend = { from: fromHandle, progress: 0 };
   function glide(now: number): void {
-    const t = Math.min(1, (now - start) / (sameWindow ? 300 : 900));
+    const t = Math.min(1, (now - start) / duration);
     const eased = t * t * (3 - 2 * t);
     visibleTimeline = t === 1 ? target : {
       start: from.start + (target.start - from.start) * eased,
@@ -295,9 +296,7 @@ function glideTimeline(anchor: string, immediate: boolean): void {
       end: from.end + (target.end - from.end) * eased,
       ids: target.ids,
     };
-    // Follow the changing scale during zoom, and ease from the old handle on a news step.
-    const position = timelineHandleAt(visibleTimeline);
-    timelineHandle = Math.max(0, Math.min(100, position + handleOffset * (1 - eased)));
+    timelineBlend = t === 1 ? null : { from: fromHandle, progress: eased };
     drawTimeline();
     timelineFrame = t < 1 ? requestAnimationFrame(glide) : null;
   }
@@ -308,8 +307,8 @@ timelineMotion.addEventListener("change", () => {
   if (!timelineMotion.matches) return;
   if (timelineFrame !== null) cancelAnimationFrame(timelineFrame);
   timelineFrame = null;
+  timelineBlend = null;
   visibleTimeline = timelineTarget;
-  timelineHandle = timelineTargetHandle;
   drawTimeline();
 });
 
@@ -820,7 +819,7 @@ document.addEventListener("click", (event) => {
   const action = control.dataset.action;
   if (action === "timeline-zoom") {
     timelineZoomed = !timelineZoomed;
-    updateTimeline();
+    updateTimeline(false, 900);
     return;
   } else if (action === "timeline-story") {
     goToChapter(0);
@@ -929,6 +928,7 @@ function startTimelineScrub(pointerId: number): void {
   // Hold the mapping still under the pointer, including when a glide was interrupted.
   if (timelineFrame !== null) cancelAnimationFrame(timelineFrame);
   timelineFrame = null;
+  timelineBlend = null;
   timelineTarget = visibleTimeline;
 }
 
