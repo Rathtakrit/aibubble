@@ -145,7 +145,7 @@ for (const set of sets) {
     const chapter = set.chapters[Math.min(2, set.chapters.length - 1)];
     await page.goto(`${set.path}?chapter=${chapter.number}`);
     await expectChapter(page, chapter.number, set.chapters);
-    await story(page).getByRole('button', { name: 'Explore day by day', exact: true }).click();
+    await page.locator('.timeline-controls [data-action="story-explore"]').click();
     await expect(page).toHaveURL(new RegExp(`\\?date=${chapter.date}$`));
     await expectExplore(page, chapter.date);
 
@@ -200,7 +200,7 @@ test('Explore opens on the chapter day or on an explicit date, and bubble tabs r
   const chapter = chapters[Math.min(2, chapters.length - 1)];
   await page.goto(`/?chapter=${chapter.number}`);
   await expectChapter(page, chapter.number);
-  await story(page).getByRole('button', { name: 'Explore day by day', exact: true }).click();
+  await page.locator('.timeline-controls [data-action="story-explore"]').click();
   await expect(page).toHaveURL(new RegExp(`\\?date=${chapter.date}$`));
   await expectExplore(page, chapter.date);
 
@@ -238,6 +238,41 @@ async function expectIconButton(button: Locator, label: string) {
   expect(rect.height, `${label} height`).toBeGreaterThanOrEqual(44);
 }
 
+test('The compass and book take turns in the same timeline slot', async ({ page, isMobile }) => {
+  if (!isMobile) await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/');
+  const first = await expectChapter(page, 1);
+  await page.evaluate(() => document.fonts.ready.then(() => null));
+
+  const controls = page.locator('.timeline-controls');
+  const compass = controls.locator('[data-action="story-explore"]');
+  const book = controls.locator('[data-action="timeline-story"]');
+  await expect(page.locator('[data-action="story-explore"]')).toHaveCount(1);
+  await expectIconButton(compass, 'Explore day by day');
+  await expect(book).toBeHidden();
+  await compass.focus();
+  await page.keyboard.press('Tab');
+  await expect(compass).not.toBeFocused();
+  await page.keyboard.press('Shift+Tab');
+  await expect(compass).toBeFocused();
+
+  // Reveal the full control row at the foot of the scrollable phone sheet.
+  if (isMobile) await page.locator('.sheet').evaluate(sheet => { sheet.scrollTop = sheet.scrollHeight; });
+  const storyBox = (await compass.boundingBox())!;
+  await compass.click();
+  await expectExplore(page, first.date);
+  await expect(compass).toBeHidden();
+  await expectIconButton(book, 'Back to the story');
+  const exploreBox = (await book.boundingBox())!;
+  expect(Math.abs(exploreBox.x - storyBox.x), 'timeline slot x').toBeLessThanOrEqual(2);
+  expect(Math.abs(exploreBox.y - storyBox.y), 'timeline slot y').toBeLessThanOrEqual(2);
+
+  await book.click();
+  await expectChapter(page, 1);
+  await expect(compass).toBeVisible();
+  await expect(book).toBeHidden();
+});
+
 test('Explore and Story switch modes with labelled icon buttons', async ({ page }) => {
   await page.goto(`/?date=${exploreDate}`);
   await expectExplore(page, exploreDate);
@@ -254,7 +289,7 @@ test('Explore and Story switch modes with labelled icon buttons', async ({ page 
   await back.click();
   await expect(page).toHaveURL(/\?chapter=1$/);
   const first = await expectChapter(page, 1);
-  const explore = story(page).getByRole('button', { name: 'Explore day by day', exact: true });
+  const explore = button('Explore day by day');
   await expectIconButton(explore, 'Explore day by day');
   await explore.click();
   await expectExplore(page, first.date);

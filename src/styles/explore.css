@@ -871,11 +871,6 @@ body[data-mode="story"] .story-dot {
   color: var(--accent-dark);
 }
 
-.read-story[data-action="story-explore"] {
-  min-width: 44px;
-  justify-content: center;
-}
-
 .story-links {
   display: flex;
   flex-wrap: wrap;
@@ -1128,7 +1123,8 @@ body[data-mode="story"] .sheet .mode-switch {
 .timeline-strip-ends { position: absolute; inset: 28px 0 auto; display: flex; justify-content: space-between; font-size: 12px; line-height: 14px; pointer-events: none; }
 .timeline-controls { display: flex; gap: 8px; flex-shrink: 0; }
 .timeline-controls button { min-width: 44px; min-height: 44px; padding: 0; border: 1px solid var(--ink); background: transparent; color: var(--ink); border-radius: 999px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-body[data-mode="story"] .timeline-controls [data-action="timeline-story"] { display: none; }
+body[data-mode="story"] .timeline-controls [data-action="timeline-story"],
+body[data-mode="explore"] .timeline-controls [data-action="story-explore"] { display: none; }
 .timeline-controls [data-action="timeline-zoom"] { background: var(--ink); color: var(--paper); }
 .timeline-controls button:disabled { opacity: .45; cursor: default; }
 .timeline-controls :is([data-timeline-earlier], [data-timeline-next]) { display: none; }
