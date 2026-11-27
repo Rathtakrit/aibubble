@@ -15,10 +15,9 @@ import type { Pan, PeakDay } from "./camera.ts";
 const SVG_NS = "http://www.w3.org/2000/svg";
 const CLIP_ID = "aibubble-clip";
 
-// How long the bubbles take to glide to a new day, and how long a company takes to fade in
-// or out (the fade is the stylesheet's 700ms opacity transition; this is how long we keep a
-// leaving company's element before removing it).
-const GLIDE_MS = 500;
+// How long the bubbles and camera take to move to a new day.
+const MOVE_MS = 900;
+// Keep a leaving company's element until the stylesheet's 700ms fade finishes.
 const FADE_MS = 700;
 
 // Opacity of a faint money line, and of a bubble that is not a player of the chosen item.
@@ -49,9 +48,9 @@ function fixed(value: number): string {
   return value.toFixed(3);
 }
 
-// Ease in-out, so a bubble starts and stops gently.
+// Start and stop gently, like the camera.
 function ease(t: number): number {
-  return t < 0.5 ? 2 * t * t : 1 - ((-2 * t + 2) * (-2 * t + 2)) / 2;
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
 
 type BubbleNode = {
@@ -624,7 +623,7 @@ function paintAll(drawing: Drawing): void {
 
 // One frame of the glide: ease every bubble to its new place, then redraw the lines.
 function step(drawing: Drawing, now: number): void {
-  const t = Math.min(1, Math.max(0, (now - drawing.startedAt) / GLIDE_MS));
+  const t = Math.min(1, Math.max(0, (now - drawing.startedAt) / MOVE_MS));
   const e = ease(t);
   drawing.ringRadius = drawing.fromRingRadius + (drawing.toRingRadius - drawing.fromRingRadius) * e;
   for (const live of drawing.bubbles.values()) {
@@ -805,7 +804,7 @@ function ariaLabel(date: string, bubbles: Bubble[]): string {
 // The camera glides to its new place, unless the visitor asked for reduced motion.
 function cameraTransition(): string {
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  return reduced ? "none" : "transform 900ms cubic-bezier(0.65, 0, 0.35, 1)";
+  return reduced ? "none" : `transform ${MOVE_MS}ms cubic-bezier(0.65, 0, 0.35, 1)`;
 }
 
 export type BubbleOptions = {
