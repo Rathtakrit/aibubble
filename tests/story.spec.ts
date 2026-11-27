@@ -70,12 +70,17 @@ async function expectExplore(page: Page, day: string) {
   await expect(slider(page)).toHaveAttribute('aria-valuetext', formatDay.format(new Date(day)));
 }
 
-test('AI opens the story, with no separate Story tab or Mode switch', async ({ page }) => {
+test('AI opens the story with bubble tabs but no separate Story tab or Mode switch', async ({ page, isMobile }) => {
   await page.goto('/');
   await expectChapter(page, 1);
   await expect(page.locator('.site-nav').getByRole('link', { name: 'Story', exact: true, includeHidden: true })).toHaveCount(0);
   await expect(page.getByRole('group', { name: 'Mode', exact: true, includeHidden: true })).toHaveCount(0);
-  await expect(page.getByRole('link', { name: 'AI', exact: true })).toHaveAttribute('aria-current', 'page');
+  const tabs = page.locator(isMobile ? '.map-top .mode-switch' : '.site-nav');
+  await expect(tabs.getByRole('link', { name: 'AI', exact: true })).toHaveAttribute('aria-current', 'page');
+  if (isMobile) {
+    await expect(tabs.getByRole('link')).toHaveText(['AI', 'Dot-com', 'Housing', 'Compare']);
+    await expect(page.locator('.sheet .mode-switch')).toHaveCount(0);
+  }
 });
 
 for (const set of sets) {

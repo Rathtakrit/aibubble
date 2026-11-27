@@ -533,24 +533,44 @@ const ariaFor = (itemTitle: string, date: string) => `${dayLabel(date)}, ${itemT
         <svg class="bubble-svg" data-bubble="phone" viewBox="0 0 100 100" role="img"></svg>
       </div>
 
-      <div class="map-top">
-        <span class="wordmark-chip">Bubble</span>
-      </div>
-
-      <div class="map-side">
-        <div class="legend phone-legend" aria-label="Money flow">
-          {legend.map((kind) => (
-            <span class="legend-item">
-              <span class:list={["legend-line", `legend-${kind.colour}`]} aria-hidden="true"></span>
-              {kind.phoneLabel}
-            </span>
-          ))}
+      <div class="map-chrome">
+        <div class="map-top">
+          <span class="wordmark-chip">Bubble</span>
+          <nav class="mode-switch" aria-label="Bubbles">
+            <a
+              class:list={["mode-button", !isPast && "nav-current"]}
+              href="/"
+              aria-current={isPast ? undefined : "page"}>AI</a
+            >
+            <a
+              class:list={["mode-button", id === "dotcom" && "nav-current"]}
+              href="/past/dotcom/"
+              aria-current={id === "dotcom" ? "page" : undefined}>Dot-com</a
+            >
+            <a
+              class:list={["mode-button", id === "housing" && "nav-current"]}
+              href="/past/housing/"
+              aria-current={id === "housing" ? "page" : undefined}>Housing</a
+            >
+            <a class="mode-button" href="/compare/">Compare</a>
+          </nav>
         </div>
 
-        <div class="zoom-buttons map-zoom">
-          <button type="button" class="zoom-button" data-zoom="fit" aria-label="Focus on the players">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h5V4M20 9h-5V4M4 15h5v5M20 15h-5v5"></path></svg>
-          </button>
+        <div class="map-side">
+          <div class="legend phone-legend" aria-label="Money flow">
+            {legend.map((kind) => (
+              <span class="legend-item">
+                <span class:list={["legend-line", `legend-${kind.colour}`]} aria-hidden="true"></span>
+                {kind.phoneLabel}
+              </span>
+            ))}
+          </div>
+
+          <div class="zoom-buttons map-zoom">
+            <button type="button" class="zoom-button" data-zoom="fit" aria-label="Focus on the players">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h5V4M20 9h-5V4M4 15h5v5M20 15h-5v5"></path></svg>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -564,24 +584,6 @@ const ariaFor = (itemTitle: string, date: string) => `${dayLabel(date)}, ${itemT
         >
           <span class="grabber" aria-hidden="true"></span>
         </button>
-        <nav class="mode-switch" aria-label="Bubbles">
-          <a
-            class:list={["mode-button", !isPast && "nav-current"]}
-            href="/"
-            aria-current={isPast ? undefined : "page"}>AI</a
-          >
-          <a
-            class:list={["mode-button", id === "dotcom" && "nav-current"]}
-            href="/past/dotcom/"
-            aria-current={id === "dotcom" ? "page" : undefined}>Dot-com</a
-          >
-          <a
-            class:list={["mode-button", id === "housing" && "nav-current"]}
-            href="/past/housing/"
-            aria-current={id === "housing" ? "page" : undefined}>Housing</a
-          >
-          <a class="mode-button" href="/compare/">Compare</a>
-        </nav>
         <div class="dock-row">
           <p class="dock-title" data-bind="dock-title">{current.title}</p>
         </div>

@@ -1388,32 +1388,30 @@ const timelineInner = document.querySelector<HTMLElement>("[data-timeline]");
 if (timelineInner) new ResizeObserver(drawTimeline).observe(timelineInner);
 document.fonts.ready.then(drawTimeline, () => {});
 
-// The phone's map is sized from the visible area: the room above the bottom sheet, minus 12px on
-// each side, never wider than the window, and 560px at most; it is centred in that space. The
-// sheet grows and shrinks with its content, so the map is measured again whenever the sheet or
-// the window changes, never from a fixed pixel guess. Desktop is untouched: its map is hidden.
+// Keep the phone's map square below the tabs and above the sheet, even when the tabs wrap
+// or the sheet changes height. Desktop has its own map.
+const phoneMap = document.querySelector<HTMLElement>(".layout-phone")!;
+const mapBubble = phoneMap.querySelector<HTMLElement>(".map-bubble")!;
+const mapTop = phoneMap.querySelector<HTMLElement>(".map-top")!;
+const mapSheet = phoneMap.querySelector<HTMLElement>("[data-sheet]")!;
+
 function sizeMapBubble(): void {
-  const map = document.querySelector<HTMLElement>(".layout-phone");
-  const bubble = document.querySelector<HTMLElement>(".map-bubble");
-  const sheet = document.querySelector<HTMLElement>("[data-sheet]");
-  if (!map || !bubble || !sheet) return;
-  const mapBox = map.getBoundingClientRect();
-  const mapWidth = mapBox.width;
-  const sheetTop = sheet.getBoundingClientRect().top - mapBox.top;
-  const size = Math.max(0, Math.min(560, mapWidth - 24, sheetTop - 24));
-  bubble.style.width = `${size}px`;
-  bubble.style.left = `${(mapWidth - size) / 2}px`;
-  bubble.style.top = `${(sheetTop - size) / 2}px`;
+  if (desktopLayout.matches) return;
+  const map = phoneMap.getBoundingClientRect();
+  const top = mapTop.getBoundingClientRect().bottom - map.top;
+  const bottom = mapSheet.getBoundingClientRect().top - map.top;
+  const size = Math.max(0, Math.min(560, map.width - 24, bottom - top - 24));
+  mapBubble.style.width = `${size}px`;
+  mapBubble.style.left = `${(map.width - size) / 2}px`;
+  mapBubble.style.top = `${(top + bottom - size) / 2}px`;
 }
 
 sizeMapBubble();
-const mapSheet = document.querySelector<HTMLElement>("[data-sheet]");
-if (mapSheet) new ResizeObserver(sizeMapBubble).observe(mapSheet);
-window.addEventListener("resize", sizeMapBubble);
+const mapResize = new ResizeObserver(sizeMapBubble);
+for (const element of [phoneMap, mapTop, mapSheet]) mapResize.observe(element);
 
-// The phone's bottom sheet is open or docked with just the handle, tab pill and one title line.
-// Drag or tap the handle to switch; the choice stays on this device. The observer above measures
-// the map again so docking gives the bubble the room the panel gives up.
+// The phone's sheet docks to just the handle, a title line and the timeline. Drag or tap the
+// handle to switch states; the choice is kept on this device.
 const SHEET_KEY = "aibubble.sheet";
 const SHEET_SNAP_MS = 200;
 const sheetMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -1465,7 +1463,7 @@ function showSheetState(sheet: HTMLElement, state: SheetState): void {
   const handle = sheet.querySelector<HTMLButtonElement>("[data-sheet-handle]");
   handle?.setAttribute("aria-expanded", String(state === "open"));
   handle?.setAttribute("aria-label", state === "open" ? "Show less" : "Show more");
-  if (state === "open") drawTimeline();
+  drawTimeline();
 }
 
 for (const sheet of document.querySelectorAll<HTMLElement>("[data-sheet]")) {
@@ -1528,11 +1526,10 @@ for (const sheet of document.querySelectorAll<HTMLElement>("[data-sheet]")) {
     settle(state, sheet.getBoundingClientRect().height, state === "open" ? open : docked);
   };
 
-  // A press with a pointer is handled below, so only a click with no pointer behind it (Enter,
-  // Space, a screen reader) toggles here.
+  // Toggle on click, not pointerup: a touch click must land before the sheet moves away.
+  let dragged = false;
   handle.addEventListener("click", (event) => {
-    if (event.detail !== 0) return;
-    toggle();
+    if (event.detail === 0 || !dragged) toggle();
   });
 
   handle.addEventListener("pointerdown", (event) => {
@@ -1542,16 +1539,9 @@ for (const sheet of document.querySelectorAll<HTMLElement>("[data-sheet]")) {
     const open = sheetHeight(sheet, "open");
     // A layout that is not showing (desktop) has no height to drag.
     if (open <= 1) return;
-    stopSnap();
-    // A sheet caught mid-snap keeps the height it had reached and follows the pointer from there.
-    sheet.classList.remove("is-snapping");
     const startState: SheetState = sheet.dataset.sheetState === "docked" ? "docked" : "open";
     const startHeight = sheet.getBoundingClientRect().height;
-    // Dragging a docked sheet shows what it is uncovering from the first pixel.
-    if (startState === "docked") showSheetState(sheet, "open");
-    sheet.style.maxHeight = "none";
-    sheet.style.height = `${startHeight}px`;
-    sheet.classList.add("is-dragging");
+    dragged = false;
     drag = {
       id: event.pointerId,
       startState,
@@ -1578,21 +1568,24 @@ for (const sheet of document.querySelectorAll<HTMLElement>("[data-sheet]")) {
     drag.time = event.timeStamp;
     drag.height = height;
     drag.moved = Math.max(drag.moved, Math.hypot(event.clientX - drag.startX, travel));
+    if (!dragged) {
+      if (drag.moved < SHEET_TAP_PX) return;
+      dragged = true;
+      stopSnap();
+      sheet.classList.remove("is-snapping");
+      if (drag.startState === "docked") showSheetState(sheet, "open");
+      sheet.style.maxHeight = "none";
+      sheet.classList.add("is-dragging");
+    }
     sheet.style.height = `${height}px`;
   });
 
   const endDrag = (event: PointerEvent): void => {
     if (drag === null || drag.id !== event.pointerId) return;
-    const { startState, height, docked, open, velocity, moved } = drag;
+    const { height, docked, open, velocity } = drag;
     drag = null;
-    if (handle.hasPointerCapture(event.pointerId)) handle.releasePointerCapture(event.pointerId);
-    // A press that barely moved is a tap: the handle switches the sheet.
-    const state: SheetState =
-      moved < SHEET_TAP_PX
-        ? startState === "docked"
-          ? "open"
-          : "docked"
-        : snapSheet(height, docked, open, velocity);
+    if (!dragged) return;
+    const state = snapSheet(height, docked, open, velocity);
     settle(state, height, state === "open" ? open : docked);
   };
   handle.addEventListener("pointerup", endDrag);
