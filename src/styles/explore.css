@@ -356,7 +356,7 @@ body { --bubble-caption-size: 13px; }
   border-radius: 50%;
   background: var(--ink-2);
   border: 1.5px solid var(--paper);
-  transition: all 300ms ease;
+  transition: width 300ms ease, height 300ms ease, background 300ms ease, left 300ms ease;
 }
 
 .timeline-dot[data-dot="key"] .dot {

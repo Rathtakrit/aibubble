@@ -336,6 +336,56 @@ test('Earlier / Later', async ({ page, isMobile }) => {
   }
 });
 
+async function chapterStepFrames(page: Page, chapter: number, sample: 'rings' | 'marker') {
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await open(page, `/?chapter=${chapter}`);
+  const next = page.getByRole('button', { name: /^Next chapter/ }).filter({ visible: true });
+  const marker = page.locator('[data-timeline-current]');
+  await expect(marker).toBeVisible();
+  await next.scrollIntoViewIfNeeded();
+  // Start sampling at the click, not when Playwright's click command returns.
+  const button = await next.elementHandle();
+  await page.evaluate(({ button, sample }) => {
+    const marker = document.querySelector('[data-timeline-current]')!;
+    const dots = [...document.querySelectorAll('.timeline-inner .dot')];
+    const measure = sample === 'rings'
+      ? () => dots.filter(dot => getComputedStyle(dot).boxShadow !== 'none').length
+      : () => marker.getBoundingClientRect().x;
+    const frames = new Promise<number[]>(resolve => button.addEventListener('click', () => {
+      const samples = [measure()];
+      const start = performance.now();
+      function record(now: number) {
+        samples.push(measure());
+        if (now - start < 1200) requestAnimationFrame(record);
+        else resolve(samples);
+      }
+      requestAnimationFrame(record);
+    }, { capture: true, once: true }));
+    Object.assign(window, { chapterStepFrames: frames });
+  }, { button, sample });
+  await next.click();
+  await expect(page).toHaveURL(new RegExp(`[?]chapter=${chapter + 1}$`));
+  return page.evaluate(() => (window as typeof window & { chapterStepFrames: Promise<number[]> }).chapterStepFrames);
+}
+
+test('One red ring on a chapter step', async ({ page }) => {
+  const rings = await chapterStepFrames(page, 1, 'rings');
+  expect(rings[0], 'The starting chapter should have a ring').toBe(1);
+  expect(Math.max(...rings), 'Most ringed dots in any frame').toBeLessThanOrEqual(1);
+});
+
+test('Marker moves one way on a chapter step', async ({ page }) => {
+  const positions = await chapterStepFrames(page, 7, 'marker');
+  const direction = Math.sign(positions.at(-1)! - positions[0]) || 1;
+  let furthest = positions[0] * direction;
+  let backtrack = 0;
+  for (const x of positions) {
+    furthest = Math.max(furthest, x * direction);
+    backtrack = Math.max(backtrack, furthest - x * direction);
+  }
+  expect(backtrack, 'Largest backward move from any earlier frame, in px').toBeLessThanOrEqual(1);
+});
+
 test('The AI footer minimap starts on the first day and supports keyboard scrubbing', async ({ page, isMobile }) => {
   await open(page, '/', middle);
   const strip = page.locator('.timeline-footer [data-timeline-strip]');

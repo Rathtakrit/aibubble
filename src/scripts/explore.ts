@@ -139,6 +139,7 @@ let visibleTimeline = fullTimeline;
 let timelineTarget = fullTimeline;
 let timelineFrame: number | null = null;
 let timelineHandle = 50;
+let chapterHandleX: number | undefined;
 let scrubPointer: number | null = null;
 const timelineMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 const desktopLayout = window.matchMedia("(min-width: 900px)");
@@ -200,29 +201,13 @@ function drawTimeline(): void {
         : label.dataset.fullEnd;
     }
   }
-  const ids = new Set(timelineTarget.ids);
-  for (const element of inner.querySelectorAll<HTMLElement>("[data-timeline-date]")) {
-    const percent = windowPercent(scale.percentOf(element.dataset.timelineDate!), visibleTimeline);
-    const id = element.dataset.timelineId ?? element.dataset.news;
-    // The whole line must still offer its first and last items, even in sets where
-    // an end item does not have a key or small date flag.
-    if (id && (id === timelineEvents[0]?.id || id === timelineEvents[timelineEvents.length - 1]?.id)) {
-      delete element.dataset.zoomOnly;
-    }
-    element.dataset.outside = String(percent < 0 || percent > 100 || (timelineZoomed && !!id && !ids.has(id)));
-    element.style.left = `${percent}%`;
-  }
-  placeTimelineDots(inner);
+  drawTimelineDots(inner, visibleTimeline);
   let current = timelineHandle;
-  if (!desktopLayout.matches && scrubPointer === null) {
-    const selected = inner.querySelector<HTMLElement>(".timeline-dot.is-current");
-    if (selected?.offsetHeight) {
-      // The handle follows the painted dot even when nearby dates have been fanned out.
-      const center = timelineDotX(selected);
-      const dateX = parseFloat(selected.style.left) * inner.clientWidth / 100;
-      const distance = Math.abs(current * inner.clientWidth / 100 - dateX);
-      current += (center - dateX) * Math.max(0, 1 - distance / 22) * 100 / inner.clientWidth;
-    }
+  if (chapterHandleX !== undefined) {
+    const { left, width } = inner.getBoundingClientRect();
+    current = timelineHandle = (chapterHandleX - left) / width * 100;
+  } else if (scrubPointer === null) {
+    current = paintedHandleAt(inner, current);
   }
   inner.style.setProperty("--timeline-current", `${current}%`);
   const marker = inner.querySelector<HTMLElement>("[data-timeline-current]");
@@ -242,7 +227,34 @@ function drawTimeline(): void {
   placeTimelineLabels();
 }
 
-function updateTimeline(immediate = false): void {
+function drawTimelineDots(inner: HTMLElement, window: TimelineWindow): void {
+  const ids = new Set(timelineTarget.ids);
+  for (const element of inner.querySelectorAll<HTMLElement>("[data-timeline-date]")) {
+    const percent = windowPercent(scale.percentOf(element.dataset.timelineDate!), window);
+    const id = element.dataset.timelineId ?? element.dataset.news;
+    // The whole line must still offer its first and last items, even in sets where
+    // an end item does not have a key or small date flag.
+    if (id && (id === timelineEvents[0]?.id || id === timelineEvents[timelineEvents.length - 1]?.id)) {
+      delete element.dataset.zoomOnly;
+    }
+    element.dataset.outside = String(percent < 0 || percent > 100 || (timelineZoomed && !!id && !ids.has(id)));
+    element.style.left = `${percent}%`;
+  }
+  placeTimelineDots(inner);
+}
+
+function paintedHandleAt(inner: HTMLElement, current: number): number {
+  if (desktopLayout.matches) return current;
+  const selected = inner.querySelector<HTMLElement>(".timeline-dot.is-current");
+  if (!selected?.offsetHeight) return current;
+  // The handle follows the painted dot even when nearby dates have been fanned out.
+  const center = timelineDotX(selected);
+  const dateX = parseFloat(selected.style.left) * inner.clientWidth / 100;
+  const distance = Math.abs(current * inner.clientWidth / 100 - dateX);
+  return current + (center - dateX) * Math.max(0, 1 - distance / 22) * 100 / inner.clientWidth;
+}
+
+function updateTimeline(immediate = false, chapterStep = false): void {
   document.body.dataset.timelineZoomed = String(timelineZoomed);
   const anchor = (itemId === null ? null : byId.get(itemId)) ?? latestOnOrBefore(ordered, day);
   for (const button of document.querySelectorAll<HTMLButtonElement>('[data-action="timeline-zoom"]')) {
@@ -254,13 +266,13 @@ function updateTimeline(immediate = false): void {
       ? "M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"
       : "M4 9h5V4M20 9h-5V4M4 15h5v5M20 15h-5v5");
   }
-  glideTimeline(anchor?.id ?? timelineEvents[0]?.id ?? "", immediate);
+  glideTimeline(anchor?.id ?? timelineEvents[0]?.id ?? "", immediate, chapterStep);
 }
 
 let timelineDrawn = false;
 let timelineTargetHandle = 50;
 
-function glideTimeline(anchor: string, immediate: boolean): void {
+function glideTimeline(anchor: string, immediate: boolean, chapterStep: boolean): void {
   const last = timelineEvents[timelineEvents.length - 1];
   // Share the final window across the last step so the handle travels to the final dot
   // instead of recentering the rail on both items.
@@ -274,8 +286,9 @@ function glideTimeline(anchor: string, immediate: boolean): void {
   timelineTarget = target;
   timelineTargetHandle = endHandle;
   if (timelineFrame !== null) cancelAnimationFrame(timelineFrame);
+  chapterHandleX = undefined;
   if (timelineMotion.matches || immediate || !timelineDrawn || scrubPointer !== null ||
-    (sameWindow && timelineHandle === endHandle)) {
+    (!chapterStep && sameWindow && timelineHandle === endHandle)) {
     timelineDrawn = true;
     timelineFrame = null;
     visibleTimeline = target;
@@ -285,6 +298,20 @@ function glideTimeline(anchor: string, immediate: boolean): void {
   }
   const from = visibleTimeline;
   const handleOffset = timelineHandle - timelineHandleAt(from);
+  const inner = chapterStep ? timeline.querySelector<HTMLElement>("[data-timeline]") : null;
+  const marker = inner?.querySelector<HTMLElement>("[data-timeline-current]");
+  let chapterPath: { start: number; end: number } | undefined;
+  if (inner?.clientWidth && marker) {
+    // Move straight to the marker's final spot while the dates glide underneath it.
+    const { left, width } = inner.getBoundingClientRect();
+    const start = marker.getBoundingClientRect().x;
+    // On the phone, measure the fanned-out dots at the end before putting the old window back.
+    if (!desktopLayout.matches) drawTimelineDots(inner, target);
+    const end = left + width * paintedHandleAt(inner, endHandle) / 100;
+    if (!desktopLayout.matches) drawTimelineDots(inner, from);
+    chapterPath = { start, end };
+    chapterHandleX = start;
+  }
   const start = performance.now();
   function glide(now: number): void {
     const t = Math.min(1, (now - start) / (sameWindow ? 300 : 900));
@@ -295,9 +322,15 @@ function glideTimeline(anchor: string, immediate: boolean): void {
       end: from.end + (target.end - from.end) * eased,
       ids: target.ids,
     };
-    // Follow the changing scale during zoom, and ease from the old handle on a news step.
-    const position = timelineHandleAt(visibleTimeline);
-    timelineHandle = Math.max(0, Math.min(100, position + handleOffset * (1 - eased)));
+    if (chapterPath && t < 1) {
+      chapterHandleX = chapterPath.start + (chapterPath.end - chapterPath.start) * eased;
+    } else {
+      chapterHandleX = undefined;
+      // Follow the changing scale during zoom, and ease from the old handle on a news step.
+      const position = timelineHandleAt(visibleTimeline);
+      timelineHandle = t === 1 ? endHandle
+        : Math.max(0, Math.min(100, position + handleOffset * (1 - eased)));
+    }
     drawTimeline();
     timelineFrame = t < 1 ? requestAnimationFrame(glide) : null;
   }
@@ -308,6 +341,7 @@ timelineMotion.addEventListener("change", () => {
   if (!timelineMotion.matches) return;
   if (timelineFrame !== null) cancelAnimationFrame(timelineFrame);
   timelineFrame = null;
+  chapterHandleX = undefined;
   visibleTimeline = timelineTarget;
   timelineHandle = timelineTargetHandle;
   drawTimeline();
@@ -420,7 +454,7 @@ function renderCompany(company: Company): void {
   }
 }
 
-function render(soon = false): void {
+function render(soon = false, chapterStep = false): void {
   // A company the chosen day does not show goes back to the quiet day.
   if (companyId !== null && !isCompanyShown(companyId, day)) {
     companyId = null;
@@ -542,7 +576,7 @@ function render(soon = false): void {
   for (const marker of document.querySelectorAll<HTMLElement>("[data-news]")) {
     marker.classList.toggle("is-current", item !== null && marker.dataset.news === item.id);
   }
-  updateTimeline();
+  updateTimeline(false, chapterStep);
 
   // Earlier and Later walk every news item in date order and stop at the ends.
   const at = anchor ? ordered.findIndex((one) => one.id === anchor.id) : -1;
@@ -684,7 +718,7 @@ function focusVisible(selector: string): void {
   }
 }
 
-function goToChapter(index: number): void {
+function goToChapter(index: number, chapterStep = false): void {
   if (!STORY_ENABLED) return;
   const chapter = chapters[index];
   if (!chapter) return;
@@ -694,7 +728,7 @@ function goToChapter(index: number): void {
   companyId = null;
   day = chapter.date;
   resetZoom(true);
-  render();
+  render(false, chapterStep);
   // A chapter opens at its first line: on the phone the sheet scrolls back to the top, and on a
   // desktop page that has grown past the window, the page scrolls back to the chapter's kicker.
   for (const panel of document.querySelectorAll<HTMLElement>("[data-sheet]")) {
@@ -838,13 +872,13 @@ document.addEventListener("click", (event) => {
   } else if (action === "company-back") {
     clearCompany();
   } else if (action === "chapter-earlier") {
-    if (chapterIndex !== null) goToChapter(chapterIndex - 1);
+    if (chapterIndex !== null) goToChapter(chapterIndex - 1, true);
   } else if (action === "chapter-next") {
     if (chapterIndex !== null) {
       if (chapterIndex === chapters.length - 1) {
         leaveStory(day);
       } else {
-        goToChapter(chapterIndex + 1);
+        goToChapter(chapterIndex + 1, true);
       }
     }
   } else if (action === "story-explore") {
@@ -929,6 +963,7 @@ function startTimelineScrub(pointerId: number): void {
   // Hold the mapping still under the pointer, including when a glide was interrupted.
   if (timelineFrame !== null) cancelAnimationFrame(timelineFrame);
   timelineFrame = null;
+  chapterHandleX = undefined;
   timelineTarget = visibleTimeline;
 }
 
