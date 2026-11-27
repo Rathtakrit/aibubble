@@ -145,11 +145,13 @@ const timelineMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 const desktopLayout = window.matchMedia("(min-width: 900px)");
 const timeline = document.querySelector<HTMLElement>(".timeline")!;
 const desktop = timeline.parentElement!;
-const sheetButtons = document.querySelector<HTMLElement>(".sheet > .sheet-buttons.explore-only")!;
+const sheetStatus = document.querySelector<HTMLElement>(".sheet > .status")!;
+const timelineEarlier = timeline.querySelector<HTMLButtonElement>("[data-timeline-earlier]")!;
+const timelineNext = timeline.querySelector<HTMLButtonElement>("[data-timeline-next]")!;
 
 function mountTimeline(): void {
-  (desktopLayout.matches ? desktop : sheetButtons.parentElement!).insertBefore(
-    timeline, desktopLayout.matches ? null : sheetButtons,
+  (desktopLayout.matches ? desktop : sheetStatus.parentElement!).insertBefore(
+    timeline, desktopLayout.matches ? null : sheetStatus,
   );
   for (const dot of timeline.querySelectorAll<HTMLElement>(".timeline-dot")) {
     dot.inert = !desktopLayout.matches;
@@ -488,7 +490,16 @@ function render(soon = false, chapterStep = false): void {
   }
 
   // The stylesheet follows the mode: Story shows the chapter's dots and hides Explore's masthead.
-  document.body.dataset.mode = storyChapter !== null ? "story" : "explore";
+  const inStory = storyChapter !== null;
+  const atLastChapter = storyAt === chapters.length - 1;
+  const nextChapterLabel = atLastChapter ? "Explore any day" : "Next chapter";
+  document.body.dataset.mode = inStory ? "story" : "explore";
+  timelineEarlier.dataset.action = inStory ? "chapter-earlier" : "earlier";
+  timelineNext.dataset.action = inStory ? "chapter-next" : "later";
+  timelineEarlier.title = inStory ? "Earlier chapter" : "Earlier";
+  timelineNext.title = inStory ? nextChapterLabel : "Later";
+  timelineEarlier.setAttribute("aria-label", timelineEarlier.title);
+  timelineNext.setAttribute("aria-label", timelineNext.title);
   for (const sheet of document.querySelectorAll<HTMLElement>("[data-sheet]")) {
     sheet.setAttribute("aria-label", storyChapter !== null ? "Chapter" : "News item");
   }
@@ -512,9 +523,11 @@ function render(soon = false, chapterStep = false): void {
     for (const button of document.querySelectorAll<HTMLButtonElement>('[data-action="chapter-earlier"]')) {
       button.disabled = storyAt === 0;
     }
-    const atLastChapter = storyAt === chapters.length - 1;
+    timelineNext.disabled = false;
     for (const button of document.querySelectorAll<HTMLButtonElement>('[data-action="chapter-next"]')) {
-      button.textContent = atLastChapter ? "Explore any day" : "Next chapter →";
+      if (button !== timelineNext) {
+        button.textContent = atLastChapter ? nextChapterLabel : `${nextChapterLabel} →`;
+      }
     }
     for (const button of document.querySelectorAll<HTMLElement>('[data-action="story-open"]')) {
       button.setAttribute("aria-expanded", String(storyListOpen));
@@ -1398,11 +1411,9 @@ const mapSheet = document.querySelector<HTMLElement>("[data-sheet]");
 if (mapSheet) new ResizeObserver(sizeMapBubble).observe(mapSheet);
 window.addEventListener("resize", sizeMapBubble);
 
-// The phone's bottom sheet rests in one of two states: open, today's panel at most 40% of the
-// screen, or docked, a small panel with the handle, the tab pill and one title line with Earlier
-// and Later. The handle's row drags between them and a tap on it switches; the choice is kept on
-// this device. The map above the sheet is measured again by the observer above, so docking gives
-// the bubble the room the panel gives up.
+// The phone's bottom sheet is open or docked with just the handle, tab pill and one title line.
+// Drag or tap the handle to switch; the choice stays on this device. The observer above measures
+// the map again so docking gives the bubble the room the panel gives up.
 const SHEET_KEY = "aibubble.sheet";
 const SHEET_SNAP_MS = 200;
 const sheetMotion = window.matchMedia("(prefers-reduced-motion: reduce)");

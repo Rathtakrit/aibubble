@@ -68,11 +68,10 @@ function paintedDate(region: Locator, item: Item) {
   return region.locator(`[data-news=${JSON.stringify(item.id)}]`);
 }
 
-async function step(page: Page, direction: 'Earlier' | 'Later', phone: boolean) {
-  const arrowName = direction === 'Earlier' ? '\u2190 Earlier' : 'Later \u2192';
-  const shortName = page.getByRole('button', { name: direction, exact: true });
-  // The expanded phone sheet on some versions uses the long captions instead of the dock buttons.
-  return phone && await shortName.isVisible() ? shortName : page.getByRole('button', { name: arrowName, exact: true });
+function step(page: Page, direction: 'Earlier' | 'Later', phone: boolean) {
+  if (phone) return timeline(page).getByRole('button', { name: direction, exact: true });
+  const name = direction === 'Earlier' ? '\u2190 Earlier' : 'Later \u2192';
+  return page.getByRole('button', { name, exact: true });
 }
 
 async function open(page: Page, path = '/', item?: Item) {
@@ -326,20 +325,20 @@ test('Earlier / Later', async ({ page, isMobile }) => {
       const hasZoom = await zoom(page).isVisible();
       if (hasZoom) await setZoom(page, inward);
       else if (!inward) await setZoom(page, inward);
-      await (await step(page, 'Earlier', isMobile)).click();
+      await step(page, 'Earlier', isMobile).click();
       await shown(page, ai[ai.indexOf(middle) - 1]);
       if (hasZoom) expect(await zoomState(page), 'Earlier preserves zoom').toBe(inward);
-      await (await step(page, 'Later', isMobile)).click();
+      await step(page, 'Later', isMobile).click();
       await shown(page, middle);
       if (hasZoom) expect(await zoomState(page), 'Later preserves zoom').toBe(inward);
     });
   }
 });
 
-async function chapterStepFrames(page: Page, chapter: number, sample: 'rings' | 'marker') {
+async function chapterStepFrames(page: Page, phone: boolean, chapter: number, sample: 'rings' | 'marker') {
   await page.emulateMedia({ reducedMotion: 'no-preference' });
   await open(page, `/?chapter=${chapter}`);
-  const next = page.getByRole('button', { name: /^Next chapter/ }).filter({ visible: true });
+  const next = phone ? page.locator('[data-timeline-next]') : page.getByRole('button', { name: /^Next chapter/ });
   const marker = page.locator('[data-timeline-current]');
   await expect(marker).toBeVisible();
   await next.scrollIntoViewIfNeeded();
@@ -368,14 +367,14 @@ async function chapterStepFrames(page: Page, chapter: number, sample: 'rings' | 
   return page.evaluate(() => (window as typeof window & { chapterStepFrames: Promise<number[]> }).chapterStepFrames);
 }
 
-test('One red ring on a chapter step', async ({ page }) => {
-  const rings = await chapterStepFrames(page, 1, 'rings');
+test('One red ring on a chapter step', async ({ page, isMobile }) => {
+  const rings = await chapterStepFrames(page, isMobile, 1, 'rings');
   expect(rings[0], 'The starting chapter should have a ring').toBe(1);
   expect(Math.max(...rings), 'Most ringed dots in any frame').toBeLessThanOrEqual(1);
 });
 
-test('Marker moves one way on a chapter step', async ({ page }) => {
-  const positions = await chapterStepFrames(page, 7, 'marker');
+test('Marker moves one way on a chapter step', async ({ page, isMobile }) => {
+  const positions = await chapterStepFrames(page, isMobile, 7, 'marker');
   const direction = Math.sign(positions.at(-1)! - positions[0]) || 1;
   let furthest = positions[0] * direction;
   let backtrack = 0;
@@ -410,7 +409,7 @@ test('Line keeps its width', async ({ page, isMobile }) => {
   if (!isMobile) await strip.scrollIntoViewIfNeeded();
   for (const fraction of [0.2, 0.6, 0.35, 0.8, 0.5]) {
     if (isMobile) {
-      await (await step(page, 'Later', true)).tap();
+      await step(page, 'Later', true).tap();
     } else {
       const rail = await box(strip, 'Whole story strip');
       await page.mouse.click(rail.x + rail.width * fraction, rail.y + rail.height / 2);
@@ -458,7 +457,7 @@ async function laterMotion(page: Page, phone: boolean, ms: number) {
   await open(page, '/', ai.at(-2)!);
   await shown(page, ai.at(-2)!);
   const slider = daySlider(page);
-  const later = await step(page, 'Later', phone);
+  const later = step(page, 'Later', phone);
   await expect(slider, 'Visible Day slider for motion sampling').toBeVisible();
   await later.scrollIntoViewIfNeeded();
   // Sample in the browser at the requested time, not after the click command returns.
@@ -468,6 +467,7 @@ async function laterMotion(page: Page, phone: boolean, ms: number) {
   else await later.click();
   const during = await page.evaluate(() => (window as typeof window & { timelineMotionSample?: Promise<number> }).timelineMotionSample!);
   await shown(page, last);
+  await expect(later).toBeDisabled();
   await slider.evaluate(async input => {
     await Promise.allSettled((input.parentElement ?? input).getAnimations({ subtree: true }).map(a => a.finished));
   });
@@ -482,13 +482,30 @@ test('Phone only: bottom sheet, tap boxes and smooth handle', async ({ page, isM
   const region = sheet(page).getByRole('region', { name: 'Timeline', exact: true });
   await expect.soft(region, 'The bottom sheet should contain a named Timeline region').toBeVisible();
   await expect(region.getByText('Whole story', { exact: true })).toBeHidden();
-  const buttons = region.getByRole('button');
-  await expect(buttons).toHaveCount(3);
-  for (const button of [...await buttons.all(), await step(page, 'Earlier', true), await step(page, 'Later', true)]) {
-    const rect = await box(button, 'Phone timeline tap target');
-    const label = await button.getAttribute('aria-label') ?? await button.innerText();
-    expect.soft(Math.min(rect.width, rect.height), `${label}: ${rect.width.toFixed(1)} x ${rect.height.toFixed(1)} px`).toBeGreaterThanOrEqual(44);
+  const controls = region.locator('.timeline-controls');
+  const buttons = controls.getByRole('button');
+  await expect(step(page, 'Earlier', true)).toBeDisabled();
+  for (const { width, height } of [{ width: 390, height: 844 }, { width: 360, height: 780 }]) {
+    await page.setViewportSize({ width, height });
+    await expect(buttons).toHaveCount(5);
+    const row = await box(controls, 'Phone control row');
+    expect(row.x).toBeGreaterThanOrEqual(0);
+    expect(row.x + row.width).toBeLessThanOrEqual(width);
+    let right = row.x;
+    for (const [index, button] of (await buttons.all()).entries()) {
+      const rect = await box(button, 'Phone timeline tap target');
+      const label = await button.getAttribute('aria-label');
+      expect.soft(Math.min(rect.width, rect.height), `${label} at ${width}px`).toBeGreaterThanOrEqual(44);
+      expect(inside(rect, row), `${label} fits the row at ${width}px`).toBe(true);
+      expect(rect.x).toBeGreaterThanOrEqual(right);
+      if (index === 0) expect(rect.x).toBe(row.x);
+      right = rect.x + rect.width;
+    }
+    expect(right).toBe(row.x + row.width);
+    await expect(step(page, 'Earlier', true)).toHaveAttribute('title', 'Earlier');
+    await expect(step(page, 'Later', true)).toHaveAttribute('title', 'Later');
   }
+  await page.setViewportSize({ width: 390, height: 844 });
   expect((await box(daySlider(page), 'Day slider tap area')).height).toBeGreaterThanOrEqual(44);
   const { start, during, end } = await laterMotion(page, true, 100);
   expect(during, `Handle at 100 ms (start ${start.toFixed(1)}, end ${end.toFixed(1)})`).toBeGreaterThan(Math.min(start, end) + 1);

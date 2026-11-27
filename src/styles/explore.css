@@ -201,8 +201,7 @@ body { --bubble-caption-size: 13px; }
   cursor: default;
 }
 
-.button-row,
-.sheet-buttons {
+.button-row {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
@@ -669,11 +668,8 @@ body:not([data-timeline-zoomed="true"]) [data-zoom-only="true"],
   pointer-events: none;
 }
 
-/* The docked sheet: the handle, the tab pill and one line with the news title, ellipsed, beside
-   the compact Earlier / Later arrows. The rest of the panel waits until it is open again. */
+/* The docked sheet shows only the handle, the tab pill and one title line. */
 .sheet[data-sheet-state="docked"] {
-  /* The panel is as tall as its three rows and no taller; on a very short screen that is a few
-     pixels over 40%, and the rows are the smallest they can be with 44px arrows. */
   max-height: none;
   overflow: visible;
   padding-top: 0;
@@ -715,25 +711,6 @@ body:not([data-timeline-zoomed="true"]) [data-zoom-only="true"],
   font-size: 16px;
   line-height: 1.2;
   color: var(--ink);
-}
-
-.dock-button {
-  flex: 0 0 44px;
-  width: 44px;
-  height: 44px;
-  padding: 0;
-  border: 1px solid var(--ink);
-  background: transparent;
-  color: var(--ink);
-  font-family: inherit;
-  font-size: 18px;
-  line-height: 1;
-  cursor: pointer;
-}
-
-.dock-button:disabled {
-  opacity: 0.35;
-  cursor: default;
 }
 
 /* While the handle is dragged, and while the sheet settles, the panel's own scrolling waits so
@@ -796,29 +773,6 @@ body:not([data-timeline-zoomed="true"]) [data-zoom-only="true"],
   --source-gap: 6px;
 }
 
-.sheet > .sheet-buttons {
-  margin-top: 12px;
-}
-
-.sheet-buttons {
-  gap: 10px;
-  margin-top: 0;
-}
-
-.sheet-buttons .button {
-  flex: 1 1 0;
-  height: 44px;
-  font-size: 14px;
-}
-
-.sheet-buttons .button-primary {
-  flex: 1 1 0;
-}
-
-/* The line sits below the Earlier / Later buttons. The Report link's tap area is 44px tall but
-   its text is not, so the link is pulled up half of that extra height by its own margins (see the
-   next rule). The line is moved down by the same amount, plus 12px, so the link's box always
-   starts at least 12px below the buttons' boxes and the two never touch. */
 .sheet .status {
   margin: calc(12px + (44px - 1lh) / 2) 0 0;
   font-size: 11px;
@@ -1092,7 +1046,6 @@ body[data-mode="story"] .sheet .mode-switch {
   margin-bottom: 8px;
 }
 
-.sheet [data-block="story"] .sheet-buttons,
 .sheet .story-links {
   margin-top: 8px;
 }
@@ -1178,6 +1131,7 @@ body[data-mode="story"] .sheet .mode-switch {
 body[data-mode="story"] .timeline-controls [data-action="timeline-story"] { display: none; }
 .timeline-controls [data-action="timeline-zoom"] { background: var(--ink); color: var(--paper); }
 .timeline-controls button:disabled { opacity: .45; cursor: default; }
+.timeline-controls :is([data-timeline-earlier], [data-timeline-next]) { display: none; }
 .timeline-current { position: absolute; top: 28px; height: 36px; border-left: 2px solid var(--ink); pointer-events: none; }
 .timeline-current::after { content: ""; position: absolute; top: 23px; left: -15px; width: 26px; height: 26px; box-sizing: border-box; border: 3px solid #B42318; border-radius: 50%; background: var(--paper); }
 .timeline-inner .is-current .dot { box-shadow: 0 0 0 3px var(--paper), 0 0 0 6px #B42318; }
@@ -1328,7 +1282,9 @@ body[data-mode="explore"][data-timeline-zoomed="true"] .timeline-label[data-time
   .sheet .timeline-strip { display: none; }
   .sheet .timeline-dot { pointer-events: none; }
   .timeline-footer { flex-wrap: wrap; gap: 4px 16px; }
-  .timeline-controls { margin-left: auto; }
+  .timeline-controls { width: 100%; }
+  .timeline-controls :is([data-timeline-earlier], [data-timeline-next]) { display: flex; }
+  .timeline-controls [data-timeline-earlier] { margin-inline-start: auto; }
   .desktop-timeline-status { display: none; }
   .timeline-inner .day-range { touch-action: none; }
 }
