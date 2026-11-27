@@ -160,6 +160,32 @@ for (const set of sets) {
   });
 }
 
+for (const viewport of [{ width: 390, height: 844 }, { width: 360, height: 780 }]) {
+  test(`AI Story timeline and controls fit at ${viewport.width}x${viewport.height}`, async ({ page, isMobile }) => {
+    test.skip(!isMobile, 'Measures the phone Story timeline');
+    await page.setViewportSize(viewport);
+
+    const timeline = page.locator('body[data-mode="story"] .timeline-inner');
+    const next = page.locator('.timeline-controls [data-timeline-next]');
+    for (const chapter of chapters) {
+      await page.goto(`/?chapter=${chapter.number}`);
+      await expectChapter(page, chapter.number);
+      await page.evaluate(() => document.fonts.ready.then(() => null));
+
+      await expect(timeline).toBeVisible();
+      const rail = (await timeline.boundingBox())!;
+      expect(rail.height, `chapter ${chapter.number} timeline height`).toBeLessThanOrEqual(72);
+
+      // The phone's Next button becomes Explore on the last chapter.
+      await expect(next).toHaveAccessibleName(chapter === chapters.at(-1) ? 'Explore any day' : 'Next chapter');
+      await expect(next).toBeVisible();
+      const button = (await next.boundingBox())!;
+      const windowHeight = await page.evaluate(() => window.innerHeight);
+      expect(button.y + button.height, `chapter ${chapter.number} control bottom`).toBeLessThanOrEqual(windowHeight);
+    }
+  });
+}
+
 test('The final AI chapters have separate dots and the marker follows chapter 11', async ({ page, isMobile }) => {
   test.skip(isMobile, 'Measures the desktop timeline');
   await page.setViewportSize({ width: 1280, height: 800 });

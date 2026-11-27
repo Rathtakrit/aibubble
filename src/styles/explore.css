@@ -1275,6 +1275,41 @@ body[data-mode="explore"][data-timeline-zoomed="true"] .timeline-label[data-time
   .timeline-controls [data-timeline-earlier] { margin-inline-start: auto; }
   .desktop-timeline-status { display: none; }
   .timeline-inner .day-range { touch-action: none; }
+
+  body[data-mode="story"] .sheet > .timeline {
+    margin-top: 8px;
+  }
+
+  /* Longer chapters still scroll in the sheet, with navigation in reach. */
+  body[data-mode="story"] .sheet[data-sheet-state="open"]:has(> [data-block="story"]:not([hidden])) > .timeline {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    background: var(--paper);
+  }
+
+  body[data-mode="story"] .timeline-inner {
+    --timeline-line: 42px;
+    height: calc(var(--timeline-line) + 22px); /* Keep the full 44px slider target. */
+  }
+
+  body[data-mode="story"] .timeline-current {
+    height: calc(var(--timeline-line) - 28px);
+  }
+
+  body[data-mode="story"] .timeline-current::after {
+    top: calc(100% - 13px);
+  }
+
+  body[data-mode="story"] .timeline-label[data-story-label],
+  body[data-mode="story"] .timeline-summary {
+    display: none;
+  }
+
+  body[data-mode="story"] .sheet [data-block="story"] .sheet-title {
+    font-size: 30px;
+    line-height: 1.1;
+  }
 }
 
 /* --- desktop: news beside the bubble, one-line timeline below (layout B) --- */
