@@ -2,6 +2,17 @@
   "status": "draft",
   "items": [
     {
+      "id": "2019-07-22-microsoft-openai",
+      "date": "2019-07-22",
+      "from": "microsoft",
+      "to": "openai",
+      "kind": "investment",
+      "amount_usd_bn": 1,
+      "amount_type": "paid",
+      "title": "OpenAI forms exclusive computing partnership with Microsoft to build new Azure AI supercomputing technologies",
+      "source": "https://news.microsoft.com/source/2019/07/22/openai-forms-exclusive-computing-partnership-with-microsoft-to-build-new-azure-ai-supercomputing-technologies/"
+    },
+    {
       "id": "2023-09-25-amazon-anthropic",
       "date": "2023-09-25",
       "from": "amazon",

@@ -9,6 +9,7 @@
   "kinds": [
     { "id": "investment", "label": "Investment deal" },
     { "id": "takeover", "label": "Takeover deal" },
-    { "id": "supplier", "label": "Supplier loan or swap" }
+    { "id": "supplier", "label": "Capacity swap" },
+    { "id": "vendor-loan", "label": "Vendor loan" }
   ]
 }

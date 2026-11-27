@@ -123,6 +123,12 @@ body { --bubble-caption-size: 13px; }
   color: var(--ink);
 }
 
+/* A deal kind past a set's third has no colour of its own yet and keeps the quiet ink-2 its money
+   lines are drawn in. */
+.pill-ink-2 {
+  color: var(--ink-2);
+}
+
 .legend {
   display: flex;
   flex-wrap: wrap;
@@ -162,6 +168,10 @@ body { --bubble-caption-size: 13px; }
   border-top-color: var(--chip);
 }
 
+.legend-ink-2 {
+  border-top-color: var(--ink-2);
+}
+
 .button {
   display: inline-flex;
   align-items: center;
@@ -191,8 +201,7 @@ body { --bubble-caption-size: 13px; }
   cursor: default;
 }
 
-.button-row,
-.sheet-buttons {
+.button-row {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
@@ -346,7 +355,7 @@ body { --bubble-caption-size: 13px; }
   border-radius: 50%;
   background: var(--ink-2);
   border: 1.5px solid var(--paper);
-  transition: all 300ms ease;
+  transition: width 300ms ease, height 300ms ease, background 300ms ease, left 300ms ease;
 }
 
 .timeline-dot[data-dot="key"] .dot {
@@ -546,8 +555,7 @@ body:not([data-timeline-zoomed="true"]) [data-zoom-only="true"],
   line-height: 1.45;
 }
 
-/* The map's square takes the visible area above the bottom sheet: its width and place are set
-   at runtime from that room (sizeMapBubble in explore.ts), so no fixed size lives here. */
+/* The map's square fits between the tab row and the sheet (sizeMapBubble in explore.ts). */
 .map-bubble {
   position: absolute;
   top: 0;
@@ -559,14 +567,24 @@ body:not([data-timeline-zoomed="true"]) [data-zoom-only="true"],
   height: auto;
 }
 
-.map-top {
+.map-chrome {
   position: absolute;
-  left: 12px;
-  right: 12px;
-  top: 12px;
+  inset: 12px 12px auto;
+  display: grid;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.map-top {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+  justify-content: space-between;
   gap: 8px;
+}
+
+.map-chrome :is(a, button) {
+  pointer-events: auto;
 }
 
 .wordmark-chip {
@@ -582,33 +600,44 @@ body:not([data-timeline-zoomed="true"]) [data-zoom-only="true"],
   font-style: italic;
 }
 
-/* The money key and the zoom buttons stand in one column at the top right: the key first, the
-   buttons 8px below it, so the buttons follow the key however many money kinds a page has. */
+/* Preserve the zoom button's Explore position until its own layout changes. The offset
+   is the old stacked legend's 12px line height, row gaps, padding, border and 8px gap. */
 .map-side {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  z-index: 1;
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 8px;
+  justify-content: flex-end;
+  align-items: flex-start;
+}
+
+body[data-mode="explore"] .map-zoom {
+  margin-top: calc(var(--money-kind-count) * (12px * 1.45 + 4px) + 18px);
+}
+
+/* Keep the legend inside the square that sizeMapBubble fits above the sheet. Let the
+   legend use the phone width even when the sheet makes that square narrower. */
+body[data-mode="explore"] .map-bubble {
+  display: grid;
+  aspect-ratio: 1;
+  grid-template: minmax(0, 1fr) auto / minmax(0, 1fr);
+  justify-items: center;
+}
+
+body[data-mode="explore"] .map-bubble .bubble-svg {
+  width: auto;
+  height: 100%;
 }
 
 .phone-legend {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 4px;
-  padding: 6px 8px;
-  border: 1px solid var(--rule);
-  background: var(--paper);
-  color: var(--ink-2);
-  font-size: 12px;
+  width: max-content;
+  max-width: calc(100vw - 24px);
+  justify-content: center;
+  gap: 4px 10px;
+  padding-block: 4px;
+  line-height: 16px;
 }
 
 .phone-legend .legend-item {
   gap: 6px;
+  white-space: nowrap;
 }
 
 /* The cap includes the sheet padding and border. Longer content scrolls inside the sheet. */
@@ -659,11 +688,8 @@ body:not([data-timeline-zoomed="true"]) [data-zoom-only="true"],
   pointer-events: none;
 }
 
-/* The docked sheet: the handle, the tab pill and one line with the news title, ellipsed, beside
-   the compact Earlier / Later arrows. The rest of the panel waits until it is open again. */
+/* The docked sheet shows only the handle, one title line and the timeline. */
 .sheet[data-sheet-state="docked"] {
-  /* The panel is as tall as its three rows and no taller; on a very short screen that is a few
-     pixels over 40%, and the rows are the smallest they can be with 44px arrows. */
   max-height: none;
   overflow: visible;
   padding-top: 0;
@@ -676,12 +702,8 @@ body:not([data-timeline-zoomed="true"]) [data-zoom-only="true"],
   padding: 16px 0 0;
 }
 
-.sheet[data-sheet-state="docked"] > :not(.sheet-handle):not(.mode-switch):not(.dock-row) {
+.sheet[data-sheet-state="docked"] > :not(.sheet-handle):not(.dock-row):not(.timeline) {
   display: none;
-}
-
-.sheet[data-sheet-state="docked"] .mode-switch {
-  margin-bottom: 8px;
 }
 
 .dock-row {
@@ -705,25 +727,6 @@ body:not([data-timeline-zoomed="true"]) [data-zoom-only="true"],
   font-size: 16px;
   line-height: 1.2;
   color: var(--ink);
-}
-
-.dock-button {
-  flex: 0 0 44px;
-  width: 44px;
-  height: 44px;
-  padding: 0;
-  border: 1px solid var(--ink);
-  background: transparent;
-  color: var(--ink);
-  font-family: inherit;
-  font-size: 18px;
-  line-height: 1;
-  cursor: pointer;
-}
-
-.dock-button:disabled {
-  opacity: 0.35;
-  cursor: default;
 }
 
 /* While the handle is dragged, and while the sheet settles, the panel's own scrolling waits so
@@ -786,29 +789,6 @@ body:not([data-timeline-zoomed="true"]) [data-zoom-only="true"],
   --source-gap: 6px;
 }
 
-.sheet > .sheet-buttons {
-  margin-top: 12px;
-}
-
-.sheet-buttons {
-  gap: 10px;
-  margin-top: 0;
-}
-
-.sheet-buttons .button {
-  flex: 1 1 0;
-  height: 44px;
-  font-size: 14px;
-}
-
-.sheet-buttons .button-primary {
-  flex: 1 1 0;
-}
-
-/* The line sits below the Earlier / Later buttons. The Report link's tap area is 44px tall but
-   its text is not, so the link is pulled up half of that extra height by its own margins (see the
-   next rule). The line is moved down by the same amount, plus 12px, so the link's box always
-   starts at least 12px below the buttons' boxes and the two never touch. */
 .sheet .status {
   margin: calc(12px + (44px - 1lh) / 2) 0 0;
   font-size: 11px;
@@ -907,6 +887,25 @@ body[data-mode="story"] .story-dot {
   color: var(--accent-dark);
 }
 
+.story-links {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 16px;
+}
+
+.story-sources {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 13px;
+  line-height: 14px;
+  overflow-wrap: anywhere;
+}
+
+/* Keep the 44px link boxes without letting them set the wrapped line height. */
+.story-sources .source {
+  margin-block: calc((1lh - 44px) / 2);
+}
+
 /* The list of every chapter, past and next, as the design shows it: one row each, the chapter
    being read marked with the accent. */
 .chapter-list {
@@ -1002,17 +1001,19 @@ body[data-mode="story"] .story-dot {
   color: var(--accent);
 }
 
-/* The phone's bubble tabs and Story / Explore switch share the bottom sheet's pill row. */
+/* The phone's bubble tabs keep the pill treatment in the map toolbar. */
 .mode-switch {
   display: flex;
-  padding: 0;
-  margin-bottom: 0;
+  margin-inline-start: auto;
   border: 1px solid var(--ink);
   border-radius: 999px;
+  background: var(--paper);
 }
 
 .mode-button {
-  flex: 1 1 0;
+  min-width: 44px;
+  box-sizing: border-box;
+  padding-inline: 5px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1025,27 +1026,18 @@ body[data-mode="story"] .story-dot {
   text-decoration: none;
 }
 
-@media (max-width: 430px) {
-  .mode-button {
-    font-size: 13px;
-  }
-}
-
 .mode-switch .nav-current {
   background: var(--ink);
   color: var(--paper);
   text-decoration: none;
 }
 
-/* On the phone the chapter lives in the sheet: kicker, title, note, players and buttons stay
-   put and the text scrolls inside them, so the sheet never grows past its 40dvh and nothing is
-   drawn over the buttons or the day line. The money key has no room left in Story and is left
-   out; Explore keeps it. */
+/* On the phone the chapter and its sources scroll with the existing sheet, not inside a
+   second scroll area. The money key has no room left in Story; Explore keeps it. */
 body[data-mode="story"] .phone-legend {
   display: none;
 }
 
-.sheet:has([data-block="story"]:not([hidden])),
 .sheet:has([data-block="story-list"]:not([hidden])) {
   display: flex;
   flex-direction: column;
@@ -1056,44 +1048,18 @@ body[data-mode="story"] .phone-legend {
   flex: 0 0 auto;
 }
 
-.sheet:has([data-block="story"]:not([hidden])) [data-block="story"] {
-  flex: 1 1 auto;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
+.sheet .story-links {
+  margin-top: 8px;
 }
 
-.sheet [data-block="story"] .chapter-text {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-}
-
-/* A few pixels less between the lines that stay put leaves the chapter text more of the
-   40dvh to read in. */
-body[data-mode="story"] .sheet .mode-switch {
-  margin-bottom: 8px;
-}
-
-body[data-mode="story"] .sheet .status,
-body[data-mode="story"] .sheet .players-line {
-  margin-top: 6px;
-}
-
-body[data-mode="story"] .sheet .read-story {
-  margin-top: 4px;
+.sheet .story-links .read-story {
+  margin-top: 0;
 }
 
 .sheet [data-block="story"] .chapter-text p {
   margin: 4px 0 10px;
   font-size: 14px;
   line-height: 1.55;
-}
-
-.sheet [data-block="story"] .players-line {
-  margin: 8px 0 0;
-  font-size: 13px;
 }
 
 .sheet:has([data-block="story-list"]:not([hidden])) [data-block="story-list"] {
@@ -1142,40 +1108,33 @@ body[data-mode="story"] .sheet .read-story {
   margin: 0 auto;
 }
 
-.timeline-overview, .timeline-footer {
+.timeline-footer {
   max-width: 1360px;
   margin: 0 auto;
   display: flex;
   align-items: center;
-  gap: 16px;
+  justify-content: space-between;
+  gap: 24px;
   color: var(--ink-2);
   font-size: 13px;
 }
 
-.timeline-overview { margin-bottom: 4px; }
-.timeline-overview-title {
-  flex: 0 0 auto;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-}
-.timeline-strip { position: relative; flex: 1; height: 56px; min-width: 0; }
-.timeline-strip-line { position: absolute; top: 21px; width: 100%; border-top: 2px solid #57534B; }
-.timeline-strip-dots span { position: absolute; top: 19.5px; width: 5px; height: 5px; border-radius: 50%; background: #57534B; transform: translateX(-50%); }
-.timeline-strip-bracket { position: absolute; top: 10px; height: 24px; box-sizing: border-box; border: 1.5px solid #1E3A8A; border-radius: 3px; background: rgb(30 58 138 / 12%); }
-.timeline-strip-current { position: absolute; top: 8px; height: 28px; border-left: 2px solid #B42318; }
+.timeline-summary { white-space: nowrap; }
+.timeline-strip { position: relative; width: 240px; height: 44px; }
+.timeline-strip-line { position: absolute; top: 14px; width: 100%; border-top: 2px solid #57534B; }
+.timeline-strip-dots span { position: absolute; top: 12.5px; width: 5px; height: 5px; border-radius: 50%; background: #57534B; transform: translateX(-50%); }
+.timeline-strip-bracket { position: absolute; top: 2px; height: 24px; box-sizing: border-box; border: 1.5px solid #1E3A8A; border-radius: 3px; background: rgb(30 58 138 / 12%); }
+.timeline-strip-current { position: absolute; top: 0; height: 28px; border-left: 2px solid #B42318; }
 .timeline-strip input { position: absolute; inset: 0; width: 100%; height: 44px; margin: 0; opacity: 0; cursor: pointer; }
 .timeline-strip:focus-within { outline: 2px solid #1E3A8A; outline-offset: 3px; }
-.timeline-strip-years span { position: absolute; top: 36px; font-size: 12px; line-height: 14px; transform: translateX(-50%); white-space: nowrap; }
-.timeline-strip-years span::before { content: ""; position: absolute; top: -10px; left: 50%; height: 5px; border-left: 1px solid #CFC5B2; }
-.timeline-strip-years span:first-child { transform: none; }
-.timeline-strip-years span:last-child { transform: translateX(-100%); }
-.timeline-footer { justify-content: space-between; gap: 24px; }
+.timeline-strip-ends { position: absolute; inset: 28px 0 auto; display: flex; justify-content: space-between; font-size: 12px; line-height: 14px; pointer-events: none; }
 .timeline-controls { display: flex; gap: 8px; flex-shrink: 0; }
-.timeline-controls button { min-height: 44px; padding: 0 16px; border: 1px solid var(--ink); background: transparent; color: var(--ink); border-radius: 999px; font: 500 14px "Instrument Sans", sans-serif; display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.timeline-controls button { min-width: 44px; min-height: 44px; padding: 0; border: 1px solid var(--ink); background: transparent; color: var(--ink); border-radius: 999px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+body[data-mode="story"] .timeline-controls [data-action="timeline-story"],
+body[data-mode="explore"] .timeline-controls [data-action="story-explore"] { display: none; }
 .timeline-controls [data-action="timeline-zoom"] { background: var(--ink); color: var(--paper); }
 .timeline-controls button:disabled { opacity: .45; cursor: default; }
+.timeline-controls :is([data-timeline-earlier], [data-timeline-next]) { display: none; }
 .timeline-current { position: absolute; top: 28px; height: 36px; border-left: 2px solid var(--ink); pointer-events: none; }
 .timeline-current::after { content: ""; position: absolute; top: 23px; left: -15px; width: 26px; height: 26px; box-sizing: border-box; border: 3px solid #B42318; border-radius: 50%; background: var(--paper); }
 .timeline-inner .is-current .dot { box-shadow: 0 0 0 3px var(--paper), 0 0 0 6px #B42318; }
@@ -1253,7 +1212,7 @@ body[data-mode="story"] .sheet .read-story {
   background: var(--paper);
 }
 
-body[data-timeline-zoomed="true"] .timeline-label[data-timeline-id] {
+body[data-mode="explore"][data-timeline-zoomed="true"] .timeline-label[data-timeline-id] {
   visibility: visible;
   max-width: min(320px, 100%);
   display: -webkit-box;
@@ -1323,12 +1282,49 @@ body[data-timeline-zoomed="true"] .timeline-label[data-timeline-id] {
   }
 
   .timeline-row { padding-inline: 22px; }
-  .sheet .timeline-overview { display: none; }
+  .sheet .timeline-strip { display: none; }
   .sheet .timeline-dot { pointer-events: none; }
   .timeline-footer { flex-wrap: wrap; gap: 4px 16px; }
-  .timeline-controls { margin-left: auto; }
+  .timeline-controls { width: 100%; }
+  .timeline-controls :is([data-timeline-earlier], [data-timeline-next]) { display: flex; }
+  .timeline-controls [data-timeline-earlier] { margin-inline-start: auto; }
   .desktop-timeline-status { display: none; }
   .timeline-inner .day-range { touch-action: none; }
+
+  body[data-mode="story"] .sheet > .timeline {
+    margin-top: 8px;
+  }
+
+  /* Longer chapters still scroll in the sheet, with navigation in reach. */
+  body[data-mode="story"] .sheet[data-sheet-state="open"]:has(> [data-block="story"]:not([hidden])) > .timeline {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    background: var(--paper);
+  }
+
+  body[data-mode="story"] .timeline-inner {
+    --timeline-line: 42px;
+    height: calc(var(--timeline-line) + 22px); /* Keep the full 44px slider target. */
+  }
+
+  body[data-mode="story"] .timeline-current {
+    height: calc(var(--timeline-line) - 28px);
+  }
+
+  body[data-mode="story"] .timeline-current::after {
+    top: calc(100% - 13px);
+  }
+
+  body[data-mode="story"] .timeline-label[data-story-label],
+  body[data-mode="story"] .timeline-summary {
+    display: none;
+  }
+
+  body[data-mode="story"] .sheet [data-block="story"] .sheet-title {
+    font-size: 30px;
+    line-height: 1.1;
+  }
 }
 
 /* --- desktop: news beside the bubble, one-line timeline below (layout B) --- */
@@ -1340,7 +1336,7 @@ body[data-timeline-zoomed="true"] .timeline-label[data-timeline-id] {
 
   .layout-desktop {
     --timeline-lower: 0px;
-    --timeline-extra: 112px;
+    --timeline-extra: 72px;
     display: flex;
     flex-direction: column;
     min-height: 100vh;
@@ -1434,6 +1430,12 @@ body[data-timeline-zoomed="true"] .timeline-label[data-timeline-id] {
     justify-content: center;
   }
 
+  body[data-mode="story"] .layout-desktop [data-block="story"] .headline {
+    font-size: 48px;
+    line-height: 1.05;
+    text-align: center;
+  }
+
   .kicker {
     margin: 0 0 14px;
     font-size: 13px;
@@ -1497,11 +1499,17 @@ body[data-timeline-zoomed="true"] .timeline-label[data-timeline-id] {
     margin-top: 4px;
   }
 
-  /* The story's sample note starts at the column's left edge, as every other line there does.
-     The timeline's own status line keeps its wide band and its centred margins, which would
-     centre the note too if it kept them inside the column. */
-  .story-column [data-block="story"] .status {
-    margin: 10px 0 0;
+  body[data-mode="story"] .story-column .story-sources {
+    margin-top: 10px;
+  }
+
+  /* Pay for the sources gap with 8px by Read the story and 2px before the buttons. */
+  body[data-mode="story"] .story-column .read-story {
+    margin-top: 0;
+  }
+
+  body[data-mode="story"] .story-column .button-row {
+    margin-top: 20px;
   }
 
   /* Keep room for two rows even in short windows, and let the remaining space scroll. */
@@ -1544,6 +1552,12 @@ body[data-timeline-zoomed="true"] .timeline-label[data-timeline-id] {
     bottom: 6%;
   }
 
+  body[data-mode="story"] .bubble-column .zoom-buttons {
+    bottom: 0;
+    /* The frame has radius 48 in the 100-unit SVG square. */
+    margin-bottom: 2%;
+  }
+
   /* The lines under the bubble follow the square, not the strip beside it. */
   .bubble-meta {
     width: calc(100% - var(--zoom-strip));
@@ -1555,6 +1569,11 @@ body[data-timeline-zoomed="true"] .timeline-label[data-timeline-id] {
   .bubble-column .legend {
     width: calc(100% - var(--zoom-strip));
     margin-top: 10px;
+  }
+
+  /* Fit the historical caption and legend into the existing height budget without resizing the square. */
+  body[data-mode="story"]:not([data-dataset="ai"]) .bubble-column .legend {
+    margin-top: 7px;
   }
 
   .timeline {
@@ -1573,22 +1592,19 @@ body[data-timeline-zoomed="true"] .timeline-label[data-timeline-id] {
   }
 }
 
-/* --- Story on desktop: the page keeps the window's height and the chapter text scrolls --- */
+/* --- Story on desktop: at least the window's height, never a scroll box inside it --- */
 
-/* Story keeps the page the height of the window, as Explore does, so the timeline never falls
-   below it. The page is read as three bands: the header, the main area and the timeline. The
-   header and the timeline keep their heights and the main area is given whatever is left over, so
-   it is a share of the window and never the height of the chapter. The text column fills that
-   area, and the chapter text is the one part that shrinks and scrolls inside it: the kicker, date,
-   title, sample note, the players line, the buttons and "Read the story" keep their places around
-   it, above the timeline.
+/* Story fills at least the window, so with a short chapter the timeline sits at its foot as in
+   Explore. The chapter text is never cut into a scroll box of its own: when the kicker, title,
+   text, sources, note, picture line and buttons need more room than the window leaves, the page
+   grows and scrolls instead, so the whole chapter can always be read.
    The 1048px is where the two columns stop sitting side by side: their sizes (360px and 560px), the
    gap and the page's side padding add up to that, and below it the columns stack and the page
    scrolls in Explore too, so Story behaves the same there. */
 @media (min-width: 1048px) {
   body[data-mode="story"] .layout-desktop {
-    height: 100vh;
-    height: 100dvh;
+    min-height: 100vh;
+    min-height: 100dvh;
   }
 
   body[data-mode="story"] .layout-desktop > .site-header,
@@ -1596,70 +1612,19 @@ body[data-timeline-zoomed="true"] .timeline-label[data-timeline-id] {
     flex: 0 0 auto;
   }
 
-  /* The main area is the window less the header and the timeline, not the height of what it holds:
-     its size starts at zero and it grows into the room left between them. Nothing is drawn outside
-     it, so neither column can reach the timeline's line.
-     One line, not wrapping: above 1048px the two columns always fit side by side, and a wrapping
-     area sizes its line by the tallest thing in it — the chapter — so the column would be handed
-     the chapter's height again instead of the room between the header and the timeline. */
+  /* The main area takes the room between the header and the timeline, and more when the chapter
+     needs it. One line, not wrapping: above 1048px the two columns always fit side by side. */
   body[data-mode="story"] .explore-main {
-    flex: 1 1 0;
+    flex: 1 0 auto;
     flex-wrap: nowrap;
-    min-height: 0;
-    overflow: hidden;
   }
 
-  /* The text column fills that area from the top and hands the room it has to its one growing
-     child, the chapter block. Its height is the area's own content box, whatever the chapter's
-     length, so the block and the chapter text have a shorter height to shrink into. */
   body[data-mode="story"] .story-column {
-    height: 100%;
-    min-height: 0;
     justify-content: flex-start;
   }
 
   body[data-mode="story"] .story-column > * {
     flex: 0 0 auto;
-  }
-
-  /* Inside the column the kicker and, in the block, the title, the sample note, the
-     players line, the buttons and "Read the story" keep their natural height; the chapter text is
-     the only part that grows into the leftover room and shrinks below its content to scroll. */
-  body[data-mode="story"] .story-column [data-block="story"]:not([hidden]) {
-    display: flex;
-    flex-direction: column;
-    flex: 1 1 auto;
-    min-height: 0;
-  }
-
-  body[data-mode="story"] .story-column [data-block="story"] > * {
-    flex: 0 0 auto;
-  }
-
-  body[data-mode="story"] .story-column [data-block="story"] .chapter-text {
-    flex: 1 1 auto;
-    min-height: 0;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-  }
-
-  /* The chapter list is a panel in the same column; it gives the column's leftover room to its
-     scrolling rows, so opening it never pushes the timeline off screen either. */
-  body[data-mode="story"] .story-column [data-block="story-list"]:not([hidden]) {
-    display: flex;
-    flex-direction: column;
-    flex: 1 1 auto;
-    min-height: 0;
-  }
-
-  body[data-mode="story"] .story-column .chapter-list {
-    flex: 1 1 auto;
-    min-height: 0;
-  }
-
-  body[data-mode="story"] .story-column .chapter-list-items {
-    flex: 1 1 auto;
-    min-height: 0;
   }
 }
 
@@ -1667,13 +1632,7 @@ body[data-timeline-zoomed="true"] .timeline-label[data-timeline-id] {
    dropping labels that cannot fit in the tighter bands rather than clipping them. */
 @media (min-width: 900px) and (max-height: 760px) {
   .timeline { padding-top: 6px; padding-bottom: 6px; }
-  .timeline-overview { margin-bottom: 0; }
-  .timeline-strip { height: 44px; }
-  .timeline-strip-line { top: 14px; }
-  .timeline-strip-dots span { top: 12.5px; }
-  .timeline-strip-bracket { top: 2px; }
-  .timeline-strip-current { top: 0; }
-  .timeline-strip-years span { top: 28px; }
+  .layout-desktop { --timeline-extra: 88px; }
   .timeline-inner {
     --timeline-line: 48px;
     --label-near-above: 34px;
@@ -1717,6 +1676,10 @@ body[data-timeline-zoomed="true"] .timeline-label[data-timeline-id] {
 
   .story-column .button-row {
     margin-top: 12px;
+  }
+
+  body[data-mode="story"] .story-column .button-row {
+    margin-top: 10px;
   }
 }
 

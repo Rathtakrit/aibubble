@@ -1,10 +1,9 @@
 ---
 title: "The first trillion"
 date: 2023-05-30
-players: [nvidia]
+players: [nvidia, microsoft, openai]
+links: []
+look: "Nvidia's bubble is large, Microsoft's is larger, OpenAI's is small, and no money lines are lit."
+sources: [https://www.bbc.co.uk/news/business-65757812, https://www.cbsnews.com/news/nvidia-1-trillion-market-value-becoming-ai-first-chip-company-to-do-so/]
 ---
-Everyone who wants to build a model like ChatGPT needs the same thing: Nvidia chips, in very large numbers.
-
-On 30 May 2023 Nvidia's market value passes $1 trillion. Market value is what all of a company's shares are worth together. No chipmaker had reached that mark before.
-
-The money is not going to the labs that make the models yet. It is going to the company that sells them the tools.
+On 30 May 2023 Nvidia's market value briefly reaches $1 trillion. Market value is what all of a company's shares are worth together. Nvidia is the first chipmaker to reach that mark. The shares end the day a little below it. The labs that build models like ChatGPT buy Nvidia's chips.

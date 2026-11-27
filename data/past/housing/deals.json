@@ -77,6 +77,83 @@
       "amount_type": "paid",
       "title": "Mitsubishi UFJ completes a 21% stake in Morgan Stanley",
       "source": "https://news.bbc.co.uk/1/hi/business/7667500.stm"
+    },
+    {
+      "id": "2006-12-31-countrywide-fannie-mae",
+      "date": "2006-12-31",
+      "from": "countrywide",
+      "to": "fannie-mae",
+      "kind": "loan-sale",
+      "amount_usd_bn": null,
+      "amount_type": "reported",
+      "title": "Countrywide sells loans to Fannie Mae",
+      "source": "https://www.sec.gov/Archives/edgar/data/25191/000104746908002104/a2182824z10-k.htm"
+    },
+    {
+      "id": "2006-12-31-countrywide-freddie-mac",
+      "date": "2006-12-31",
+      "from": "countrywide",
+      "to": "freddie-mac",
+      "kind": "loan-sale",
+      "amount_usd_bn": null,
+      "amount_type": "reported",
+      "title": "Countrywide sells loans to Freddie Mac",
+      "source": "https://www.sec.gov/Archives/edgar/data/25191/000104746908002104/a2182824z10-k.htm"
+    },
+    {
+      "id": "2007-06-20-merrill-lynch-bear-stearns",
+      "date": "2007-06-20",
+      "from": "merrill-lynch",
+      "to": "bear-stearns",
+      "kind": "short-term-loan",
+      "amount_usd_bn": 0.8,
+      "amount_type": "reported",
+      "title": "Merrill Lynch seizes Bear Stearns bonds",
+      "source": "https://news.bbc.co.uk/1/hi/business/6945672.stm"
+    },
+    {
+      "id": "2007-07-27-aig-goldman-sachs",
+      "date": "2007-07-27",
+      "from": "aig",
+      "to": "goldman-sachs",
+      "kind": "insurance",
+      "amount_usd_bn": 1.8,
+      "amount_type": "reported",
+      "title": "AIG pays Goldman Sachs $1.8bn collateral",
+      "source": "https://fraser.stlouisfed.org/archival-collection/financial-crisis-inquiry-commission-4967/aig-goldman-sachs-collateral-call-timeline-updated-520675/fulltext"
+    },
+    {
+      "id": "2007-12-31-goldman-sachs-aig",
+      "date": "2007-12-31",
+      "from": "goldman-sachs",
+      "to": "aig",
+      "kind": "insurance",
+      "amount_usd_bn": null,
+      "amount_type": "reported",
+      "title": "Goldman Sachs insures bonds with AIG",
+      "source": "https://www.sec.gov/Archives/edgar/data/5272/000095012308002280/y44393e10vk.htm"
+    },
+    {
+      "id": "2008-09-16-aig-goldman-sachs",
+      "date": "2008-09-16",
+      "from": "aig",
+      "to": "goldman-sachs",
+      "kind": "insurance",
+      "amount_usd_bn": 7.596,
+      "amount_type": "paid",
+      "title": "AIG pays Goldman Sachs $7.6bn collateral",
+      "source": "https://fraser.stlouisfed.org/archival-collection/financial-crisis-inquiry-commission-4967/aig-goldman-sachs-collateral-call-timeline-updated-520675/fulltext"
+    },
+    {
+      "id": "2008-11-24-aig-goldman-sachs",
+      "date": "2008-11-24",
+      "from": "aig",
+      "to": "goldman-sachs",
+      "kind": "insurance",
+      "amount_usd_bn": 5.6,
+      "amount_type": "paid",
+      "title": "AIG pays Goldman Sachs $5.6bn to end contracts",
+      "source": "https://www.newyorkfed.org/markets/maidenlane"
     }
   ]
 }

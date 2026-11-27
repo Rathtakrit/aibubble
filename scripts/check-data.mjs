@@ -161,7 +161,7 @@ function checkIds(file, items) {
   }
 }
 
-// What a meta.json must hold: a title, two real days, and one to three deal kinds, each an id
+// What a meta.json must hold: a title, two real days, and one to eight deal kinds, each an id
 // with a plain name.
 function checkMeta(value) {
   if (typeof value !== "object" || value === null || Array.isArray(value)) {
@@ -215,8 +215,8 @@ function checkMeta(value) {
       }
     }
   }
-  if (!Array.isArray(value.kinds) || value.kinds.length === 0 || value.kinds.length > 3) {
-    problem("meta.json", "kinds", "is not a list of one to three deal kinds");
+  if (!Array.isArray(value.kinds) || value.kinds.length === 0 || value.kinds.length > 8) {
+    problem("meta.json", "kinds", "is not a list of one to eight deal kinds");
     ok = false;
   } else {
     const seen = new Set();

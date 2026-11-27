@@ -2,6 +2,9 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 import aiNews from '../data/news.json' with { type: 'json' };
 import dotcomNews from '../data/past/dotcom/news.json' with { type: 'json' };
 import dotcomMeta from '../data/past/dotcom/meta.json' with { type: 'json' };
+import housingNews from '../data/past/housing/news.json' with { type: 'json' };
+import housingMeta from '../data/past/housing/meta.json' with { type: 'json' };
+import { FIRST_CHAPTER_DAY } from '../src/lib/story.ts';
 
 type Item = { id: string; date: string; title: string; kind: string; label?: string };
 type Box = NonNullable<Awaited<ReturnType<Locator['boundingBox']>>>;
@@ -41,9 +44,17 @@ function ordered(items: Item[], start: string) {
     .sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id));
 }
 
-const ai = ordered(aiNews.items, '2022-11-30'); // Start of the AI money timeline.
+const ai = ordered(aiNews.items, FIRST_CHAPTER_DAY);
 const dotcom = ordered(dotcomNews.items, dotcomMeta.first_day);
+const housing = ordered(housingNews.items, housingMeta.first_day);
 const middle = ai[Math.floor(ai.length / 2)];
+// Each bubble's plain address opens its story, so Explore is reached through an explicit day: the
+// middle of the AI timeline, and a past set's first item, which its Explore opened on before.
+const exploreDate: Record<string, string> = {
+  '/': middle.date,
+  '/past/dotcom': dotcom[0].date,
+  '/past/housing': housing[0].date,
+};
 
 function dot(region: Locator, item: Item) {
   return region.getByRole('button', {
@@ -57,15 +68,16 @@ function paintedDate(region: Locator, item: Item) {
   return region.locator(`[data-news=${JSON.stringify(item.id)}]`);
 }
 
-async function step(page: Page, direction: 'Earlier' | 'Later', phone: boolean) {
-  const arrowName = direction === 'Earlier' ? '\u2190 Earlier' : 'Later \u2192';
-  const shortName = page.getByRole('button', { name: direction, exact: true });
-  // The expanded phone sheet on some versions uses the long captions instead of the dock buttons.
-  return phone && await shortName.isVisible() ? shortName : page.getByRole('button', { name: arrowName, exact: true });
+function step(page: Page, direction: 'Earlier' | 'Later', phone: boolean) {
+  if (phone) return timeline(page).getByRole('button', { name: direction, exact: true });
+  const name = direction === 'Earlier' ? '\u2190 Earlier' : 'Later \u2192';
+  return page.getByRole('button', { name, exact: true });
 }
 
 async function open(page: Page, path = '/', item?: Item) {
-  const response = await page.goto(item ? `${path}?news=${encodeURIComponent(item.id)}` : path);
+  const address = item ? `${path}?news=${encodeURIComponent(item.id)}`
+    : exploreDate[path] ? `${path.replace(/\/?$/, '/')}?date=${exploreDate[path]}` : path;
+  const response = await page.goto(address);
   expect(response?.ok(), `${path} should load`).toBe(true);
 }
 
@@ -313,14 +325,82 @@ test('Earlier / Later', async ({ page, isMobile }) => {
       const hasZoom = await zoom(page).isVisible();
       if (hasZoom) await setZoom(page, inward);
       else if (!inward) await setZoom(page, inward);
-      await (await step(page, 'Earlier', isMobile)).click();
+      await step(page, 'Earlier', isMobile).click();
       await shown(page, ai[ai.indexOf(middle) - 1]);
       if (hasZoom) expect(await zoomState(page), 'Earlier preserves zoom').toBe(inward);
-      await (await step(page, 'Later', isMobile)).click();
+      await step(page, 'Later', isMobile).click();
       await shown(page, middle);
       if (hasZoom) expect(await zoomState(page), 'Later preserves zoom').toBe(inward);
     });
   }
+});
+
+async function chapterStepFrames(page: Page, phone: boolean, chapter: number, sample: 'rings' | 'marker') {
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await open(page, `/?chapter=${chapter}`);
+  const next = phone ? page.locator('[data-timeline-next]') : page.getByRole('button', { name: /^Next chapter/ });
+  const marker = page.locator('[data-timeline-current]');
+  await expect(marker).toBeVisible();
+  await next.scrollIntoViewIfNeeded();
+  // Start sampling at the click, not when Playwright's click command returns.
+  const button = await next.elementHandle();
+  await page.evaluate(({ button, sample }) => {
+    const marker = document.querySelector('[data-timeline-current]')!;
+    const dots = [...document.querySelectorAll('.timeline-inner .dot')];
+    const measure = sample === 'rings'
+      ? () => dots.filter(dot => getComputedStyle(dot).boxShadow !== 'none').length
+      : () => marker.getBoundingClientRect().x;
+    const frames = new Promise<number[]>(resolve => button.addEventListener('click', () => {
+      const samples = [measure()];
+      const start = performance.now();
+      function record(now: number) {
+        samples.push(measure());
+        if (now - start < 1200) requestAnimationFrame(record);
+        else resolve(samples);
+      }
+      requestAnimationFrame(record);
+    }, { capture: true, once: true }));
+    Object.assign(window, { chapterStepFrames: frames });
+  }, { button, sample });
+  await next.click();
+  await expect(page).toHaveURL(new RegExp(`[?]chapter=${chapter + 1}$`));
+  return page.evaluate(() => (window as typeof window & { chapterStepFrames: Promise<number[]> }).chapterStepFrames);
+}
+
+test('One red ring on a chapter step', async ({ page, isMobile }) => {
+  const rings = await chapterStepFrames(page, isMobile, 1, 'rings');
+  expect(rings[0], 'The starting chapter should have a ring').toBe(1);
+  expect(Math.max(...rings), 'Most ringed dots in any frame').toBeLessThanOrEqual(1);
+});
+
+test('Marker moves one way on a chapter step', async ({ page, isMobile }) => {
+  const positions = await chapterStepFrames(page, isMobile, 7, 'marker');
+  const direction = Math.sign(positions.at(-1)! - positions[0]) || 1;
+  let furthest = positions[0] * direction;
+  let backtrack = 0;
+  for (const x of positions) {
+    furthest = Math.max(furthest, x * direction);
+    backtrack = Math.max(backtrack, furthest - x * direction);
+  }
+  expect(backtrack, 'Largest backward move from any earlier frame, in px').toBeLessThanOrEqual(1);
+});
+
+test('The AI footer minimap starts on the first day and supports keyboard scrubbing', async ({ page, isMobile }) => {
+  await open(page, '/', middle);
+  const strip = page.locator('.timeline-footer [data-timeline-strip]');
+  if (isMobile) {
+    await expect(strip).toBeHidden();
+    return;
+  }
+  const ends = strip.locator('.timeline-strip-ends span');
+  await expect(ends).toHaveCount(2);
+  const month = new Intl.DateTimeFormat('en-GB', { month: 'short', year: 'numeric', timeZone: 'UTC' });
+  await expect(ends.first()).toHaveText(month.format(new Date(FIRST_CHAPTER_DAY)));
+  const scrub = strip.getByRole('slider', { name: 'Position in the whole timeline' });
+  await scrub.press('Home');
+  await expect(daySlider(page)).toHaveAttribute('aria-valuetext', dateText(ai[0].date));
+  await scrub.press('End');
+  await expect(daySlider(page)).toHaveAttribute('aria-valuetext', dateText(ai.at(-1)!.date));
 });
 
 test('Line keeps its width', async ({ page, isMobile }) => {
@@ -329,7 +409,7 @@ test('Line keeps its width', async ({ page, isMobile }) => {
   if (!isMobile) await strip.scrollIntoViewIfNeeded();
   for (const fraction of [0.2, 0.6, 0.35, 0.8, 0.5]) {
     if (isMobile) {
-      await (await step(page, 'Later', true)).tap();
+      await step(page, 'Later', true).tap();
     } else {
       const rail = await box(strip, 'Whole story strip');
       await page.mouse.click(rail.x + rail.width * fraction, rail.y + rail.height / 2);
@@ -377,7 +457,7 @@ async function laterMotion(page: Page, phone: boolean, ms: number) {
   await open(page, '/', ai.at(-2)!);
   await shown(page, ai.at(-2)!);
   const slider = daySlider(page);
-  const later = await step(page, 'Later', phone);
+  const later = step(page, 'Later', phone);
   await expect(slider, 'Visible Day slider for motion sampling').toBeVisible();
   await later.scrollIntoViewIfNeeded();
   // Sample in the browser at the requested time, not after the click command returns.
@@ -387,6 +467,7 @@ async function laterMotion(page: Page, phone: boolean, ms: number) {
   else await later.click();
   const during = await page.evaluate(() => (window as typeof window & { timelineMotionSample?: Promise<number> }).timelineMotionSample!);
   await shown(page, last);
+  await expect(later).toBeDisabled();
   await slider.evaluate(async input => {
     await Promise.allSettled((input.parentElement ?? input).getAnimations({ subtree: true }).map(a => a.finished));
   });
@@ -395,19 +476,191 @@ async function laterMotion(page: Page, phone: boolean, ms: number) {
   return { start, during, end };
 }
 
+test('phone Explore money-flow legend: AI fits one line and past sets at most two', async ({ page, isMobile }) => {
+  test.skip(!isMobile, 'Phone layout');
+  const legend = page.locator('.phone-legend');
+  const ring = page.locator('[data-bubble="phone"] circle.bubble-frame');
+  const panel = sheet(page);
+
+  for (const [width, height] of [[390, 844], [360, 780]]) {
+    await page.setViewportSize({ width, height });
+    for (const path of ['/', '/past/dotcom', '/past/housing']) {
+      const maxHeight = path === '/' ? 24 : 48;
+      await open(page, path);
+      await page.evaluate(() => document.fonts.ready.then(() => null));
+      await expect(legend).toBeVisible();
+      await expect.poll(async () => {
+        const key = await legend.boundingBox();
+        const frame = await ring.boundingBox();
+        const bottom = await panel.boundingBox();
+        return !!(key && frame && bottom && frame.height > 0 && key.height <= maxHeight &&
+          key.x >= 0 && key.x + key.width <= width &&
+          key.y > frame.y + frame.height && key.y + key.height <= bottom.y);
+      }, { message: `${path} at ${width}x${height}: legend should be at most ${maxHeight}px tall and fit within the viewport width between the ring and sheet` }).toBe(true);
+    }
+  }
+});
+
+for (const [width, height] of [[390, 844], [360, 780]]) {
+  test(`phone at ${width}x${height}: map tabs and docked timeline stay usable`, async ({ page, isMobile }) => {
+    test.skip(!isMobile, 'Phone layout');
+    await page.setViewportSize({ width, height });
+    await open(page, '/', middle);
+    await page.evaluate(() => document.fonts.ready.then(() => null));
+    const panel = sheet(page);
+    const nav = page.locator('.map-top').getByRole('navigation', { name: 'Bubbles' });
+    const links = nav.getByRole('link');
+    await expect(links).toHaveText(['AI', 'Dot-com', 'Housing', 'Compare']);
+    await expect(panel.locator('.mode-switch')).toHaveCount(0);
+    await expect(links.first()).toHaveAttribute('aria-current', 'page');
+
+    const dragHandle = async (name: string, dy: number) => {
+      const handle = await box(panel.getByRole('button', { name }), name);
+      await page.mouse.move(center(handle), handle.y + handle.height / 2);
+      await page.mouse.down();
+      await page.mouse.move(center(handle), handle.y + handle.height / 2 + dy, { steps: 8 });
+      await page.mouse.up();
+    };
+    const expectMapToFit = async () => {
+      await expect.poll(async () => {
+        const map = await page.locator('.map-bubble').boundingBox();
+        const top = await page.locator('.map-top').boundingBox();
+        const bottom = await panel.boundingBox();
+        return !!(map && top && bottom && map.width > 0 && Math.abs(map.width - map.height) <= 1 &&
+          map.x >= 0 && map.x + map.width <= width &&
+          map.y >= top.y + top.height && map.y + map.height <= bottom.y);
+      }, { message: 'The square map fits between the tab row and sheet' }).toBe(true);
+    };
+
+    await expectMapToFit();
+    await dragHandle('Show less', 160);
+    await expect(panel).toHaveAttribute('data-sheet-state', 'docked');
+    await expect(panel.locator(':scope > :visible')).toHaveCount(3);
+    await expect(panel.locator('.dock-title')).toHaveText(middle.title);
+    await expect(daySlider(page)).toBeInViewport({ ratio: 1 });
+    const controls = timeline(page).locator('.timeline-controls');
+    await expect(controls).toBeInViewport({ ratio: 1 });
+    await expect(controls.getByRole('button')).toHaveCount(5);
+    for (const name of ['Back to the story', 'First day', 'Whole timeline', 'Earlier', 'Later']) {
+      await expect(controls.getByRole('button', { name, exact: true })).toBeEnabled();
+    }
+    await zoom(page).tap();
+    await expect(zoom(page)).toHaveAttribute('aria-pressed', 'false');
+    await step(page, 'Earlier', true).tap();
+    await expect(panel.locator('.dock-title')).toHaveText(ai[ai.indexOf(middle) - 1].title);
+    await step(page, 'Later', true).tap();
+    await expect(panel.locator('.dock-title')).toHaveText(middle.title);
+    await expectMapToFit();
+
+    const tabs = await box(nav, 'Map tabs');
+    const wordmark = await box(page.locator('.wordmark-chip'), 'Wordmark');
+    expect(wordmark.x + wordmark.width).toBeLessThan(tabs.x);
+    expect(Math.abs(wordmark.y + wordmark.height / 2 - tabs.y - tabs.height / 2)).toBeLessThanOrEqual(1);
+    expect(tabs.x + tabs.width).toBeLessThanOrEqual(width);
+    for (const selector of ['.phone-legend', '.map-zoom', '.map-bubble']) {
+      const below = await box(page.locator(selector), selector);
+      expect(below.y, selector).toBeGreaterThanOrEqual(tabs.y + tabs.height);
+    }
+
+    await dragHandle('Show more', -160);
+    await expect(panel).toHaveAttribute('data-sheet-state', 'open');
+    await expect(panel.locator('[data-block="item"]')).toBeVisible();
+    await expectMapToFit();
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await panel.getByRole('button', { name: 'Show less' }).tap();
+    await expect(panel).toHaveAttribute('data-sheet-state', 'docked');
+    await expect(panel.locator('.dock-title')).toHaveText(middle.title);
+    await panel.getByRole('button', { name: 'Show more' }).tap();
+    await expect(panel).toHaveAttribute('data-sheet-state', 'open');
+
+    for (const [name, path] of [['AI', '/'], ['Dot-com', '/past/dotcom/'], ['Housing', '/past/housing/'], ['Compare', '/compare/']]) {
+      const link = nav.getByRole('link', { name, exact: true });
+      const target = await box(link, name);
+      expect(target.height, name).toBeGreaterThanOrEqual(44);
+      expect(target.width, name).toBeGreaterThanOrEqual(44);
+      await link.tap();
+      await expect.poll(() => new URL(page.url()).pathname).toBe(path);
+      if (name !== 'Compare') {
+        await expect(page.locator('body')).toHaveAttribute('data-mode', 'story');
+        await expect(nav.getByRole('link', { name, exact: true })).toHaveAttribute('aria-current', 'page');
+      }
+    }
+  });
+}
+
+for (const [width, height] of [[390, 844], [360, 780]]) {
+  test(`phone at ${width}x${height}: close news dots have room to tap`, async ({ page, isMobile }) => {
+    test.skip(!isMobile, 'Phone layout');
+    const anchor = ai.find(item => item.date === '2023-10-17')!;
+    const region = timeline(page);
+    const slider = daySlider(page);
+    await page.setViewportSize({ width, height });
+
+    const openWindow = async () => {
+      await open(page, `/?date=${anchor.date}`);
+      await page.evaluate(() => document.fonts.ready.then(() => null));
+      await slider.scrollIntoViewIfNeeded();
+    };
+    await openWindow();
+    expect(await zoomState(page), 'Explore opens with the timeline zoomed in').toBe(true);
+
+    const dots = await region.locator('.timeline-dot[data-news]:visible').all();
+    const marks = await Promise.all(dots.map(async mark => ({
+      id: (await mark.getAttribute('data-news'))!, x: await dotX(mark),
+    })));
+    marks.sort((a, b) => a.x - b.x);
+    expect(marks.length, 'Several news dots in the zoom window').toBeGreaterThanOrEqual(3);
+    for (const [index, mark] of marks.entries()) {
+      const previous = marks[index - 1];
+      if (previous) {
+        expect(mark.x - previous.x, `Gap between ${previous.id} and ${mark.id}`).toBeGreaterThanOrEqual(43);
+      }
+    }
+
+    for (const [index, mark] of marks.entries()) {
+      // Selecting an item recentres the zoom window, so start each tap from the same date.
+      if (index > 0) await openWindow();
+      const target = region.locator(`.timeline-dot[data-news=${JSON.stringify(mark.id)}]`);
+      await expect(target).toBeVisible();
+      const rail = await box(slider, 'Day slider');
+      await page.touchscreen.tap(await dotX(target), rail.y + rail.height / 2);
+      await expect.poll(() => new URL(page.url()).searchParams.get('news'), {
+        message: `Tap at the painted centre should select ${mark.id}`,
+      }).toBe(mark.id);
+    }
+  });
+}
+
 test('Phone only: bottom sheet, tap boxes and smooth handle', async ({ page, isMobile }) => {
   test.skip(!isMobile, 'Phone layout only');
   await open(page, '/', ai[0]);
   const region = sheet(page).getByRole('region', { name: 'Timeline', exact: true });
   await expect.soft(region, 'The bottom sheet should contain a named Timeline region').toBeVisible();
   await expect(region.getByText('Whole story', { exact: true })).toBeHidden();
-  const buttons = region.getByRole('button');
-  await expect(buttons).toHaveCount(2);
-  for (const button of [...await buttons.all(), await step(page, 'Earlier', true), await step(page, 'Later', true)]) {
-    const rect = await box(button, 'Phone timeline tap target');
-    const label = await button.getAttribute('aria-label') ?? await button.innerText();
-    expect.soft(Math.min(rect.width, rect.height), `${label}: ${rect.width.toFixed(1)} x ${rect.height.toFixed(1)} px`).toBeGreaterThanOrEqual(44);
+  const controls = region.locator('.timeline-controls');
+  const buttons = controls.getByRole('button');
+  await expect(step(page, 'Earlier', true)).toBeDisabled();
+  for (const { width, height } of [{ width: 390, height: 844 }, { width: 360, height: 780 }]) {
+    await page.setViewportSize({ width, height });
+    await expect(buttons).toHaveCount(5);
+    const row = await box(controls, 'Phone control row');
+    expect(row.x).toBeGreaterThanOrEqual(0);
+    expect(row.x + row.width).toBeLessThanOrEqual(width);
+    let right = row.x;
+    for (const [index, button] of (await buttons.all()).entries()) {
+      const rect = await box(button, 'Phone timeline tap target');
+      const label = await button.getAttribute('aria-label');
+      expect.soft(Math.min(rect.width, rect.height), `${label} at ${width}px`).toBeGreaterThanOrEqual(44);
+      expect(inside(rect, row), `${label} fits the row at ${width}px`).toBe(true);
+      expect(rect.x).toBeGreaterThanOrEqual(right);
+      if (index === 0) expect(rect.x).toBe(row.x);
+      right = rect.x + rect.width;
+    }
+    expect(right).toBe(row.x + row.width);
+    await expect(step(page, 'Earlier', true)).toHaveAttribute('title', 'Earlier');
+    await expect(step(page, 'Later', true)).toHaveAttribute('title', 'Later');
   }
+  await page.setViewportSize({ width: 390, height: 844 });
   expect((await box(daySlider(page), 'Day slider tap area')).height).toBeGreaterThanOrEqual(44);
   const { start, during, end } = await laterMotion(page, true, 100);
   expect(during, `Handle at 100 ms (start ${start.toFixed(1)}, end ${end.toFixed(1)})`).toBeGreaterThan(Math.min(start, end) + 1);

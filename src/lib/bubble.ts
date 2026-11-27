@@ -15,10 +15,9 @@ import type { Pan, PeakDay } from "./camera.ts";
 const SVG_NS = "http://www.w3.org/2000/svg";
 const CLIP_ID = "aibubble-clip";
 
-// How long the bubbles take to glide to a new day, and how long a company takes to fade in
-// or out (the fade is the stylesheet's 700ms opacity transition; this is how long we keep a
-// leaving company's element before removing it).
-const GLIDE_MS = 500;
+// How long the bubbles and camera take to move to a new day.
+const MOVE_MS = 900;
+// Keep a leaving company's element until the stylesheet's 700ms fade finishes.
 const FADE_MS = 700;
 
 // Opacity of a faint money line, and of a bubble that is not a player of the chosen item.
@@ -49,9 +48,9 @@ function fixed(value: number): string {
   return value.toFixed(3);
 }
 
-// Ease in-out, so a bubble starts and stops gently.
+// Start and stop gently, like the camera.
 function ease(t: number): number {
-  return t < 0.5 ? 2 * t * t : 1 - ((-2 * t + 2) * (-2 * t + 2)) / 2;
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
 
 type BubbleNode = {
@@ -568,9 +567,7 @@ function createArrowNode(): ArrowNode {
   return { group, shaft, head };
 }
 
-// The look of one arrow: a pale thin line for the everyday view, or its kind colour and
-// small arrowhead when both ends are players of the chosen item. With a company panel open,
-// every line that touches that company is drawn that way instead.
+// A strong line uses its kind colour and a small arrowhead; the rest are pale and thin.
 function styleArrow(live: LiveArrow): void {
   const strong = live.strong;
   const colour = `var(--${kindColour(live.arrow.kind)})`;
@@ -626,7 +623,7 @@ function paintAll(drawing: Drawing): void {
 
 // One frame of the glide: ease every bubble to its new place, then redraw the lines.
 function step(drawing: Drawing, now: number): void {
-  const t = Math.min(1, Math.max(0, (now - drawing.startedAt) / GLIDE_MS));
+  const t = Math.min(1, Math.max(0, (now - drawing.startedAt) / MOVE_MS));
   const e = ease(t);
   drawing.ringRadius = drawing.fromRingRadius + (drawing.toRingRadius - drawing.fromRingRadius) * e;
   for (const live of drawing.bubbles.values()) {
@@ -747,18 +744,24 @@ function opacityOf(live: LiveBubble, drawing: Drawing): string {
   return drawing.dim && !drawing.players.has(live.bubble.id) ? DIM : "1";
 }
 
-function updateArrows(drawing: Drawing, layer: SVGGElement, arrows: Arrow[]): void {
+function updateArrows(
+  drawing: Drawing,
+  layer: SVGGElement,
+  arrows: Arrow[],
+  strongArrows?: ReadonlySet<string>,
+): void {
   const seen = new Set<string>();
   for (const arrow of arrows) {
     const key = `${arrow.from}|${arrow.to}|${arrow.kind}`;
     seen.add(key);
-    const strong =
+    const strong = strongArrows?.has(key) ?? (
       drawing.focus !== null
         ? arrow.from === drawing.focus || arrow.to === drawing.focus
-        : drawing.dim && drawing.players.has(arrow.from) && drawing.players.has(arrow.to);
-    // The everyday view draws one pale line per pair; a chosen item draws every line of
-    // its own pairs in full.
-    const visible = strong || arrow.pairFirst;
+        : drawing.dim && drawing.players.has(arrow.from) && drawing.players.has(arrow.to)
+    );
+    // Explore and chapters without links keep one pale line per pair. With explicit chapter
+    // links, every other arrow is drawn faint, including additional arrows within a pair.
+    const visible = strongArrows !== undefined || strong || arrow.pairFirst;
     const live = drawing.arrows.get(key);
     if (!live) {
       const node = createArrowNode();
@@ -801,12 +804,14 @@ function ariaLabel(date: string, bubbles: Bubble[]): string {
 // The camera glides to its new place, unless the visitor asked for reduced motion.
 function cameraTransition(): string {
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  return reduced ? "none" : "transform 900ms cubic-bezier(0.65, 0, 0.35, 1)";
+  return reduced ? "none" : `transform ${MOVE_MS}ms cubic-bezier(0.65, 0, 0.35, 1)`;
 }
 
 export type BubbleOptions = {
-  // The players of the current item: the companies the camera flies to.
+  // The players to mark with rings while fading the other companies.
   players?: string[];
+  // The companies the camera fits; defaults to the marked players.
+  cameraPlayers?: string[];
   // The company whose panel is open: it keeps a ring, its own money lines stay strong and the
   // companies it has no deal with fade back.
   focus?: string;
@@ -819,6 +824,8 @@ export type BubbleOptions = {
   peak?: PeakDay;
   changeFromPeak?: string;
   immediate?: boolean;
+  // The chapter's eligible money lines, keyed by "from|to|kind"; overrides player lighting.
+  strongArrows?: ReadonlySet<string>;
 };
 
 // The zoom control's 1x is the whole view, even when the peak fit has already scaled the scene.
@@ -847,7 +854,7 @@ export function renderBubble(
       : null;
   const manual = options.manual ?? 1;
   const peakBubbles = options.peak ? bubblesForDate(options.peak.date) : undefined;
-  const view = dayView(bubbles, options.players ?? [], manual, date, options.burstDate, peakBubbles);
+  const view = dayView(bubbles, options.cameraPlayers ?? options.players ?? [], manual, date, options.burstDate, peakBubbles);
   // Where the camera looks once the reader's drag is applied; clamped so the content stays
   // inside the round frame.
   const noPan = { dx: 0, dy: 0 };
@@ -940,7 +947,7 @@ export function renderBubble(
   drawing.reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   updateBubbles(drawing, bubbleLayer, bubbles);
-  updateArrows(drawing, arrowLayer, arrows);
+  updateArrows(drawing, arrowLayer, arrows, options.strongArrows);
   glide(drawing);
 
 }

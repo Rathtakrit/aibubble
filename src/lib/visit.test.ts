@@ -50,41 +50,40 @@ test("the page's zoom and Compare's picks are saved with its address", () => {
   assert.equal(readVisit("/", storage)?.compare, undefined);
 });
 
-test("tab links point at the saved addresses, and a page with nothing saved keeps its path", () => {
+test("bubble tabs keep their plain story addresses even with saved Explore visits", () => {
   const storage = fakeStorage();
-  writeVisit({ address: "/?date=2024-02-03&news=one", zoom: "whole" }, storage);
-  writeVisit({ address: "/past/dotcom/?date=2000-03-10", zoom: "whole" }, storage);
   const ai = link("/");
   const dotcom = link("/past/dotcom/");
   const housing = link("/past/housing/");
   const compare = link("/compare/");
+  writeVisit({ address: "/?date=2024-02-03&news=one", zoom: "whole" }, storage);
+  writeVisit({ address: "/past/dotcom/?date=2000-03-10", zoom: "whole" }, storage);
+  writeVisit({ address: "/past/housing/?date=2006-03-10", zoom: "whole" }, storage);
   restoreTabLinks([ai, dotcom, housing, compare], storage);
-  assert.equal(ai.href, "/?date=2024-02-03&news=one");
-  assert.equal(dotcom.href, "/past/dotcom/?date=2000-03-10");
-  // Nothing saved for these pages: they stay on their bare paths.
+  assert.equal(ai.href, "/");
+  assert.equal(dotcom.href, "/past/dotcom/");
   assert.equal(housing.href, "/past/housing/");
   assert.equal(compare.href, "/compare/");
 });
 
-test("a link already pointed at a saved address follows it when the address changes", () => {
+test("the Compare tab link follows its saved address when it changes", () => {
   const storage = fakeStorage();
-  const ai = link("/");
-  writeVisit({ address: "/?date=2024-02-03&news=one", zoom: "whole" }, storage);
-  restoreTabLinks([ai], storage);
-  assert.equal(ai.href, "/?date=2024-02-03&news=one");
-  // The reader moved on in the AI tab; the same link now points at the newer place.
-  writeVisit({ address: "/?date=2024-03-04&news=two", zoom: "focused" }, storage);
-  restoreTabLinks([ai], storage);
-  assert.equal(ai.href, "/?date=2024-03-04&news=two");
+  const compare = link("/compare/");
+  writeVisit({ address: "/compare/?measure=size" }, storage);
+  restoreTabLinks([compare], storage);
+  assert.equal(compare.href, "/compare/?measure=size");
+  writeVisit({ address: "/compare/?measure=change" }, storage);
+  restoreTabLinks([compare], storage);
+  assert.equal(compare.href, "/compare/?measure=change");
 });
 
 test("with storage blocked, reads return nothing, writes do not throw and links keep their paths", () => {
   const storage = fakeStorage(true);
   assert.doesNotThrow(() => writeVisit({ address: "/?date=2024-01-01", zoom: "whole" }, storage));
   assert.equal(readVisit("/", storage), null);
-  const ai = link("/");
-  assert.doesNotThrow(() => restoreTabLinks([ai], storage));
-  assert.equal(ai.href, "/");
+  const compare = link("/compare/");
+  assert.doesNotThrow(() => restoreTabLinks([compare], storage));
+  assert.equal(compare.href, "/compare/");
 });
 
 test("a broken, empty or foreign entry is ignored, never sent to another host", () => {

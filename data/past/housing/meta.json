@@ -8,6 +8,10 @@
   },
   "kinds": [
     { "id": "investment", "label": "Investment deal" },
-    { "id": "takeover", "label": "Takeover deal" }
+    { "id": "takeover", "label": "Takeover deal" },
+    { "id": "loan-sale", "label": "Loan sale" },
+    { "id": "insurance", "label": "Insurance" },
+    { "id": "short-term-loan", "label": "Short-term loan" },
+    { "id": "rescue", "label": "Rescue" }
   ]
 }

@@ -68,6 +68,39 @@
       "source": "https://www.edn.com/qwest-us-west-pairing-alters-long-haul-landscape/"
     },
     {
+      "id": "2000-09-30-lucent-winstar",
+      "date": "2000-09-30",
+      "from": "lucent",
+      "to": "winstar",
+      "kind": "vendor-loan",
+      "amount_usd_bn": 2,
+      "amount_type": "committed",
+      "title": "Lucent lends Winstar up to $2bn",
+      "source": "https://www.eweek.com/news/vendor-financing-backfires/"
+    },
+    {
+      "id": "2000-09-30-cisco-icg",
+      "date": "2000-09-30",
+      "from": "cisco",
+      "to": "icg",
+      "kind": "vendor-loan",
+      "amount_usd_bn": 0.18,
+      "amount_type": "paid",
+      "title": "Cisco lends ICG $180m",
+      "source": "https://www.eweek.com/news/vendor-financing-backfires/"
+    },
+    {
+      "id": "2000-09-30-lucent-leap",
+      "date": "2000-09-30",
+      "from": "lucent",
+      "to": "leap",
+      "kind": "vendor-loan",
+      "amount_usd_bn": 1.35,
+      "amount_type": "up to",
+      "title": "Lucent opens a $1.35bn line to Leap",
+      "source": "https://www.eweek.com/news/vendor-financing-backfires/"
+    },
+    {
       "id": "2001-03-31-qwest-global-crossing",
       "date": "2001-03-31",
       "from": "global-crossing",

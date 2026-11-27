@@ -15,6 +15,7 @@ import {
   publisherName,
   siteName,
   snapToItemDateRange,
+  timelineEndDay,
   timelineScale,
   timelineStrip,
   timelineWindow,
@@ -74,6 +75,12 @@ test("dates outside the news range snap to the first or last item", () => {
   for (const date of [first, "2003-03-05", last]) {
     assert.equal(snapToItemDateRange(date, first, last), date);
   }
+});
+
+test("the timeline ends on the latest data or chapter day", () => {
+  assert.equal(timelineEndDay(last, ["2026-11-23", "2026-11-20"]), "2026-11-23");
+  assert.equal(timelineEndDay(last, ["2026-11-10", "2026-11-11"]), last);
+  assert.equal(timelineEndDay(last, []), last);
 });
 
 test("the whole-range strip maps dates and a zoom bracket in calendar time", () => {

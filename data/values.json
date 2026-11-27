@@ -843,6 +843,13 @@
     },
     {
       "company": "openai",
+      "date": "2021-04-30",
+      "value_usd_bn": 14,
+      "what": "April 2021 valuation, $14bn; reported (month-end used)",
+      "source": "https://economictimes.indiatimes.com/tech/artificial-intelligence/from-non-profit-to-500-billion-openais-valuation-rise/articleshow/123330870.cms"
+    },
+    {
+      "company": "openai",
       "date": "2023-04-28",
       "value_usd_bn": 29,
       "what": "tender offer (existing shares sold), $27bn-$29bn; reported",
