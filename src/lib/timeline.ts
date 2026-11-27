@@ -39,6 +39,11 @@ export function snapToItemDateRange(date: string, firstItemDate: string, lastIte
   return date;
 }
 
+// The line ends on the later of the data's last day and the latest chapter date.
+export function timelineEndDay(dataLastDay: string, chapterDates: readonly string[]): string {
+  return chapterDates.reduce((last, date) => date > last ? date : last, dataLastDay);
+}
+
 // --- the day scale: busy months get more room, empty ones less ---
 
 // Every dot on the line, split by the colour it is drawn in: a red key date earns its month more
@@ -103,7 +108,7 @@ function monthSpans(lastDate: string, dots: ScaleDots): MonthSpan[] {
 }
 
 export type TimelineScale = {
-  // 0% on the set's first day, 100% on the last day of the data, with busy months given more room.
+  // 0% on the set's first day, 100% on the timeline's last day, with busy months given more room.
   percentOf(date: string): number;
   // The day nearest that place on the line, as YYYY-MM-DD.
   dateOf(percent: number): string;

@@ -25,6 +25,7 @@ import {
   pillKind,
   placeLabels,
   publisherName,
+  timelineEndDay,
   timelineScale,
 } from "../lib/timeline.ts";
 import { chapterProblems, chapterSources, orderChapterFiles } from "../lib/story.ts";
@@ -55,7 +56,22 @@ const description = descriptions[id];
 const setStatus = status;
 const setKinds = kinds;
 const firstDay = FIRST_DAY;
-const lastDay = LAST_DAY;
+
+// Story mode's chapters, read from the set's own folder (docs/story, docs/story/dotcom or
+// docs/story/housing) while the site is built, in file-name order. A day that is not a day, or one
+// before the set's first day, stops the build with the file name; the same checks run in
+// src/lib/story.test.ts. A player or link the set's data does not have yet is skipped on the page
+// and printed as a warning by that test.
+const chapters: Chapter[] = STORY_ENABLED ? orderChapterFiles(chapterSources(id)) : [];
+if (STORY_ENABLED) {
+  const chapterProblemsFound = chapterProblems(chapters, firstDay);
+  if (chapters.length === 0) throw new Error(`Story mode has no chapters for the ${bubbleName}.`);
+  if (chapterProblemsFound.length > 0) {
+    throw new Error(`Story chapters are not ready:\n${chapterProblemsFound.join("\n")}`);
+  }
+}
+const timelineEnd = timelineEndDay(LAST_DAY, chapters.map((c) => c.date));
+
 const allCompanies = companies;
 const allDeals = deals;
 const ordered = inDateOrder(news.filter((item) => item.kind === "money" && item.date >= firstDay));
@@ -69,7 +85,7 @@ const keyDates = ordered.filter((item) => item.key_date);
 const smallDates = ordered.filter((item) => item.small_date);
 const publisher = publisherName(current.source);
 // One day scale for the dots, the ticks, the years and the slider, so busy months are wider.
-const scale = timelineScale(lastDay, { red: keyDates, blue: smallDates });
+const scale = timelineScale(timelineEnd, { red: keyDates, blue: smallDates });
 const sliderValue = Math.round(scale.percentOf(current.date) * 100);
 
 // The legend under the bubble: every kind the set uses, with the colour of its money line. The
@@ -96,10 +112,10 @@ const TICK_GAP = 6;
 const YEAR_NAME_WIDTH = 28;
 const ticks: { date: string; year: boolean; percent: number }[] = [];
 let lastTick = -Infinity;
-for (let year = Number(firstDay.slice(0, 4)); year <= Number(lastDay.slice(0, 4)); year += 1) {
+for (let year = Number(firstDay.slice(0, 4)); year <= Number(timelineEnd.slice(0, 4)); year += 1) {
   for (const month of ["01", "04", "07", "10"]) {
     const date = `${year}-${month}-01`;
-    if (date < firstDay || date > lastDay) continue;
+    if (date < firstDay || date > timelineEnd) continue;
     const percent = scale.percentOf(date);
     const yearTick = month === "01";
     if (!yearTick && ((percent - lastTick) / 100) * TICK_LINE_WIDTH < TICK_GAP) continue;
@@ -131,24 +147,11 @@ const labels = placeLabels(
   1280,
 );
 
-// The line ends on the last day in the data, not the visitor's local date.
+// The line ends on the data's last day or the last chapter's day, whichever is later.
 const monthName = new Intl.DateTimeFormat("en-GB", { month: "short", year: "numeric", timeZone: "UTC" });
 const firstEnd = monthName.format(new Date(`${firstDay}T00:00:00Z`));
-const lastEnd = dayLabel(lastDay);
+const lastEnd = dayLabel(timelineEnd);
 
-// Story mode's chapters, read from the set's own folder (docs/story, docs/story/dotcom or
-// docs/story/housing) while the site is built, in file-name order. A day that is not a day, or one
-// before the set's first day, stops the build with the file name; the same checks run in
-// src/lib/story.test.ts. A player or link the set's data does not have yet is skipped on the page
-// and printed as a warning by that test.
-const chapters: Chapter[] = STORY_ENABLED ? orderChapterFiles(chapterSources(id)) : [];
-if (STORY_ENABLED) {
-  const chapterProblemsFound = chapterProblems(chapters, firstDay);
-  if (chapters.length === 0) throw new Error(`Story mode has no chapters for the ${bubbleName}.`);
-  if (chapterProblemsFound.length > 0) {
-    throw new Error(`Story chapters are not ready:\n${chapterProblemsFound.join("\n")}`);
-  }
-}
 const firstChapter = chapters[0];
 // The browser needs the chapter text too, so the page carries it as data rather than asking for
 // the files again.

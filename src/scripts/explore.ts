@@ -43,6 +43,7 @@ import {
   siteName,
   snapToItemDateRange,
   type LabelRect,
+  timelineEndDay,
   timelineScale,
   timelineStrip,
   timelineWindow,
@@ -98,19 +99,20 @@ const dealById = new Map(deals.map((deal) => [deal.id, deal]));
 const nameOf = new Map(companies.map((company) => [company.id, company.name]));
 const companyById = new Map(companies.map((company) => [company.id, company]));
 const lastDate = defaultDate();
-const lastDay = dayIndex(lastDate);
 const openingItem: NewsItem | undefined = ordered[isPast ? 0 : ordered.length - 1];
-// The timeline's day scale, built once from the days that carry a dot: busy months are wider.
-const scale = timelineScale(lastDate, {
-  red: ordered.filter((item) => item.key_date),
-  blue: ordered.filter((item) => item.small_date),
-});
 // Story mode's chapters, written into the page while it was built so the browser never reads
 // docs/story itself.
 const chaptersData = document.querySelector<HTMLScriptElement>("[data-story-chapters]");
 const chapters: Chapter[] = chaptersData?.textContent
   ? (JSON.parse(chaptersData.textContent) as Chapter[])
   : [];
+const timelineEnd = timelineEndDay(LAST_DAY, chapters.map((c) => c.date));
+const lastDay = dayIndex(timelineEnd);
+// The timeline's day scale, built once from the days that carry a dot: busy months are wider.
+const scale = timelineScale(timelineEnd, {
+  red: ordered.filter((item) => item.key_date),
+  blue: ordered.filter((item) => item.small_date),
+});
 
 // What the site says about each kind of value, in plain words, the first time it is shown.
 const VALUE_NOTES: Record<Company["kind"], string> = {
@@ -164,7 +166,7 @@ function mountTimeline(): void {
 }
 
 const timelineEvents = ordered;
-const strip = timelineStrip(FIRST_DAY, LAST_DAY);
+const strip = timelineStrip(FIRST_DAY, timelineEnd);
 const stripDots = document.querySelector<HTMLElement>("[data-strip-dots]");
 for (const item of timelineEvents) {
   const dot = document.createElement("span");

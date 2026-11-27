@@ -160,6 +160,35 @@ for (const set of sets) {
   });
 }
 
+test('The final AI chapters have separate dots and the marker follows chapter 11', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'Measures the desktop timeline');
+  await page.setViewportSize({ width: 1280, height: 800 });
+
+  const timeline = page.locator('[data-timeline]');
+  const dot = (number: number) => timeline.locator(`[data-chapter="${number}"]`);
+  const marker = timeline.locator('[data-timeline-current]');
+  const chapter10 = dot(10).locator('.dot');
+  const chapter11 = dot(11).locator('.dot');
+  const centerX = async (locator: Locator) => {
+    const box = (await locator.boundingBox())!;
+    return box.x + box.width / 2;
+  };
+
+  for (const number of [10, 11]) {
+    await page.goto(`/?chapter=${number}`);
+    const chapter = await expectChapter(page, number);
+    await expect(dot(number)).toHaveClass(/\bis-current\b/);
+    await expect(chapter10).toBeVisible();
+    await expect(chapter11).toBeVisible();
+    await expect.poll(async () => (await centerX(chapter11)) - (await centerX(chapter10))).toBeGreaterThan(4);
+    if (number === 11) {
+      await expect(marker).toContainText(`You are here · ${formatDay.format(new Date(chapter.date))}`);
+      await expect.poll(async () => Math.abs((await centerX(marker)) - (await centerX(chapter11)))).toBeLessThanOrEqual(12);
+      await expect(page.locator('[data-timeline-summary]')).toContainText(`→ ${formatDay.format(new Date(chapter.date))}`);
+    }
+  }
+});
+
 test('Chapter steps keep a steady zoom and the focus button toggles player zoom', async ({ page, isMobile }) => {
   await page.goto('/?chapter=1');
   await expectChapter(page, 1);
