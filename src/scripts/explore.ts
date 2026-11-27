@@ -658,7 +658,8 @@ function drawBubble(immediate: boolean): void {
   for (const svg of document.querySelectorAll<SVGSVGElement>("[data-bubble]")) {
     svg.dataset.zoomed = String(zoomedIn);
     renderBubble(svg, day, {
-      players,
+      players: chapter ? playersNow() : players,
+      cameraPlayers: players,
       focus: companyId ?? undefined,
       strongArrows,
       manual,
@@ -736,7 +737,7 @@ function goToChapter(index: number, chapterStep = false): void {
   itemId = null;
   companyId = null;
   day = chapter.date;
-  resetZoom(true);
+  resetZoom();
   render(false, chapterStep);
   // A chapter opens at its first line: on the phone the sheet scrolls back to the top, and on a
   // desktop page that has grown past the window, the page scrolls back to the chapter's kicker.
@@ -1245,7 +1246,7 @@ function readAddress(): void {
     itemId = null;
     companyId = null;
     day = chapters[at].date;
-    resetZoom(true);
+    resetZoom();
     return;
   }
   const wantedId = params.get("news");

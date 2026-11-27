@@ -160,6 +160,44 @@ for (const set of sets) {
   });
 }
 
+test('Chapter steps keep a steady zoom and the focus button toggles player zoom', async ({ page, isMobile }) => {
+  await page.goto('/?chapter=1');
+  await expectChapter(page, 1);
+
+  const navigation = isMobile ? page.locator('.timeline-controls') : story(page);
+  const next = navigation.getByRole('button', { name: /^Next chapter/ });
+  const bubble = page.locator('svg[data-bubble]').filter({ visible: true });
+  const scene = bubble.locator('g.scene');
+  const scale = async () => {
+    await page.waitForTimeout(1200);
+    return scene.evaluate(g => new DOMMatrix(getComputedStyle(g).transform).a);
+  };
+  await expect(bubble.locator('.bubble').first()).toBeVisible();
+  const firstScale = await scale();
+  for (let number = 2; number <= 4; number++) {
+    if (isMobile) await next.tap();
+    else await next.click();
+    await expectChapter(page, number);
+    expect(Math.abs(await scale() - firstScale), `chapter ${number} scale`).toBeLessThanOrEqual(0.01);
+  }
+  const hasFadedBubble = await bubble.locator('.bubble').evaluateAll(groups => groups.some(group => {
+    const opacity = Number(getComputedStyle(group).opacity);
+    return opacity > 0 && opacity < 1;
+  }));
+  expect(hasFadedBubble, 'chapter 4 fades non-player bubbles without zooming').toBe(true);
+
+  const focus = page.locator('[data-zoom="fit"]').filter({ visible: true });
+  await expect(focus).toHaveAccessibleName('Focus on the players');
+  if (isMobile) await focus.tap();
+  else await focus.click();
+  expect(await scale()).toBeGreaterThan(firstScale);
+
+  await expect(focus).toHaveAccessibleName('Show the whole bubble');
+  if (isMobile) await focus.tap();
+  else await focus.click();
+  expect(Math.abs(await scale() - firstScale)).toBeLessThanOrEqual(0.01);
+});
+
 test('Wrapped chapter sources keep 44px tap targets without adding desktop scroll', async ({ page, isMobile }) => {
   const chapter = chapters.find(entry => entry.file.endsWith('-the-first-pop.md'))!;
   if (!isMobile) await page.setViewportSize({ width: 1440, height: 900 });

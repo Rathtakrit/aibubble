@@ -808,8 +808,10 @@ function cameraTransition(): string {
 }
 
 export type BubbleOptions = {
-  // The players of the current item: the companies the camera flies to.
+  // The players to mark with rings while fading the other companies.
   players?: string[];
+  // The companies the camera fits; defaults to the marked players.
+  cameraPlayers?: string[];
   // The company whose panel is open: it keeps a ring, its own money lines stay strong and the
   // companies it has no deal with fade back.
   focus?: string;
@@ -852,7 +854,7 @@ export function renderBubble(
       : null;
   const manual = options.manual ?? 1;
   const peakBubbles = options.peak ? bubblesForDate(options.peak.date) : undefined;
-  const view = dayView(bubbles, options.players ?? [], manual, date, options.burstDate, peakBubbles);
+  const view = dayView(bubbles, options.cameraPlayers ?? options.players ?? [], manual, date, options.burstDate, peakBubbles);
   // Where the camera looks once the reader's drag is applied; clamped so the content stays
   // inside the round frame.
   const noPan = { dx: 0, dy: 0 };
