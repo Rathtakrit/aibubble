@@ -125,6 +125,8 @@ let day = openingItem?.date ?? lastDate;
 let itemId: string | null = openingItem?.id ?? null;
 let companyId: string | null = null;
 let chapterIndex: number | null = null;
+// The last chapter read, or the first if none has opened yet.
+let storyReturn = 0;
 // Whether "Read the story" has the list of chapters open.
 let storyListOpen = false;
 let fitPlayers = false;
@@ -733,6 +735,7 @@ function goToChapter(index: number, chapterStep = false): void {
   const chapter = chapters[index];
   if (!chapter) return;
   chapterIndex = index;
+  storyReturn = index;
   storyListOpen = false;
   itemId = null;
   companyId = null;
@@ -867,7 +870,7 @@ document.addEventListener("click", (event) => {
     updateTimeline();
     return;
   } else if (action === "timeline-story") {
-    goToChapter(0);
+    goToChapter(storyReturn);
     focusVisible('[data-bind="story-title"]');
   } else if (action === "timeline-start") {
     const first = timelineEvents[0];
@@ -1242,6 +1245,7 @@ function readAddress(): void {
     const wanted = Number(params.get("chapter"));
     const at = Number.isInteger(wanted) && wanted >= 1 && wanted <= chapters.length ? wanted - 1 : 0;
     chapterIndex = at;
+    storyReturn = at;
     storyListOpen = false;
     itemId = null;
     companyId = null;

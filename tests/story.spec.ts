@@ -316,6 +316,41 @@ test('The compass and book take turns in the same timeline slot', async ({ page,
   await expect(book).toBeHidden();
 });
 
+test('Back to the story returns to chapter 4 even after stepping Earlier in Explore', async ({ page, isMobile }) => {
+  await page.goto('/?chapter=1');
+  await expectChapter(page, 1);
+
+  const controls = page.locator('.timeline-controls');
+  const navigation = isMobile ? controls : story(page);
+  const next = navigation.getByRole('button', { name: /^Next chapter/ });
+  const explore = controls.locator('[data-action="story-explore"]');
+  const back = controls.getByRole('button', { name: 'Back to the story', exact: true });
+  const earlier = page.locator('[data-action="earlier"]').filter({ visible: true }).first();
+
+  for (let number = 2; number <= 4; number++) {
+    if (isMobile) await next.tap();
+    else await next.click();
+    await expectChapter(page, number);
+  }
+
+  if (isMobile) await explore.tap();
+  else await explore.click();
+  await expectExplore(page, chapters[3].date);
+  if (isMobile) await back.tap();
+  else await back.click();
+  await expectChapter(page, 4);
+
+  if (isMobile) await explore.tap();
+  else await explore.click();
+  await expectExplore(page, chapters[3].date);
+  if (isMobile) await earlier.tap();
+  else await earlier.click();
+  await expect(page).toHaveURL(/[?&]news=/);
+  if (isMobile) await back.tap();
+  else await back.click();
+  await expectChapter(page, 4);
+});
+
 test('Explore and Story switch modes with labelled icon buttons', async ({ page }) => {
   await page.goto(`/?date=${exploreDate}`);
   await expectExplore(page, exploreDate);
