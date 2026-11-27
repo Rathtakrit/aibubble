@@ -186,31 +186,49 @@ for (const viewport of [{ width: 390, height: 844 }, { width: 360, height: 780 }
   });
 }
 
-const longestTitle = chapters.reduce((longest, chapter) => chapter.title.length > longest.title.length ? chapter : longest);
-for (const viewport of [{ width: 1280, height: 800 }, { width: 1440, height: 900 }]) {
-  test(`AI Story titles are centred and chapters fit at ${viewport.width}x${viewport.height}`, async ({ page, isMobile }) => {
-    test.skip(isMobile, 'Measures the desktop Story layout');
-    await page.setViewportSize(viewport);
+for (const set of sets) {
+  const longestTitle = set.chapters.reduce((longest, chapter) => chapter.title.length > longest.title.length ? chapter : longest);
+  for (const viewport of [{ width: 1280, height: 800 }, { width: 1440, height: 900 }]) {
+    test(`${set.name} Story titles are centred and chapters fit at ${viewport.width}x${viewport.height}`, async ({ page, isMobile }) => {
+      test.skip(isMobile, 'Measures the desktop Story layout');
+      await page.setViewportSize(viewport);
 
-    for (const chapter of chapters) {
-      await page.goto(`/?chapter=${chapter.number}`);
-      await expectChapter(page, chapter.number);
-      await page.evaluate(() => document.fonts.ready.then(() => null));
+      const card = story(page);
+      const frame = page.locator('[data-bubble] circle.bubble-frame').filter({ visible: true });
+      const zoom = page.locator('.bubble-column [data-zoom="fit"]').filter({ visible: true });
+      for (const chapter of set.chapters) {
+        const label = `${set.name} chapter ${chapter.number} (${chapter.title})`;
+        await page.goto(`${set.path}?chapter=${chapter.number}`);
+        await expectChapter(page, chapter.number, set.chapters);
+        await page.evaluate(() => document.fonts.ready.then(() => null));
 
-      if (chapter.number === 1 || chapter === longestTitle) {
-        const title = story(page).getByRole('heading', { name: chapter.title, exact: true });
-        await expect(title).toHaveCSS('text-align', 'center');
-        expect(await title.evaluate(el => parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(46);
-        const titleBox = (await title.boundingBox())!;
-        const columnBox = (await page.locator('.story-column:visible').boundingBox())!;
-        expect(Math.abs(titleBox.x + titleBox.width / 2 - (columnBox.x + columnBox.width / 2))).toBeLessThanOrEqual(2);
+        if (chapter.number === 1 || chapter === longestTitle) {
+          const title = card.getByRole('heading', { name: chapter.title, exact: true });
+          await expect(title).toHaveCSS('text-align', 'center');
+          expect(await title.evaluate(el => parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(46);
+          const titleBox = (await title.boundingBox())!;
+          const columnBox = (await page.locator('.story-column:visible').boundingBox())!;
+          expect(Math.abs(titleBox.x + titleBox.width / 2 - (columnBox.x + columnBox.width / 2))).toBeLessThanOrEqual(2);
+        }
+
+        const bodyBox = (await card.locator('.chapter-text').boundingBox())!;
+        const sourcesBox = (await card.locator('[data-story-sources]').boundingBox())!;
+        expect(sourcesBox.y - (bodyBox.y + bodyBox.height), `${label} sources gap`).toBeGreaterThanOrEqual(8);
+
+        await expect(frame).toBeVisible();
+        await expect(zoom).toBeVisible();
+        await expect.poll(async () => {
+          const circle = (await frame.boundingBox())!;
+          const button = (await zoom.boundingBox())!;
+          return Math.abs((button.y + button.height) - (circle.y + circle.height));
+        }, { message: `${label} zoom button should align with the circle bottom` }).toBeLessThanOrEqual(2);
+
+        await expect.poll(() => page.evaluate(() => document.documentElement.scrollHeight - window.innerHeight), {
+          message: `${label} should fit without page scroll`,
+        }).toBeLessThanOrEqual(0);
       }
-
-      await expect.poll(() => page.evaluate(() => document.documentElement.scrollHeight - window.innerHeight), {
-        message: `chapter ${chapter.number} (${chapter.title}) should fit without page scroll`,
-      }).toBeLessThanOrEqual(0);
-    }
-  });
+    });
+  }
 }
 
 test('The final AI chapters have separate dots and the marker follows chapter 11', async ({ page, isMobile }) => {

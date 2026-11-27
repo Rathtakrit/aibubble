@@ -1499,6 +1499,19 @@ body[data-mode="explore"][data-timeline-zoomed="true"] .timeline-label[data-time
     margin-top: 4px;
   }
 
+  body[data-mode="story"] .story-column .story-sources {
+    margin-top: 10px;
+  }
+
+  /* Pay for the sources gap with 8px by Read the story and 2px before the buttons. */
+  body[data-mode="story"] .story-column .read-story {
+    margin-top: 0;
+  }
+
+  body[data-mode="story"] .story-column .button-row {
+    margin-top: 20px;
+  }
+
   /* Keep room for two rows even in short windows, and let the remaining space scroll. */
   .story-column .company-news {
     max-height: max(98px, min(32vh, 100vh - 700px));
@@ -1539,6 +1552,12 @@ body[data-mode="explore"][data-timeline-zoomed="true"] .timeline-label[data-time
     bottom: 6%;
   }
 
+  body[data-mode="story"] .bubble-column .zoom-buttons {
+    bottom: 0;
+    /* The frame has radius 48 in the 100-unit SVG square. */
+    margin-bottom: 2%;
+  }
+
   /* The lines under the bubble follow the square, not the strip beside it. */
   .bubble-meta {
     width: calc(100% - var(--zoom-strip));
@@ -1550,6 +1569,11 @@ body[data-mode="explore"][data-timeline-zoomed="true"] .timeline-label[data-time
   .bubble-column .legend {
     width: calc(100% - var(--zoom-strip));
     margin-top: 10px;
+  }
+
+  /* Fit the historical caption and legend into the existing height budget without resizing the square. */
+  body[data-mode="story"]:not([data-dataset="ai"]) .bubble-column .legend {
+    margin-top: 7px;
   }
 
   .timeline {
@@ -1652,6 +1676,10 @@ body[data-mode="explore"][data-timeline-zoomed="true"] .timeline-label[data-time
 
   .story-column .button-row {
     margin-top: 12px;
+  }
+
+  body[data-mode="story"] .story-column .button-row {
+    margin-top: 10px;
   }
 }
 
