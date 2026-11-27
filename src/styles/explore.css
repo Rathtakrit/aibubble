@@ -1430,6 +1430,12 @@ body[data-mode="explore"][data-timeline-zoomed="true"] .timeline-label[data-time
     justify-content: center;
   }
 
+  body[data-mode="story"] .layout-desktop [data-block="story"] .headline {
+    font-size: 48px;
+    line-height: 1.05;
+    text-align: center;
+  }
+
   .kicker {
     margin: 0 0 14px;
     font-size: 13px;

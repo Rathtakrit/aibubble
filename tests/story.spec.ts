@@ -186,6 +186,33 @@ for (const viewport of [{ width: 390, height: 844 }, { width: 360, height: 780 }
   });
 }
 
+const longestTitle = chapters.reduce((longest, chapter) => chapter.title.length > longest.title.length ? chapter : longest);
+for (const viewport of [{ width: 1280, height: 800 }, { width: 1440, height: 900 }]) {
+  test(`AI Story titles are centred and chapters fit at ${viewport.width}x${viewport.height}`, async ({ page, isMobile }) => {
+    test.skip(isMobile, 'Measures the desktop Story layout');
+    await page.setViewportSize(viewport);
+
+    for (const chapter of chapters) {
+      await page.goto(`/?chapter=${chapter.number}`);
+      await expectChapter(page, chapter.number);
+      await page.evaluate(() => document.fonts.ready.then(() => null));
+
+      if (chapter.number === 1 || chapter === longestTitle) {
+        const title = story(page).getByRole('heading', { name: chapter.title, exact: true });
+        await expect(title).toHaveCSS('text-align', 'center');
+        expect(await title.evaluate(el => parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(46);
+        const titleBox = (await title.boundingBox())!;
+        const columnBox = (await page.locator('.story-column:visible').boundingBox())!;
+        expect(Math.abs(titleBox.x + titleBox.width / 2 - (columnBox.x + columnBox.width / 2))).toBeLessThanOrEqual(2);
+      }
+
+      await expect.poll(() => page.evaluate(() => document.documentElement.scrollHeight - window.innerHeight), {
+        message: `chapter ${chapter.number} (${chapter.title}) should fit without page scroll`,
+      }).toBeLessThanOrEqual(0);
+    }
+  });
+}
+
 test('The final AI chapters have separate dots and the marker follows chapter 11', async ({ page, isMobile }) => {
   test.skip(isMobile, 'Measures the desktop timeline');
   await page.setViewportSize({ width: 1280, height: 800 });
