@@ -588,6 +588,49 @@ for (const [width, height] of [[390, 844], [360, 780]]) {
   });
 }
 
+for (const [width, height] of [[390, 844], [360, 780]]) {
+  test(`phone at ${width}x${height}: close news dots have room to tap`, async ({ page, isMobile }) => {
+    test.skip(!isMobile, 'Phone layout');
+    const anchor = ai.find(item => item.date === '2023-10-17')!;
+    const region = timeline(page);
+    const slider = daySlider(page);
+    await page.setViewportSize({ width, height });
+
+    const openWindow = async () => {
+      await open(page, `/?date=${anchor.date}`);
+      await page.evaluate(() => document.fonts.ready.then(() => null));
+      await slider.scrollIntoViewIfNeeded();
+    };
+    await openWindow();
+    expect(await zoomState(page), 'Explore opens with the timeline zoomed in').toBe(true);
+
+    const dots = await region.locator('.timeline-dot[data-news]:visible').all();
+    const marks = await Promise.all(dots.map(async mark => ({
+      id: (await mark.getAttribute('data-news'))!, x: await dotX(mark),
+    })));
+    marks.sort((a, b) => a.x - b.x);
+    expect(marks.length, 'Several news dots in the zoom window').toBeGreaterThanOrEqual(3);
+    for (const [index, mark] of marks.entries()) {
+      const previous = marks[index - 1];
+      if (previous) {
+        expect(mark.x - previous.x, `Gap between ${previous.id} and ${mark.id}`).toBeGreaterThanOrEqual(43);
+      }
+    }
+
+    for (const [index, mark] of marks.entries()) {
+      // Selecting an item recentres the zoom window, so start each tap from the same date.
+      if (index > 0) await openWindow();
+      const target = region.locator(`.timeline-dot[data-news=${JSON.stringify(mark.id)}]`);
+      await expect(target).toBeVisible();
+      const rail = await box(slider, 'Day slider');
+      await page.touchscreen.tap(await dotX(target), rail.y + rail.height / 2);
+      await expect.poll(() => new URL(page.url()).searchParams.get('news'), {
+        message: `Tap at the painted centre should select ${mark.id}`,
+      }).toBe(mark.id);
+    }
+  });
+}
+
 test('Phone only: bottom sheet, tap boxes and smooth handle', async ({ page, isMobile }) => {
   test.skip(!isMobile, 'Phone layout only');
   await open(page, '/', ai[0]);

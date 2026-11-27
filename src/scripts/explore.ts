@@ -143,7 +143,7 @@ let visibleTimeline = fullTimeline;
 let timelineTarget = fullTimeline;
 let timelineFrame: number | null = null;
 let timelineHandle = 50;
-let chapterHandleX: number | undefined;
+let glideHandleX: number | undefined;
 let scrubPointer: number | null = null;
 const timelineMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 const desktopLayout = window.matchMedia("(min-width: 900px)");
@@ -209,9 +209,9 @@ function drawTimeline(): void {
   }
   drawTimelineDots(inner, visibleTimeline);
   let current = timelineHandle;
-  if (chapterHandleX !== undefined) {
+  if (glideHandleX !== undefined) {
     const { left, width } = inner.getBoundingClientRect();
-    current = timelineHandle = (chapterHandleX - left) / width * 100;
+    current = timelineHandle = (glideHandleX - left) / width * 100;
   } else if (scrubPointer === null) {
     current = paintedHandleAt(inner, current);
   }
@@ -277,6 +277,7 @@ function updateTimeline(immediate = false, chapterStep = false): void {
 
 let timelineDrawn = false;
 let timelineTargetHandle = 50;
+let timelineTargetItem: string | null = null;
 
 function glideTimeline(anchor: string, immediate: boolean, chapterStep: boolean): void {
   const last = timelineEvents[timelineEvents.length - 1];
@@ -287,14 +288,17 @@ function glideTimeline(anchor: string, immediate: boolean, chapterStep: boolean)
     : timelineZoomed ? timelineWindow(timelineEvents, windowAnchor, scale) : fullTimeline;
   const endHandle = timelineHandleAt(target);
   const sameWindow = JSON.stringify(target) === JSON.stringify(timelineTarget);
-  if (sameWindow && endHandle === timelineTargetHandle && timelineFrame !== null &&
+  const phoneExplore = !desktopLayout.matches && chapterIndex === null;
+  const sameItem = !phoneExplore || itemId === timelineTargetItem;
+  if (sameWindow && sameItem && endHandle === timelineTargetHandle && timelineFrame !== null &&
     !immediate && !timelineMotion.matches) return;
   timelineTarget = target;
   timelineTargetHandle = endHandle;
+  timelineTargetItem = itemId;
   if (timelineFrame !== null) cancelAnimationFrame(timelineFrame);
-  chapterHandleX = undefined;
+  glideHandleX = undefined;
   if (timelineMotion.matches || immediate || !timelineDrawn || scrubPointer !== null ||
-    (!chapterStep && sameWindow && timelineHandle === endHandle)) {
+    (!chapterStep && sameWindow && sameItem && timelineHandle === endHandle)) {
     timelineDrawn = true;
     timelineFrame = null;
     visibleTimeline = target;
@@ -304,23 +308,24 @@ function glideTimeline(anchor: string, immediate: boolean, chapterStep: boolean)
   }
   const from = visibleTimeline;
   const handleOffset = timelineHandle - timelineHandleAt(from);
-  const inner = chapterStep ? timeline.querySelector<HTMLElement>("[data-timeline]") : null;
+  const inner = chapterStep || phoneExplore ? timeline.querySelector<HTMLElement>("[data-timeline]") : null;
   const marker = inner?.querySelector<HTMLElement>("[data-timeline-current]");
-  let chapterPath: { start: number; end: number } | undefined;
+  let handlePath: { start: number; end: number } | undefined;
   if (inner?.clientWidth && marker) {
-    // Move straight to the marker's final spot while the dates glide underneath it.
+    // Ease between painted endpoints; following the selected dot mid-glide can backtrack.
     const { left, width } = inner.getBoundingClientRect();
     const start = marker.getBoundingClientRect().x;
     // On the phone, measure the fanned-out dots at the end before putting the old window back.
     if (!desktopLayout.matches) drawTimelineDots(inner, target);
     const end = left + width * paintedHandleAt(inner, endHandle) / 100;
     if (!desktopLayout.matches) drawTimelineDots(inner, from);
-    chapterPath = { start, end };
-    chapterHandleX = start;
+    handlePath = { start, end };
+    glideHandleX = start;
   }
   const start = performance.now();
   function glide(now: number): void {
-    const t = Math.min(1, (now - start) / (sameWindow ? 300 : 900));
+    const elapsed = phoneExplore ? Math.max(0, now - start) : now - start;
+    const t = Math.min(1, elapsed / (sameWindow ? 300 : 900));
     const eased = t * t * (3 - 2 * t);
     visibleTimeline = t === 1 ? target : {
       start: from.start + (target.start - from.start) * eased,
@@ -328,10 +333,10 @@ function glideTimeline(anchor: string, immediate: boolean, chapterStep: boolean)
       end: from.end + (target.end - from.end) * eased,
       ids: target.ids,
     };
-    if (chapterPath && t < 1) {
-      chapterHandleX = chapterPath.start + (chapterPath.end - chapterPath.start) * eased;
+    if (handlePath && t < 1) {
+      glideHandleX = handlePath.start + (handlePath.end - handlePath.start) * eased;
     } else {
-      chapterHandleX = undefined;
+      glideHandleX = undefined;
       // Follow the changing scale during zoom, and ease from the old handle on a news step.
       const position = timelineHandleAt(visibleTimeline);
       timelineHandle = t === 1 ? endHandle
@@ -347,7 +352,7 @@ timelineMotion.addEventListener("change", () => {
   if (!timelineMotion.matches) return;
   if (timelineFrame !== null) cancelAnimationFrame(timelineFrame);
   timelineFrame = null;
-  chapterHandleX = undefined;
+  glideHandleX = undefined;
   visibleTimeline = timelineTarget;
   timelineHandle = timelineTargetHandle;
   drawTimeline();
@@ -978,7 +983,7 @@ function startTimelineScrub(pointerId: number): void {
   // Hold the mapping still under the pointer, including when a glide was interrupted.
   if (timelineFrame !== null) cancelAnimationFrame(timelineFrame);
   timelineFrame = null;
-  chapterHandleX = undefined;
+  glideHandleX = undefined;
   timelineTarget = visibleTimeline;
 }
 
@@ -1000,7 +1005,18 @@ for (const slider of document.querySelectorAll<HTMLInputElement>("[data-slider]"
     }
     sliderTo(scale.dateOf(place));
   };
-  slider.addEventListener("input", () => scrubTo(Number(slider.value) / 100));
+  const line = slider.closest<HTMLElement>("[data-timeline]");
+  let press: { id: number; x: number; y: number; dragging: boolean; rail: boolean; dot?: HTMLElement } | null = null;
+  slider.addEventListener("input", () => {
+    // A native range input can fire during a phone tap, before pointerup. Only the
+    // rail's pointer handlers should change the date for that gesture.
+    if (press?.rail) {
+      const painted = line?.style.getPropertyValue("--timeline-current");
+      if (painted) slider.value = String(Math.round(parseFloat(painted) * 100));
+      return;
+    }
+    scrubTo(Number(slider.value) / 100);
+  });
   slider.addEventListener("pointerdown", (event) => {
     if (!event.isPrimary || event.button !== 0 || !desktopLayout.matches) return;
     startTimelineScrub(event.pointerId);
@@ -1017,9 +1033,7 @@ for (const slider of document.querySelectorAll<HTMLInputElement>("[data-slider]"
     sliderTo(dateAt(Math.min(lastDay, Math.max(0, to))));
   });
 
-  const line = slider.closest<HTMLElement>("[data-timeline]");
   if (!line) continue;
-  let press: { id: number; x: number; y: number; dragging: boolean; rail: boolean } | null = null;
   line.addEventListener("pointerdown", (event) => {
     if (press || !event.isPrimary || event.button !== 0 || !(event.target instanceof Element)) return;
     const rail = !desktopLayout.matches && event.target === slider;
@@ -1027,7 +1041,20 @@ for (const slider of document.querySelectorAll<HTMLInputElement>("[data-slider]"
     if (!control) return;
     // On phone, wait for the release to distinguish a nearest-dot tap from a calendar drag.
     if (rail) event.preventDefault();
-    press = { id: event.pointerId, x: event.clientX, y: event.clientY, dragging: false, rail };
+    // Remember the mark under the finger before another glide frame moves the dots.
+    let dot: HTMLElement | undefined;
+    if (rail) {
+      const x = event.clientX - line.getBoundingClientRect().left;
+      let distance = Infinity;
+      for (const candidate of line.querySelectorAll<HTMLElement>(".timeline-dot")) {
+        if (!candidate.offsetHeight) continue;
+        const gap = Math.abs(timelineDotX(candidate) - x);
+        if (gap >= distance) continue;
+        distance = gap;
+        dot = candidate;
+      }
+    }
+    press = { id: event.pointerId, x: event.clientX, y: event.clientY, dragging: false, rail, dot };
     control.setPointerCapture(event.pointerId);
   });
   line.addEventListener("pointermove", (event) => {
@@ -1045,22 +1072,10 @@ for (const slider of document.querySelectorAll<HTMLInputElement>("[data-slider]"
   });
   const endPress = (event: PointerEvent) => {
     if (event.pointerId === press?.id) {
-      const tap = press.rail && !press.dragging && event.type === "pointerup";
+      const dot = !press.dragging && event.type === "pointerup" ? press.dot : undefined;
       press = null;
-      if (tap) {
-        const x = event.clientX - line.getBoundingClientRect().left;
-        let nearest: HTMLElement | undefined;
-        let distance = Infinity;
-        for (const dot of line.querySelectorAll<HTMLElement>(".timeline-dot")) {
-          if (!dot.offsetHeight) continue;
-          const gap = Math.abs(timelineDotX(dot) - x);
-          if (gap >= distance) continue;
-          distance = gap;
-          nearest = dot;
-        }
-        if (nearest?.dataset.news) selectItem(nearest.dataset.news);
-        else if (nearest?.dataset.chapter) goToChapter(Number(nearest.dataset.chapter) - 1);
-      }
+      if (dot?.dataset.news) selectItem(dot.dataset.news);
+      else if (dot?.dataset.chapter) goToChapter(Number(dot.dataset.chapter) - 1);
     }
     if (event.pointerId === scrubPointer) {
       scrubPointer = null;
@@ -1321,14 +1336,30 @@ function placeTimelineDots(inner: HTMLElement): void {
     .map((dot) => ({ dot, x: Number.parseFloat(dot.style.left) * inner.clientWidth / 100 }))
     .sort((a, b) => a.x - b.x);
   // Fan out coincident or nearly coincident dots so each has its own reachable centre.
-  const spacing = 10;
+  const phoneZoom = !desktopLayout.matches && timelineZoomed && chapterIndex === null;
+  const spacing = phoneZoom ? Math.min(44, inner.clientWidth / Math.max(1, dots.length - 1)) : 10;
+  let start = 0;
+  let end = inner.clientWidth;
+  if (phoneZoom && dots.length > 0) {
+    const rail = inner.querySelector("[data-slider]")?.getBoundingClientRect();
+    const left = inner.getBoundingClientRect().left;
+    if (rail) {
+      const first = Math.max(start, rail.left - left + 22);
+      const last = Math.min(end, rail.right - left - 22);
+      // When the rail fits full targets, keep the ends reachable too.
+      if (last - first >= 44 * (dots.length - 1)) {
+        start = first;
+        end = last;
+      }
+    }
+  }
   dots.forEach((entry, index) => {
     const previous = dots[index - 1];
-    if (previous) entry.x = Math.max(entry.x, previous.x + spacing);
+    entry.x = previous ? Math.max(entry.x, previous.x + spacing) : Math.max(entry.x, start);
   });
   for (let index = dots.length - 1; index >= 0; index--) {
     const next = dots[index + 1];
-    dots[index].x = Math.min(dots[index].x, next ? next.x - spacing : inner.clientWidth);
+    dots[index].x = Math.min(dots[index].x, next ? next.x - spacing : end);
   }
   dots.forEach(({ dot, x }, index) => {
     const previous = dots[index - 1];
