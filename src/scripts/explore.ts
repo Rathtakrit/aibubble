@@ -499,10 +499,6 @@ function render(soon = false, chapterStep = false): void {
     setText("story-title", storyChapter.title);
     // The docked sheet's one line: the chapter being read.
     setText("dock-title", storyChapter.title);
-    setText("story-look", storyChapter.look);
-    for (const line of document.querySelectorAll<HTMLElement>("[data-story-look]")) {
-      line.hidden = !storyChapter.look;
-    }
     // Every paragraph, word for word, in a plain text block rather than markup.
     for (const text of document.querySelectorAll<HTMLElement>('[data-bind="story-text"]')) {
       text.textContent = "";

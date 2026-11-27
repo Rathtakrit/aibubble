@@ -1107,11 +1107,6 @@ body[data-mode="story"] .sheet .mode-switch {
   line-height: 1.55;
 }
 
-.sheet [data-block="story"] .players-line {
-  margin: 8px 0 0;
-  font-size: 13px;
-}
-
 .sheet:has([data-block="story-list"]:not([hidden])) [data-block="story-list"] {
   flex: 1 1 auto;
   min-height: 0;

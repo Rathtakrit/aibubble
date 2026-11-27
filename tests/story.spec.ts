@@ -90,9 +90,8 @@ for (const set of sets) {
     const card = story(page);
     for (let number = 1; number <= list.length; number++) {
       const chapter = await expectChapter(page, number, list);
-      const look = card.locator('[data-story-look]');
-      if (chapter.look) await expect(look).toHaveText(`In the picture: ${chapter.look}`);
-      else await expect(look).toBeHidden();
+      await expect(card.locator('[data-story-look]')).toHaveCount(0);
+      await expect(card.getByText('In the picture')).toHaveCount(0);
       const sources = card.locator('[data-story-sources]');
       await expect(sources).toBeVisible();
       expect(chapter.sources.length).toBeGreaterThan(0);
