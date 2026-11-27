@@ -476,6 +476,31 @@ async function laterMotion(page: Page, phone: boolean, ms: number) {
   return { start, during, end };
 }
 
+test('phone Explore money-flow legend: AI fits one line and past sets at most two', async ({ page, isMobile }) => {
+  test.skip(!isMobile, 'Phone layout');
+  const legend = page.locator('.phone-legend');
+  const ring = page.locator('[data-bubble="phone"] circle.bubble-frame');
+  const panel = sheet(page);
+
+  for (const [width, height] of [[390, 844], [360, 780]]) {
+    await page.setViewportSize({ width, height });
+    for (const path of ['/', '/past/dotcom', '/past/housing']) {
+      const maxHeight = path === '/' ? 24 : 48;
+      await open(page, path);
+      await page.evaluate(() => document.fonts.ready.then(() => null));
+      await expect(legend).toBeVisible();
+      await expect.poll(async () => {
+        const key = await legend.boundingBox();
+        const frame = await ring.boundingBox();
+        const bottom = await panel.boundingBox();
+        return !!(key && frame && bottom && frame.height > 0 && key.height <= maxHeight &&
+          key.x >= 0 && key.x + key.width <= width &&
+          key.y > frame.y + frame.height && key.y + key.height <= bottom.y);
+      }, { message: `${path} at ${width}x${height}: legend should be at most ${maxHeight}px tall and fit within the viewport width between the ring and sheet` }).toBe(true);
+    }
+  }
+});
+
 for (const [width, height] of [[390, 844], [360, 780]]) {
   test(`phone at ${width}x${height}: map tabs and docked timeline stay usable`, async ({ page, isMobile }) => {
     test.skip(!isMobile, 'Phone layout');

@@ -600,29 +600,44 @@ body:not([data-timeline-zoomed="true"]) [data-zoom-only="true"],
   font-style: italic;
 }
 
-/* The money key and the zoom buttons stand in one column at the top right: the key first, the
-   buttons 8px below it, so the buttons follow the key however many money kinds a page has. */
+/* Preserve the zoom button's Explore position until its own layout changes. The offset
+   is the old stacked legend's 12px line height, row gaps, padding, border and 8px gap. */
 .map-side {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 8px;
+  justify-content: flex-end;
+  align-items: flex-start;
+}
+
+body[data-mode="explore"] .map-zoom {
+  margin-top: calc(var(--money-kind-count) * (12px * 1.45 + 4px) + 18px);
+}
+
+/* Keep the legend inside the square that sizeMapBubble fits above the sheet. Let the
+   legend use the phone width even when the sheet makes that square narrower. */
+body[data-mode="explore"] .map-bubble {
+  display: grid;
+  aspect-ratio: 1;
+  grid-template: minmax(0, 1fr) auto / minmax(0, 1fr);
+  justify-items: center;
+}
+
+body[data-mode="explore"] .map-bubble .bubble-svg {
+  width: auto;
+  height: 100%;
 }
 
 .phone-legend {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 4px;
-  padding: 6px 8px;
-  border: 1px solid var(--rule);
-  background: var(--paper);
-  color: var(--ink-2);
-  font-size: 12px;
+  width: max-content;
+  max-width: calc(100vw - 24px);
+  justify-content: center;
+  gap: 4px 10px;
+  padding-block: 4px;
+  line-height: 16px;
 }
 
 .phone-legend .legend-item {
   gap: 6px;
+  white-space: nowrap;
 }
 
 /* The cap includes the sheet padding and border. Longer content scrolls inside the sheet. */

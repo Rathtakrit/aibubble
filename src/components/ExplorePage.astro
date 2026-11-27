@@ -531,9 +531,17 @@ const ariaFor = (itemTitle: string, date: string) => `${dayLabel(date)}, ${itemT
       </section>
     </div>
 
-    <div class="layout-phone">
+    <div class="layout-phone" style={`--money-kind-count: ${legend.length}`}>
       <div class="map-bubble">
         <svg class="bubble-svg" data-bubble="phone" viewBox="0 0 100 100" role="img"></svg>
+        <div class="legend phone-legend" aria-label="Money flow">
+          {legend.map((kind) => (
+            <span class="legend-item">
+              <span class:list={["legend-line", `legend-${kind.colour}`]} aria-hidden="true"></span>
+              {kind.phoneLabel}
+            </span>
+          ))}
+        </div>
       </div>
 
       <div class="map-chrome">
@@ -560,15 +568,6 @@ const ariaFor = (itemTitle: string, date: string) => `${dayLabel(date)}, ${itemT
         </div>
 
         <div class="map-side">
-          <div class="legend phone-legend" aria-label="Money flow">
-            {legend.map((kind) => (
-              <span class="legend-item">
-                <span class:list={["legend-line", `legend-${kind.colour}`]} aria-hidden="true"></span>
-                {kind.phoneLabel}
-              </span>
-            ))}
-          </div>
-
           <div class="zoom-buttons map-zoom">
             <button type="button" class="zoom-button" data-zoom="fit" aria-label="Focus on the players">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h5V4M20 9h-5V4M4 15h5v5M20 15h-5v5"></path></svg>
